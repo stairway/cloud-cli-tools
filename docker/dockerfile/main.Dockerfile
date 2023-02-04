@@ -1,0 +1,149 @@
+# syntax=docker/dockerfile:1
+ARG VERSION=base-latest
+ARG IMAGE_NAME="hub.docker.local/stairwaytowonderland/cloud-cli-tools:${VERSION}"
+FROM ${IMAGE_NAME}:${VERSION}
+ARG VERSION=base-latest
+ARG IMAGE_NAME="hub.docker.local/stairwaytowonderland/cloud-cli-tools:${VERSION}"
+ARG MAINTAINER="Andrew Haller <andrew.haller@grainger.com>"
+LABEL maintainer="${MAINTAINER}"
+
+ARG KUBE_VERSION=v1.21.0
+ARG ISTIO_VERSION=1.11.8
+ARG TERRAFORM_VERSION=1.3.6
+ARG TERRAGRUNT_VERSION=0.31.1
+ARG KUBECTL_CONVERT_VERSION=latest
+ARG K9S_VERSION=latest
+
+ENV TZ=America/Chicago
+ENV TERM=xterm-color
+ENV EDITOR=nano
+
+ENV AWS_VAULT_BACKEND=pass
+ENV KEEP_ALIVE=true
+
+# https://yaml.org/type/bool.html
+ENV TRUE='y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1'
+
+ENV USER="${USER:-root}"
+ENV HOME="${HOME:-/root}"
+
+USER root
+WORKDIR /tmp/downloads
+
+COPY bin/* /usr/local/bin/
+COPY profile/* /etc/profile.d/
+ADD dpctl-latest-linux-amd64.tgz dpctl-latest-linux-amd64
+
+RUN echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi"  >> "${HOME}/.bashrc"
+
+# https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux
+RUN [ "$KUBE_VERSION" = "latest" ] && \
+        KUBE_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
+        KUBE_VERSION="v$(echo ${KUBE_VERSION} | sed s/^v//g)" && \
+    curl -LO "https://dl.k8s.io/release/${KUBE_VERSION}/bin/linux/amd64/kubectl" && \
+    curl -LO "https://dl.k8s.io/${KUBE_VERSION}/bin/linux/amd64/kubectl.sha256" && \
+    CHECKSUM_VERIFY_STATUS=$(echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check) && \
+    LAST_ERR=$? && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "kubectl: OK" -a $LAST_ERR -eq 0 ] && printf "\033[%d;1m%s\033[0m\n" 92 "$CHECKSUM_VERIFY_STATUS" || { printf "\033[%d;1m%s\033[0m\n" 91 "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
+    kubectl version --short --client
+
+# https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-convert-plugin
+RUN [ "$KUBECTL_CONVERT_VERSION" = "latest" ] && \
+        KUBECTL_CONVERT_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
+        KUBECTL_CONVERT_VERSION="v$(echo ${KUBECTL_CONVERT_VERSION} | sed s/^v//g)" && \
+    curl -LO "https://dl.k8s.io/release/${KUBECTL_CONVERT_VERSION}/bin/linux/amd64/kubectl-convert" && \
+    curl -LO "https://dl.k8s.io/${KUBECTL_CONVERT_VERSION}/bin/linux/amd64/kubectl-convert.sha256" && \
+    CHECKSUM_VERIFY_STATUS=$(echo "$(cat kubectl-convert.sha256)  kubectl-convert" | sha256sum --check) && \
+    LAST_ERR=$? && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "kubectl-convert: OK" -a $LAST_ERR -eq 0 ] && printf "\033[%d;1m%s\033[0m\n" 92 "$CHECKSUM_VERIFY_STATUS" || { printf "\033[%d;1m%s\033[0m\n" 91 "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    install -o root -g root -m 0755 kubectl-convert /usr/local/bin/kubectl-convert && \
+    kubectl version --short --client
+
+RUN sh -c "$(curl -sSL https://git.io/install-kubent)"
+
+# curl -L https://istio.io/downloadIstio | ISTIO_VERSION=$ISTIO_VERSION TARGET_ARCH=x86_64 sh - 
+RUN [ "${ISTIO_VERSION:-latest}" = "latest" ] && \
+        ISTIO_VERSION=$(curl -s https://api.github.com/repos/istio/istio/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        ISTIO_VERSION="$(echo ${ISTIO_VERSION} | sed s/^v//g)" && \
+    curl -LO "https://github.com/istio/istio/releases/download/${ISTIO_VERSION}/istio-${ISTIO_VERSION}-linux-amd64.tar.gz" && \
+    curl -LO "https://github.com/istio/istio/releases/download/${ISTIO_VERSION}/istio-${ISTIO_VERSION}-linux-amd64.tar.gz.sha256" && \
+    CHECKSUM_VERIFY_STATUS=$(cat istio-${ISTIO_VERSION}-linux-amd64.tar.gz.sha256 | grep --color=never istio-${ISTIO_VERSION}-linux-amd64.tar.gz | sha256sum -c -) && \
+    LAST_ERR=$? && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "istio-${ISTIO_VERSION}-linux-amd64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[%d;1m%s\033[0m\n" 92 "$CHECKSUM_VERIFY_STATUS" || { printf "\033[%d;1m%s\033[0m\n" 91 "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    tar -xf istio-${ISTIO_VERSION}-linux-amd64.tar.gz && \
+    install istio-${ISTIO_VERSION}/bin/istioctl /usr/local/bin/istioctl && \
+    cp istio-${ISTIO_VERSION}/tools/istioctl.bash $HOME/istioctl.bash && \
+    istioctl version --remote=false --short
+
+RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
+        TERRAFORM_VERSION=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') || \
+        TERRAFORM_VERSION="$(echo ${TERRAFORM_VERSION} | sed s/^v//g)" && \
+    curl -LO "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" && \
+    curl -LO "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS" && \
+    CHECKSUM_VERIFY_STATUS=$(cat terraform_${TERRAFORM_VERSION}_SHA256SUMS | grep --color=never terraform_${TERRAFORM_VERSION}_linux_amd64.zip | sha256sum -c -) && \
+    LAST_ERR=$? && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "terraform_${TERRAFORM_VERSION}_linux_amd64.zip: OK" -a $LAST_ERR -eq 0 ] && printf "\033[%d;1m%s\033[0m\n" 92 "$CHECKSUM_VERIFY_STATUS" || { printf "\033[%d;1m%s\033[0m\n" 91 "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    unzip "terraform_${TERRAFORM_VERSION}_linux_amd64.zip" && \
+    install terraform /usr/local/bin/terraform && \
+    terraform version && \
+    terraform -install-autocomplete
+
+RUN [ "${TERRAGRUNT_VERSION:-latest}" = "latest" ] && \
+        TERRAGRUNT_VERSION=$(curl -s https://api.github.com/repos/gruntwork-io/terragrunt/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        TERRAGRUNT_VERSION="v$(echo ${TERRAGRUNT_VERSION} | sed s/^v//g)" && \
+    curl -LO "https://github.com/gruntwork-io/terragrunt/releases/download/${TERRAGRUNT_VERSION}/terragrunt_linux_amd64" && \
+    curl -L "https://github.com/gruntwork-io/terragrunt/releases/download/${TERRAGRUNT_VERSION}/SHA256SUMS" -o "terragrunt_${TERRAGRUNT_VERSION}_SHA256SUMS" && \
+    CHECKSUM_VERIFY_STATUS=$(cat terragrunt_${TERRAGRUNT_VERSION}_SHA256SUMS | grep --color=never terragrunt_linux_amd64 | sha256sum -c -) && \
+    LAST_ERR=$? && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "terragrunt_linux_amd64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[%d;1m%s\033[0m\n" 92 "$CHECKSUM_VERIFY_STATUS" || { printf "\033[%d;1m%s\033[0m\n" 91 "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    install terragrunt_linux_amd64 /usr/local/bin/terragrunt && \
+    terraform version
+
+RUN [ "${K9S_VERSION:-latest}" = "latest" ] && \
+        K9S_VERSION=$(curl -s https://api.github.com/repos/derailed/k9s/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        K9S_VERSION="v$(echo ${K9S_VERSION} | sed s/^v//g)" && \
+    curl -LO "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz" && \
+    curl -L "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/checksums.txt" -o "k9s-${K9S_VERSION}-checksums.txt" && \
+    CHECKSUM_VERIFY_STATUS=$(cat "k9s-${K9S_VERSION}-checksums.txt" | grep --color=never k9s_Linux_amd64.tar.gz | sha256sum -c -) && \
+    LAST_ERR=$? && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "k9s_Linux_amd64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[%d;1m%s\033[0m\n" 92 "$CHECKSUM_VERIFY_STATUS" || { printf "\033[%d;1m%s\033[0m\n" 91 "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    tar -xvzf k9s_Linux_amd64.tar.gz k9s -C . && \
+    install k9s /usr/local/bin/k9s && \
+    k9s version
+
+RUN install dpctl-latest-linux-amd64/dpctl /usr/local/bin/dpctl && \
+    rm -rf /tmp/downloads && \
+    echo "EDITOR=\${EDITOR}" >> "${HOME}/.profile" && \
+    echo "VISUAL=\${EDITOR}" >> "${HOME}/.profile" && \
+    echo "GIT_EDITOR=\${EDITOR}" >> "${HOME}/.profile" && \
+    echo "KUBE_EDITOR=\${EDITOR}" >> "${HOME}/.profile" && \
+    echo "complete -C /usr/local/bin/aws_completer aws" >> "${HOME}/.bashrc" && \
+    echo "source <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
+    echo "[ -f ~/istioctl.bash ] && . ~/istioctl.bash" >> "${HOME}/.bashrc" && \
+    echo "init.sh" >> "${HOME}/.bashrc" && \
+    echo "source ${HOME}/.platform_aliases"
+
+USER $USER
+WORKDIR $HOME
+
+VOLUME [ "/data", "$HOME/.ssh", "$HOME/.gnupg", "$HOME/.password-store", "$HOME/.awsvault" ]
+
+ENTRYPOINT [ "/usr/local/bin/docker-entrypoint.sh" ]
+
+ARG APPLICATION_NAME \
+    BUILD_IMAGE \
+	BUILD_VERSION \
+	BUILD_DATE \
+    VENDOR_ORGANIZATION
+    
+LABEL \
+	org.opencontainers.image.base.name="${IMAGE_NAME}:${VERSION}" \
+	org.opencontainers.image.url=$BUILD_IMAGE \
+	org.opencontainers.image.created-date=$BUILD_DATE \
+	org.opencontainers.image.title=$APPLICATION_NAME \
+	org.opencontainers.image.version=$BUILD_VERSION \
+	org.opencontainers.image.vendor=$VENDOR_ORGANIZATION \
+	org.opencontainers.image.authors=$MAINTAINER \
+	org.opencontainers.image.description="docker run -d ${BUILD_IMAGE}:${BUILD_VERSION}" \
+	com.grainger.image.name="${BUILD_IMAGE}:${BUILD_VERSION}"

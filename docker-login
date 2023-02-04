@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+
+set -e
+
+echo
+printf "\033[92;1m>>>\033[94;1m%s\033[92;1m <<<\033[0m\n" "Docker Hub Login Script"
+
+printf ""
+HUB_USERNAME="${HUB_USERNAME}"
+while [ -z "$HUB_USERNAME" ]; do
+    printf "Username: "
+    read HUB_USERNAME
+done
+
+HUB_PASSWORD="${HUB_PASSWORD}"
+while [ -z "$HUB_PASSWORD" ]; do
+    printf "Password: "
+    read -s HUB_PASSWORD
+done
+
+echo
+echo "${HUB_PASSWORD}" | docker login -u "${HUB_USERNAME}" --password-stdin

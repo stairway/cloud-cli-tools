@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+echo
+echo https://grainger.atlassian.net/wiki/spaces/PD/pages/48123144356/Developer+workstation+configuration+guide
+echo
+echo https://grainger.atlassian.net/wiki/spaces/PD/pages/48206843329/AWS+password+and+MFA+reset+instructions
+echo
+echo https://grainger.atlassian.net/wiki/spaces/PLE/pages/50063794375/Kubectl
+echo

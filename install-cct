@@ -1,0 +1,98 @@
+#!/usr/bin/env sh
+
+# Set strict error checking
+set -euf
+LC_CTYPE=C
+
+# Enable debug output if $DEBUG is set to true
+[ "${DEBUG:="false"}" = "true" ] && set -x
+
+if [ -f "$0" ]; then
+    SCRIPT_DIR="$(dirname $( cd "$( dirname "$0" )" && pwd ))"
+    script=true
+else
+    SCRIPT_DIR="$(pwd)"
+    script=false
+fi
+
+# Optional vars
+PROJECT_NAME="${PROJECT_NAME:-"cloud-cli-tools"}"
+APP_NAME="${APP_NAME:="cloudcli"}"
+GITHUB_REPO="${GITHUB_REPO:="stairway/cloud-cli-tools"}"
+TARGET_DIR="${TARGET_DIR:="${SCRIPT_DIR}"}"
+TARGET_ARCH="${TARGET_ARCH:="$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"}"
+TARGET_OS="${TARGET_OS:="$(uname -s | tr '[:upper:]' '[:lower:]')"}"
+REQUIRED_BINARIES=${REQUIRED_BINARIES:='tar curl'}
+SKIP_DOWNLOAD=${SKIP_DOWNLOAD:-false}
+
+# Print error and exit
+fail() {
+    printf "\033[91;1m[ERROR]\033[0m\033[91m %s (Exiting)\033[0m\n" "$*"
+    exit 1
+}
+
+# Check if we have all the dependencies
+check_binaries() {
+    for bin in ${REQUIRED_BINARIES}; do
+        [ -x "$(command -v "${bin}")" ] || fail "Required dependency ${bin} not found in path"
+    done
+}
+
+get_latest_release() {
+    [ "${SKIP_DOWNLOAD}" = "true" ] || \
+        curl -sL "https://api.github.com/repos/${GITHUB_REPO}/releases/latest" \
+            | grep -oE '"tag_name": "[^"]*' \
+            | grep -oE '[^"]*$'
+}
+
+download_version() {
+    version="${1}"
+
+    download_url="https://github.com/${GITHUB_REPO}/releases/download/${version}/${APP_NAME}-${version}-${TARGET_OS}-${TARGET_ARCH}.tar.gz"
+
+    if [ ! -w "${TARGET_DIR}" ]; then
+        [ -w "${TARGET_DIR}" ] || fail "Target directory (${TARGET_DIR}) is not writable (destination can be changed using \$TARGET_DIR variable)"
+    fi
+
+    [ "${SKIP_DOWNLOAD}" = "true" ] || \
+        curl -L -o- "https://github.com/${GITHUB_REPO}/releases/download/${version}/${APP_NAME}-${version}-${TARGET_OS}-${TARGET_ARCH}.tar.gz" \
+            | tar -xz -C "${TARGET_DIR}"
+}
+
+check_binaries
+
+printf "\033[92;1m>>>\033[94;1m %s: %s\033[92;1m <<<\033[0m\n" "${PROJECT_NAME}" "Installation Script"
+
+while getopts "hd:a:o:n" OPTION
+do
+    case $OPTION in
+        h) usage; exit;;
+        d) TARGET_DIR="$OPTARG";;
+        a) TARGET_ARCH="$OPTARG";;
+        o) TARGET_OS="$OPTARG";;
+        n) TARGET_NIGHTLY=true ;;
+        ?) usage; exit;;
+    esac
+done
+
+release=
+printf "\033[93m>\033[0m Detecting latest version ...\n"
+#release="$(get_latest_release)" || fail "There was a problem."
+
+printf "\033[93m>\033[0m Downloading %s version %s ...\n" "${PROJECT_NAME}" "${release}"
+#download_version "${release}" || fail "There was a problem."
+
+printf "\033[93m>\033[0m Done. \033[92m%s\033[0m was installed to '\033[3m%s\033[0m'.\n" "${PROJECT_NAME}" "${TARGET_DIR}/"
+echo
+
+BUILD_NOW_CHOICE=
+while [ "${BUILD_NOW_CHOICE}" != "y" -a "${BUILD_NOW_CHOICE}" != "N" ]; do
+    printf "Build now? [y/N]: "
+    read BUILD_NOW_CHOICE
+done
+
+if [ "${BUILD_NOW_CHOICE}" = "y" ]; then
+    cd "${TARGET_DIR}/${PROJECT_NAME}"
+    printf "\033[93m>\033[0m Building ...\n"
+    bin/build.sh -F -N
+fi

@@ -1,0 +1,12 @@
+/.*
+/*.tgz
+/dist
+/mount
+/*.env
+/*.env.*
+/**/_*
+.DS_Store
+*.bak
+*.orig
+
+.idea
