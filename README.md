@@ -1,4 +1,4 @@
-# Grainger Cloud CLI Tools
+# Cloud CLI Tools
 
 ## **TLDR;**
 **Install/Build/Run**
@@ -8,7 +8,7 @@ echo && [ -n $(which docker) -a -n $(which jq) ] && \
     _cct_project_name="${PROJECT_NAME:-cloud-cli-tools}" && \
     printf "Project Name (%s): " "${_cct_project_name}" && \
     read PROJECT_NAME && export PROJECT_NAME=${PROJECT_NAME:-$_cct_project_name} && \
-    sh -c "$(curl -sSL https://github.com/stairway/cloud-cli-tools/install-cct)" && \
+    sh -c "$(curl -sSL https://raw.githubusercontent.com/stairway/cloud-cli-tools/master/install-cct)" && \
     cd "${PROJECT_NAME}" && sh -c "$(cat bin/run.sh)"
 ```
 
