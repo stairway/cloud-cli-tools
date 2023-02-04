@@ -60,8 +60,8 @@ If you're having trouble building, check if you have Experimental Features enabl
 #### **Step 1: Extract**
 
 ```bash
-$ tar -xzf grainger-cloud-cli-tools.tgz
-$ cd grainger-cloud-cli-tools
+$ tar -xzf cloud-cli-tools.tgz
+$ cd cloud-cli-tools
 ```
 
 #### **Step 2: First Build**
