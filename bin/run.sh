@@ -22,6 +22,7 @@ else
     script=false
 fi
 
+echo
 printf "\033[92;1m>>>\033[94;1m %s: %s\033[92;1m <<<\033[0m\n" "cloud-cli-tools" "Run Script"
 
 pushd "${SCRIPT_DIR}/../"
@@ -57,7 +58,8 @@ init_mountcache() {
 usage() {
     cat <<EOF
 
-usage: run.sh <racfid> <team_name> <full_name> <email>
+usage: run.sh -u <racfid> -t <team_name> -n <full_name> -m <email> -e <editor>
+       run.sh --racfid <racfid> --team <team_name> --name <full_name> --email <email> --editor <editor>
 
 *Note* Parameters with spaces (i.e. full_name) MUST be wrapped in quotes.
 

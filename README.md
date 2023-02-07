@@ -164,6 +164,7 @@ $ sh -c "$(cat bin/run.sh)"
 |   `-- run.sh
 +-- conf/
 |   |-- defaults.env
+|   |-- docker.env
 |   |-- vars.env
 |   `-- versions.env
 +-- docker/

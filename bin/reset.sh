@@ -2,12 +2,13 @@
 
 set -e
 
+echo
 printf "\033[92;1m>>>\033[94;1m %s: %s\033[92;1m <<<\033[0m\n" "cloud-cli-tools" "Reset Script"
 
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 NOTHING_MSG="Nothing to remove."
 
-pushd "${SCRIPT_DIR}/../"
+cd "${SCRIPT_DIR}/../"
 
 source conf/docker.env
 source conf/defaults.env
@@ -107,5 +108,3 @@ quick_clean "${CONTAINER_NAME}"
 if [ "$mode" = "full" ]; then
     [ -d "${PWD}/mount/dotfiles/${DOCKER_USER}" ] && full_clean "${PWD}/mount/dotfiles/${DOCKER_USER}"
 fi
-
-popd

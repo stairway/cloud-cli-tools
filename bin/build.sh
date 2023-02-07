@@ -2,6 +2,7 @@
 
 set -e
 
+echo
 printf "\033[92;1m>>>\033[94;1m %s: %s\033[92;1m <<<\033[0m\n" "cloud-cli-tools" "Build Script"
 
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
@@ -24,12 +25,21 @@ build_base() {
     if ${DOCKER_BUILD_NO_CACHE:-false} ; then build_opts+=(--no-cache); fi
     
     local build_args=(
-        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-        --build-arg BUILD_IMAGE="${DOCKER_IMAGE_PARENT}"
-        --build-arg BUILD_VERSION="${DOCKER_IMAGE_PARENT_VERSION}"
+        --build-arg VERSION="${UBUNTU_VERSION:-latest}"
     )
 
-    [ -n "${VENDOR_ORGANIZATION}" ] && build_args+=(--build-arg VENDOR_ORGANIZATION="${VENDOR_ORGANIZATION}")
+    local image_labels=(
+        --label "org.opencontainers.image.base.name=ubuntu:${UBUNTU_VERSION:-latest}"
+        --label "org.opencontainers.image.url=${DOCKER_IMAGE_PARENT}"
+        --label "org.opencontainers.image.source=${DOCKER_IMAGE_SOURCE}"
+        --label "org.opencontainers.image.version=${DOCKER_IMAGE_PARENT_VERSION}"
+        --label "org.opencontainers.image.created-date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+        --label "org.opencontainers.image.title=\"${PROJECT_TITLE} (${PROJECT_NAME}) -- Base Image\""
+        --label "org.opencontainers.image.description=\"Intended to be used as a parent image\""
+        --label "com.grainger.image.name=${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}"
+    )
+
+    [ -n "${VENDOR_ORGANIZATION}" ] && image_labels+=(--label "org.opencontainers.image.vendor=${VENDOR_ORGANIZATION}")
 
     [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg USER="${DOCKER_USER}")
     [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg HOME="/home/${DOCKER_USER}")
@@ -40,6 +50,7 @@ build_base() {
     local build_command=(docker build)
     build_command+=(
         ${build_opts[@]}
+        ${build_labels[@]}
         ${build_args[@]}
         ${@}
         -t "${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}"
@@ -60,13 +71,25 @@ build_new() {
     )
     if ${DOCKER_BUILD_NO_CACHE:-false} ; then build_opts+=(--no-cache); fi
 
+        DOCKER_IMAGE_DESCRIPTION=$(cat <<EOF
+usage: run.sh -u|--racfid <racfid> -t|--team <team_name> -n|--name <full_name> -m|--email <email> -e|--editor <editor>
+EOF
+)
+
+    local image_labels=(
+        --label "org.opencontainers.image.base.name=${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}"
+        --label "org.opencontainers.image.url=${DOCKER_IMAGE}"
+        --label "org.opencontainers.image.source=${DOCKER_IMAGE_SOURCE}"
+        --label "org.opencontainers.image.version=${DOCKER_IMAGE_VERSION}"
+        --label "org.opencontainers.image.created-date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+        --label "org.opencontainers.image.description=\"${DOCKER_IMAGE_DESCRIPTION}\""
+        --label "org.opencontainers.image.title=\"${PROJECT_TITLE} (${PROJECT_NAME}) -- ${DOCKER_IMAGE_VERSION}\""
+        --label "com.grainger.image.name=${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}"
+    )
+
     local build_args=(
         --build-arg IMAGE_NAME="${DOCKER_IMAGE_PARENT}"
         --build-arg VERSION="${DOCKER_IMAGE_PARENT_VERSION}"
-        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-        --build-arg BUILD_IMAGE="${DOCKER_IMAGE}"
-        --build-arg BUILD_VERSION="${DOCKER_IMAGE_VERSION}"
-        --build-arg APPLICATION_NAME="${DOCKER_CONTAINER_NAME_PREFIX}-${DOCKER_IMAGE_VERSION}"
     )
     [ -n "${KUBE_VERSION}" ] && build_args+=(--build-arg KUBE_VERSION="${KUBE_VERSION}")
     [ -n "${ISTIO_VERSION}" ] && build_args+=(--build-arg ISTIO_VERSION="${ISTIO_VERSION}")
@@ -74,12 +97,12 @@ build_new() {
     [ -n "${TERRAGRUNT_VERSION}" ] && build_args+=(--build-arg TERRAGRUNT_VERSION="${TERRAGRUNT_VERSION}")
     [ -n "${KUBECTL_CONVERT_VERSION}" ] && build_args+=(--build-arg KUBECTL_CONVERT_VERSION="${KUBECTL_CONVERT_VERSION}")
     [ -n "${K9S_VERSION}" ] && build_args+=(--build-arg K9S_VERSION="${K9S_VERSION}")
-    [ -n "${VENDOR_ORGANIZATION}" ] && build_args+=(--build-arg VENDOR_ORGANIZATION="${VENDOR_ORGANIZATION}")
     
     local build_command=(docker build)
     build_command+=(
         ${build_opts[@]}
         ${build_args[@]}
+        ${image_labels[@]}
         ${@}
         -t "${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}"
         "./docker"

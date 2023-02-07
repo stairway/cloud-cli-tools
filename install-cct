@@ -77,10 +77,10 @@ done
 
 release=
 printf "\033[93m>\033[0m Detecting latest version ...\n"
-#release="$(get_latest_release)" || fail "There was a problem."
+release="$(get_latest_release)" || fail "There was a problem."
 
 printf "\033[93m>\033[0m Downloading %s version %s ...\n" "${PROJECT_NAME}" "${release}"
-#download_version "${release}" || fail "There was a problem."
+download_version "${release}" || fail "There was a problem."
 
 printf "\033[93m>\033[0m Done. \033[92m%s\033[0m was installed to '\033[3m%s\033[0m'.\n" "${PROJECT_NAME}" "${TARGET_DIR}/"
 echo

@@ -1,8 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG VERSION=latest
 FROM --platform=linux/amd64 ubuntu:$VERSION
-ARG MAINTAINER="Andrew Haller <andrew.haller@grainger.com>"
-LABEL maintainer="$MAINTAINER"
+LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@grainger.com>"
 
 ARG AWS_VAULT_VERSION=latest
 ARG MINIKUBE_VERSION=latest
@@ -27,7 +26,7 @@ ARG INSTALL_PKGS="\
     curl \
     wget \
     # this is v1 version of aws-cli
-    awscli \
+    # awscli \
     openssl \
     nano \
     jq \
@@ -51,7 +50,8 @@ RUN apt-get update -y && \
     pip3 install --upgrade pip && \
     sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
     touch /usr/share/locale/locale.alias && \
-    locale-gen
+    locale-gen && \
+    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -95,17 +95,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 USER $USER
 WORKDIR $HOME
 
-ARG BUILD_IMAGE \
-	BUILD_VERSION \
-	BUILD_DATE \
-    VENDOR_ORGANIZATION
-    
-LABEL \
-	org.opencontainers.image.base.name="ubuntu:$VERSION" \
-	org.opencontainers.image.url=$BUILD_IMAGE \
-	org.opencontainers.image.created-date=$BUILD_DATE \
-	org.opencontainers.image.version=$BUILD_VERSION \
-	org.opencontainers.image.vendor=$VENDOR_ORGANIZATION \
-	org.opencontainers.image.authors="$MAINTAINER" \
-	org.opencontainers.image.description="docker run -d ${BUILD_IMAGE}:${BUILD_VERSION}" \
-	com.grainger.image.name="${BUILD_IMAGE}:${BUILD_VERSION}"
+# Additional Metadata
+
+ARG VERSION=latest
+LABEL org.opencontainers.image.base.name="ubuntu:$VERSION"

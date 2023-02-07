@@ -1,11 +1,8 @@
 # syntax=docker/dockerfile:1
 ARG VERSION=base-latest
-ARG IMAGE_NAME="hub.docker.local/stairwaytowonderland/cloud-cli-tools:${VERSION}"
+ARG IMAGE_NAME=
 FROM ${IMAGE_NAME}:${VERSION}
-ARG VERSION=base-latest
-ARG IMAGE_NAME="hub.docker.local/stairwaytowonderland/cloud-cli-tools:${VERSION}"
-ARG MAINTAINER="Andrew Haller <andrew.haller@grainger.com>"
-LABEL maintainer="${MAINTAINER}"
+LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@grainger.com>"
 
 ARG KUBE_VERSION=v1.21.0
 ARG ISTIO_VERSION=1.11.8
@@ -26,15 +23,19 @@ ENV TRUE='y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON
 
 ENV USER="${USER:-root}"
 ENV HOME="${HOME:-/root}"
+ENV PATH="/opt/bin:${PATH}"
 
 USER root
 WORKDIR /tmp/downloads
 
+COPY docs/* /docs/
+COPY opt/* /opt/bin/
 COPY bin/* /usr/local/bin/
 COPY profile/* /etc/profile.d/
 ADD dpctl-latest-linux-amd64.tgz dpctl-latest-linux-amd64
 
-RUN echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi"  >> "${HOME}/.bashrc"
+RUN echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi"  >> "${HOME}/.bashrc" && \
+    chmod +x /opt/bin/describe
 
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux
 RUN [ "$KUBE_VERSION" = "latest" ] && \
@@ -44,7 +45,7 @@ RUN [ "$KUBE_VERSION" = "latest" ] && \
     curl -LO "https://dl.k8s.io/${KUBE_VERSION}/bin/linux/amd64/kubectl.sha256" && \
     CHECKSUM_VERIFY_STATUS=$(echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check) && \
     LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "kubectl: OK" -a $LAST_ERR -eq 0 ] && printf "\033[%d;1m%s\033[0m\n" 92 "$CHECKSUM_VERIFY_STATUS" || { printf "\033[%d;1m%s\033[0m\n" 91 "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "kubectl: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
     kubectl version --short --client
 
@@ -56,7 +57,7 @@ RUN [ "$KUBECTL_CONVERT_VERSION" = "latest" ] && \
     curl -LO "https://dl.k8s.io/${KUBECTL_CONVERT_VERSION}/bin/linux/amd64/kubectl-convert.sha256" && \
     CHECKSUM_VERIFY_STATUS=$(echo "$(cat kubectl-convert.sha256)  kubectl-convert" | sha256sum --check) && \
     LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "kubectl-convert: OK" -a $LAST_ERR -eq 0 ] && printf "\033[%d;1m%s\033[0m\n" 92 "$CHECKSUM_VERIFY_STATUS" || { printf "\033[%d;1m%s\033[0m\n" 91 "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "kubectl-convert: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     install -o root -g root -m 0755 kubectl-convert /usr/local/bin/kubectl-convert && \
     kubectl version --short --client
 
@@ -70,7 +71,7 @@ RUN [ "${ISTIO_VERSION:-latest}" = "latest" ] && \
     curl -LO "https://github.com/istio/istio/releases/download/${ISTIO_VERSION}/istio-${ISTIO_VERSION}-linux-amd64.tar.gz.sha256" && \
     CHECKSUM_VERIFY_STATUS=$(cat istio-${ISTIO_VERSION}-linux-amd64.tar.gz.sha256 | grep --color=never istio-${ISTIO_VERSION}-linux-amd64.tar.gz | sha256sum -c -) && \
     LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "istio-${ISTIO_VERSION}-linux-amd64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[%d;1m%s\033[0m\n" 92 "$CHECKSUM_VERIFY_STATUS" || { printf "\033[%d;1m%s\033[0m\n" 91 "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "istio-${ISTIO_VERSION}-linux-amd64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     tar -xf istio-${ISTIO_VERSION}-linux-amd64.tar.gz && \
     install istio-${ISTIO_VERSION}/bin/istioctl /usr/local/bin/istioctl && \
     cp istio-${ISTIO_VERSION}/tools/istioctl.bash $HOME/istioctl.bash && \
@@ -83,7 +84,7 @@ RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
     curl -LO "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS" && \
     CHECKSUM_VERIFY_STATUS=$(cat terraform_${TERRAFORM_VERSION}_SHA256SUMS | grep --color=never terraform_${TERRAFORM_VERSION}_linux_amd64.zip | sha256sum -c -) && \
     LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "terraform_${TERRAFORM_VERSION}_linux_amd64.zip: OK" -a $LAST_ERR -eq 0 ] && printf "\033[%d;1m%s\033[0m\n" 92 "$CHECKSUM_VERIFY_STATUS" || { printf "\033[%d;1m%s\033[0m\n" 91 "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "terraform_${TERRAFORM_VERSION}_linux_amd64.zip: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     unzip "terraform_${TERRAFORM_VERSION}_linux_amd64.zip" && \
     install terraform /usr/local/bin/terraform && \
     terraform version && \
@@ -96,7 +97,7 @@ RUN [ "${TERRAGRUNT_VERSION:-latest}" = "latest" ] && \
     curl -L "https://github.com/gruntwork-io/terragrunt/releases/download/${TERRAGRUNT_VERSION}/SHA256SUMS" -o "terragrunt_${TERRAGRUNT_VERSION}_SHA256SUMS" && \
     CHECKSUM_VERIFY_STATUS=$(cat terragrunt_${TERRAGRUNT_VERSION}_SHA256SUMS | grep --color=never terragrunt_linux_amd64 | sha256sum -c -) && \
     LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "terragrunt_linux_amd64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[%d;1m%s\033[0m\n" 92 "$CHECKSUM_VERIFY_STATUS" || { printf "\033[%d;1m%s\033[0m\n" 91 "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "terragrunt_linux_amd64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     install terragrunt_linux_amd64 /usr/local/bin/terragrunt && \
     terraform version
 
@@ -107,7 +108,7 @@ RUN [ "${K9S_VERSION:-latest}" = "latest" ] && \
     curl -L "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/checksums.txt" -o "k9s-${K9S_VERSION}-checksums.txt" && \
     CHECKSUM_VERIFY_STATUS=$(cat "k9s-${K9S_VERSION}-checksums.txt" | grep --color=never k9s_Linux_amd64.tar.gz | sha256sum -c -) && \
     LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "k9s_Linux_amd64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[%d;1m%s\033[0m\n" 92 "$CHECKSUM_VERIFY_STATUS" || { printf "\033[%d;1m%s\033[0m\n" 91 "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "k9s_Linux_amd64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     tar -xvzf k9s_Linux_amd64.tar.gz k9s -C . && \
     install k9s /usr/local/bin/k9s && \
     k9s version
@@ -131,19 +132,7 @@ VOLUME [ "/data", "$HOME/.ssh", "$HOME/.gnupg", "$HOME/.password-store", "$HOME/
 
 ENTRYPOINT [ "/usr/local/bin/docker-entrypoint.sh" ]
 
-ARG APPLICATION_NAME \
-    BUILD_IMAGE \
-	BUILD_VERSION \
-	BUILD_DATE \
-    VENDOR_ORGANIZATION
-    
-LABEL \
-	org.opencontainers.image.base.name="${IMAGE_NAME}:${VERSION}" \
-	org.opencontainers.image.url=$BUILD_IMAGE \
-	org.opencontainers.image.created-date=$BUILD_DATE \
-	org.opencontainers.image.title=$APPLICATION_NAME \
-	org.opencontainers.image.version=$BUILD_VERSION \
-	org.opencontainers.image.vendor=$VENDOR_ORGANIZATION \
-	org.opencontainers.image.authors=$MAINTAINER \
-	org.opencontainers.image.description="docker run -d ${BUILD_IMAGE}:${BUILD_VERSION}" \
-	com.grainger.image.name="${BUILD_IMAGE}:${BUILD_VERSION}"
+# Additional Metadata
+ARG VERSION=base-latest
+ARG IMAGE_NAME=
+LABEL org.opencontainers.image.base.name="${IMAGE_NAME}:${VERSION}"
