@@ -25,7 +25,7 @@ ARG INSTALL_PKGS="\
     bash-completion \
     curl \
     wget \
-    # this is v1 version of aws-cli
+    # this is v1 version of aws-cli ... v2 downloaded with curl, below
     # awscli \
     openssl \
     nano \
@@ -34,8 +34,16 @@ ARG INSTALL_PKGS="\
     locales \
     pass \
     gpg \
+    lsb-release \
     python3-pip \
     npm"
+
+ARG DOCKER_PKGS="\
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-buildx-plugin \
+    docker-compose-plugin"
 
 # TODO: gpg not currently working with non-root user
 RUN [ "${USER:-root}" = "root" ] || { \
@@ -45,6 +53,7 @@ RUN [ "${USER:-root}" = "root" ] || { \
         echo "${USER}:${USER}" | chpasswd && \
         echo 'root:root' | chpasswd; }
 
+# Install all packages (except docker)
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y $INSTALL_PKGS && \
     apt-get clean -y && \
@@ -53,6 +62,18 @@ RUN apt-get update -y && \
     touch /usr/share/locale/locale.alias && \
     locale-gen && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+
+# Install Docker
+RUN apt-get remove -y remove docker docker-engine docker.io containerd runc; \
+    mkdir -m 0755 -p /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    chmod a+r /etc/apt/keyrings/docker.gpg && \
+    echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+        $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y $DOCKER_PKGS && \
+    apt-get clean -y
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -88,7 +109,7 @@ RUN [ "${MINIKUBE_VERSION:-latest}" = "latest" ] && \
     curl -LO "https://storage.googleapis.com/minikube/releases/${MINIKUBE_VERSION}/minikube-linux-amd64.sha256" && \
     CHECKSUM_VERIFY_STATUS=$(echo "$(cat minikube-linux-amd64.sha256)  minikube-linux-amd64" | sha256sum --check) && \
     LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "kubectl: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "minikube-linux-amd64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     install minikube-linux-amd64 /usr/local/bin/minikube && \
     minikube version
 

@@ -170,6 +170,7 @@ run_new() {
     local docker_user_home=/root
     [ "${DOCKER_USER:-root}" = "root" ] || docker_user_home="/home/${DOCKER_USER}"
     local mount_volumes=(
+        -v /var/run/docker.sock:/var/run/docker.sock
         -v "${mountpoint}/.awsvault:${docker_user_home}/.awsvault"
         -v "${mountpoint}/.gnupg:${docker_user_home}/.gnupg"
         -v "${mountpoint}/.password-store:${docker_user_home}/.password-store"
