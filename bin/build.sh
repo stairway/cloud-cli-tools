@@ -22,21 +22,21 @@ build_base() {
         # --push
         -f docker/dockerfile/base.Dockerfile
     )
-    if ${DOCKER_BUILD_NO_CACHE:-false} ; then build_opts+=(--no-cache); fi
+    if [ "${DOCKER_BUILD_NO_CACHE:-false}" = "true" ] ; then build_opts+=(--no-cache); fi
     
-    local build_args=(
-        --build-arg VERSION="${UBUNTU_VERSION:-latest}"
-    )
+    local build_args=()
+    [ "${UBUNTU_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg VERSION="${UBUNTU_VERSION}")
+
+    local created_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
     local image_labels=(
-        --label "org.opencontainers.image.base.name=ubuntu:${UBUNTU_VERSION:-latest}"
         --label "org.opencontainers.image.url=${DOCKER_IMAGE_PARENT}"
         --label "org.opencontainers.image.source=${DOCKER_IMAGE_SOURCE}"
         --label "org.opencontainers.image.version=${DOCKER_IMAGE_PARENT_VERSION}"
-        --label "org.opencontainers.image.created-date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+        --label "org.opencontainers.image.created-date=${created_date}"
         --label "org.opencontainers.image.title=\"${PROJECT_TITLE} (${PROJECT_NAME}) -- Base Image\""
         --label "org.opencontainers.image.description=\"Intended to be used as a parent image\""
-        --label "com.grainger.image.name=${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}"
+        --label "com.${CONSUMER_ORG}.image.name=${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}"
     )
 
     [ -n "${VENDOR_ORGANIZATION}" ] && image_labels+=(--label "org.opencontainers.image.vendor=${VENDOR_ORGANIZATION}")
@@ -60,7 +60,7 @@ build_base() {
     # docker pull --platform linux/amd64 "ubuntu:${UBUNTU_VERSION}"
 
     printf "\033[96;1m%s\n\033[0m" "$(echo ${build_command[@]})"
-
+    
     ${build_command[@]}
 }
 
@@ -69,22 +69,18 @@ build_new() {
         --pull=false
         -f docker/dockerfile/main.Dockerfile
     )
-    if ${DOCKER_BUILD_NO_CACHE:-false} ; then build_opts+=(--no-cache); fi
+    if [ "${DOCKER_BUILD_NO_CACHE:-false}" = "true" ] ; then build_opts+=(--no-cache); fi
 
-        DOCKER_IMAGE_DESCRIPTION=$(cat <<EOF
-usage: run.sh -u|--racfid <racfid> -t|--team <team_name> -n|--name <full_name> -m|--email <email> -e|--editor <editor>
-EOF
-)
+    local created_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
     local image_labels=(
-        --label "org.opencontainers.image.base.name=${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}"
         --label "org.opencontainers.image.url=${DOCKER_IMAGE}"
         --label "org.opencontainers.image.source=${DOCKER_IMAGE_SOURCE}"
         --label "org.opencontainers.image.version=${DOCKER_IMAGE_VERSION}"
-        --label "org.opencontainers.image.created-date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+        --label "org.opencontainers.image.created-date=${created_date}"
         --label "org.opencontainers.image.description=\"${DOCKER_IMAGE_DESCRIPTION}\""
         --label "org.opencontainers.image.title=\"${PROJECT_TITLE} (${PROJECT_NAME}) -- ${DOCKER_IMAGE_VERSION}\""
-        --label "com.grainger.image.name=${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}"
+        --label "com.${CONSUMER_ORG}.image.name=${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}"
     )
 
     local build_args=(

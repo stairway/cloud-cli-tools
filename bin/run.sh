@@ -8,8 +8,8 @@ check_dependencies() {
     local needs_openssl=$([ -n "$(which openssl})" -a -f "$(which openssl})" ] && echo true || echo false)
     local needs_uuidgen=$([ -n "$(which uuidgen})" -a -f "$(which uuidgen})" ] && echo true || echo false)
     
-    if $needs_jq ; then printf "Missing '%s'. Please make sure '%s' is properly installed (%s).\nExiting ...\n" "jq" "https://stedolan.github.io/jq/download/" >&2 ; exit 1 ; fi
-    if $needs_openssl && $needs_uuidgen ; then { printf "Please make sure either '%s' or '%s' are properly installed. Exiting ...\n" "openssl" "uuidgen" >&2; exit 1; } ; fi
+    if [ "$needs_jq" = "true" ] ; then printf "Missing '%s'. Please make sure '%s' is properly installed (%s).\nExiting ...\n" "jq" "https://stedolan.github.io/jq/download/" >&2 ; exit 1 ; fi
+    if [ "$needs_openssl" = "true" -a "$needs_uuidgen" = true ] ; then { printf "Please make sure either '%s' or '%s' are properly installed. Exiting ...\n" "openssl" "uuidgen" >&2; exit 1; } ; fi
 }
 
 check_dependencies
@@ -87,7 +87,6 @@ user_prompt() {
             read RACFID
         done
         
-        TEAM_NAME_DEFAULT=${TEAM_NAME:-di}
         printf "Enter your Team Name (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "${TEAM_NAME_DEFAULT}"
         read TEAM_NAME && TEAM_NAME="${TEAM_NAME:-$TEAM_NAME_DEFAULT}"
         #read -e -i $TEAM_NAME_DEFAULT TEAM_NAME < /dev/tty
@@ -185,6 +184,7 @@ run_new() {
     if [ "${script}" = "true" ]; then
         run_mode+=(
             -d
+            --platform linux/amd64
             "${docker_image}"
         )
         KEEP_ALIVE=true
@@ -215,7 +215,7 @@ run_new() {
     
     local run_command=(docker run)
     run_command+=(
-        --name="${CONTAINER_NAME}"
+        --name "$CONTAINER_NAME"
         --label description="'${CONTAINER_DESCRIPTION}'"
         --platform linux/amd64
         --network=host

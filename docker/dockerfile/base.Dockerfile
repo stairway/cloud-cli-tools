@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
-ARG VERSION=latest
-FROM --platform=linux/amd64 ubuntu:$VERSION
+ARG VERSION=jammy
+FROM ubuntu:$VERSION
 LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@grainger.com>"
 
 ARG AWS_VAULT_VERSION=latest
@@ -34,7 +34,8 @@ ARG INSTALL_PKGS="\
     locales \
     pass \
     gpg \
-    python3-pip"
+    python3-pip \
+    npm"
 
 # TODO: gpg not currently working with non-root user
 RUN [ "${USER:-root}" = "root" ] || { \
