@@ -1,9 +1,6 @@
 # eval "$(<cct)"
 
-# sh -c "curl -sSL https://github.com/{cloud-cli-tools}"
+printf "\033[92;1m>>>\033[97;1m %s\033[92;1m <<<\033[0m\n" "And away we go"'!'
 echo && [ -n $(which docker) -a -n $(which jq) ] && \
-    _cct_project_name="${PROJECT_NAME:-cloud-cli-tools}" && \
-    printf "Project Name (%s): " "${_cct_project_name}" && \
-    read PROJECT_NAME && export PROJECT_NAME=${PROJECT_NAME:-$_cct_project_name} && \
     sh -c "$(curl -sSL https://raw.githubusercontent.com/stairway/cloud-cli-tools/master/install-cct)" && \
-    cd "${PROJECT_NAME}" && sh -c "$(cat bin/run.sh)"
+    cd cloud-cli-tools && sh -c "$(cat bin/run.sh)"

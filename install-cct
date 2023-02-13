@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+# git clone git@github.com:stairway/cloud-cli-tools.git && cd cloud-cli-tools && bin/build.sh -F && sh -c "$(cat bin/run.sh)"
+
 # Set strict error checking
 set -euf
 LC_CTYPE=C
@@ -9,10 +11,8 @@ LC_CTYPE=C
 
 if [ -f "$0" ]; then
     SCRIPT_DIR="$(dirname $( cd "$( dirname "$0" )" && pwd ))"
-    script=true
 else
     SCRIPT_DIR="$(pwd)"
-    script=false
 fi
 
 # Optional vars
@@ -24,6 +24,12 @@ TARGET_ARCH="${TARGET_ARCH:="$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/'
 TARGET_OS="${TARGET_OS:="$(uname -s | tr '[:upper:]' '[:lower:]')"}"
 REQUIRED_BINARIES=${REQUIRED_BINARIES:='tar curl'}
 SKIP_DOWNLOAD=${SKIP_DOWNLOAD:-false}
+
+if [ -z "$GH_PAT" ]; then
+    printf "Github Personal Access Token (press Enter for none)\n"
+    read -s PAT
+fi
+PAT="${PAT:-$GH_PAT}"
 
 # Print error and exit
 fail() {
@@ -39,30 +45,44 @@ check_binaries() {
 }
 
 get_latest_release() {
+    local url="${1:-https://api.github.com/repos/stairway/cloud-cli-tools/releases/tags/v0.8.0-alpha}"
+    curl_command="curl -sL -H 'Accept: application/vnd.github+json'";
+    [ -n "${PAT}" ] && curl_command="${curl_command} -H 'Authorization: token $PAT'"
+    curl_command="${curl_command} ${url}"
     [ "${SKIP_DOWNLOAD}" = "true" ] || \
-        curl -sL "https://api.github.com/repos/${GITHUB_REPO}/releases/latest" \
-            | grep -oE '"tag_name": "[^"]*' \
-            | grep -oE '[^"]*$'
+        eval "$curl_command" \
+                | grep -oE '"tag_name": "[^"]*' \
+                | grep -oE '[^"]*$'
 }
 
-download_version() {
-    version="${1}"
-
-    download_url="https://github.com/${GITHUB_REPO}/releases/download/${version}/${APP_NAME}-${version}-${TARGET_OS}-${TARGET_ARCH}.tar.gz"
-
+download_asset() {
+    local download_url="${1}"
     if [ ! -w "${TARGET_DIR}" ]; then
         [ -w "${TARGET_DIR}" ] || fail "Target directory (${TARGET_DIR}) is not writable (destination can be changed using \$TARGET_DIR variable)"
     fi
-
+    printf "\033[93m>\033[0m Downloading '%s' ...\n" "${download_url}"
+    curl_command="curl -sL";
+    [ -n "${PAT}" ] && curl_command="${curl_command} -H 'Authorization: token $PAT'"
+    curl_command="${curl_command} -o- '${download_url}'"
     [ "${SKIP_DOWNLOAD}" = "true" ] || \
-        curl -L -o- "https://github.com/${GITHUB_REPO}/releases/download/${version}/${APP_NAME}-${version}-${TARGET_OS}-${TARGET_ARCH}.tar.gz" \
-            | tar -xz -C "${TARGET_DIR}"
+        eval "$curl_command" \
+                | tar -xz -C "${TARGET_DIR}"
+}
+
+download_version() {
+    local version="${1}"
+    local download_url="https://github.com/${GITHUB_REPO}/releases/download/${version}/${APP_NAME}-${version}-${TARGET_OS}-${TARGET_ARCH}.tar.gz"
+    download_url="https://github.com/stairway/cloud-cli-tools/archive/refs/tags/v0.8.0-alpha.tar.gz"
+    
+    download_asset "${download_url}"
+
 }
 
 check_binaries
 
 printf "\033[92;1m>>>\033[94;1m %s: %s\033[92;1m <<<\033[0m\n" "${PROJECT_NAME}" "Installation Script"
 
+printf "\0033[93m>\033[0m Determinig system type ...\n"
 while getopts "hd:a:o:n" OPTION
 do
     case $OPTION in
@@ -79,7 +99,7 @@ release=
 printf "\033[93m>\033[0m Detecting latest version ...\n"
 release="$(get_latest_release)" || fail "There was a problem."
 
-printf "\033[93m>\033[0m Downloading %s version %s ...\n" "${PROJECT_NAME}" "${release}"
+printf "\033[93m>\033[0m Downloading %s %s ...\n" "${PROJECT_NAME}" "${release}"
 download_version "${release}" || fail "There was a problem."
 
 printf "\033[93m>\033[0m Done. \033[92m%s\033[0m was installed to '\033[3m%s\033[0m'.\n" "${PROJECT_NAME}" "${TARGET_DIR}/"
