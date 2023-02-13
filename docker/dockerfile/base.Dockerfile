@@ -36,14 +36,8 @@ ARG INSTALL_PKGS="\
     gpg \
     lsb-release \
     python3-pip \
+    python3-venv \
     npm"
-
-ARG DOCKER_PKGS="\
-    docker-ce \
-    docker-ce-cli \
-    containerd.io \
-    docker-buildx-plugin \
-    docker-compose-plugin"
 
 # TODO: gpg not currently working with non-root user
 RUN [ "${USER:-root}" = "root" ] || { \
@@ -63,7 +57,19 @@ RUN apt-get update -y && \
     locale-gen && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
 # Install Docker
+# https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+ARG DOCKER_PKGS="\
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-buildx-plugin \
+    docker-compose-plugin"
+
 RUN apt-get remove -y remove docker docker-engine docker.io containerd runc; \
     mkdir -m 0755 -p /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
@@ -74,10 +80,6 @@ RUN apt-get remove -y remove docker docker-engine docker.io containerd runc; \
     apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y $DOCKER_PKGS && \
     apt-get clean -y
-
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
 
 WORKDIR /tmp/downloads
 

@@ -8,8 +8,6 @@ ARG KUBE_VERSION=v1.21.0
 ARG ISTIO_VERSION=1.11.8
 ARG TERRAFORM_VERSION=1.3.6
 ARG TERRAGRUNT_VERSION=0.31.1
-ARG KUBECTL_CONVERT_VERSION=latest
-ARG K9S_VERSION=latest
 
 ENV TZ=America/Chicago
 ENV TERM=xterm-color
@@ -38,7 +36,7 @@ RUN echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_
     chmod +x /opt/bin/describe
 
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux
-RUN [ "$KUBE_VERSION" = "latest" ] && \
+RUN [ "${KUBE_VERSION:-latest}" = "latest" ] && \
         KUBE_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
         KUBE_VERSION="v$(echo ${KUBE_VERSION} | sed s/^v//g)" && \
     curl -LO "https://dl.k8s.io/release/${KUBE_VERSION}/bin/linux/amd64/kubectl" && \
@@ -50,18 +48,39 @@ RUN [ "$KUBE_VERSION" = "latest" ] && \
     kubectl version --short --client
 
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-convert-plugin
-RUN [ "$KUBECTL_CONVERT_VERSION" = "latest" ] && \
+RUN [ "${KUBECTL_CONVERT_VERSION:-latest}" = "latest" ] && \
         KUBECTL_CONVERT_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
         KUBECTL_CONVERT_VERSION="v$(echo ${KUBECTL_CONVERT_VERSION} | sed s/^v//g)" && \
     curl -LO "https://dl.k8s.io/release/${KUBECTL_CONVERT_VERSION}/bin/linux/amd64/kubectl-convert" && \
-    curl -LO "https://dl.k8s.io/${KUBECTL_CONVERT_VERSION}/bin/linux/amd64/kubectl-convert.sha256" && \
-    CHECKSUM_VERIFY_STATUS=$(echo "$(cat kubectl-convert.sha256)  kubectl-convert" | sha256sum --check) && \
+    curl -LO "https://dl.k8s.io/${KUBECTL_CONVERT_VERSION}/bin/linux/amd64/kubectl-convert-${KUBECTL_CONVERT_VERSION}.sha256" && \
+    CHECKSUM_VERIFY_STATUS=$(echo "$(cat kubectl-convert-${KUBECTL_CONVERT_VERSION}.sha256)  kubectl-convert" | sha256sum --check) && \
     LAST_ERR=$? && \
     [ "$CHECKSUM_VERIFY_STATUS" = "kubectl-convert: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     install -o root -g root -m 0755 kubectl-convert /usr/local/bin/kubectl-convert && \
     kubectl version --short --client
 
 RUN sh -c "$(curl -sSL https://git.io/install-kubent)"
+
+# Install kubectx and kubens
+# https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
+RUN [ "${KUBECTX:-latest}" = "latest" ] && \
+        KUBECTX_VERSION=$(curl -s https://api.github.com/repos/ahmetb/kubectx/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        KUBECTX_VERSION="v$(echo ${KUBECTX_VERSION} | sed s/^v//g)" && \
+    curl -LO "https://github.com/ahmetb/kubectx/releases/download/${KUBECTX_VERSION}/kubectx_${KUBECTX_VERSION}_linux_x86_64.tar.gz" && \
+    curl -LO "https://github.com/ahmetb/kubectx/releases/download/${KUBECTX_VERSION}/kubens_${KUBECTX_VERSION}_linux_x86_64.tar.gz" && \
+    curl -L "https://github.com/ahmetb/kubectx/releases/download/${KUBECTX_VERSION}/checksums.txt" -o "kubectx-${KUBECTX_VERSION}.sha256" && \
+    CHECKSUM_VERIFY_STATUS=$(cat kubectx-${KUBECTX_VERSION}.sha256 | grep --color=never kubectx_${KUBECTX_VERSION}_linux_x86_64.tar.gz | sha256sum -c -) && \
+    LAST_ERR=$? && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "kubectx_${KUBECTX_VERSION}_linux_x86_64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    tar -xvzf kubectx_${KUBECTX_VERSION}_linux_x86_64.tar.gz && \
+    install kubectx /usr/local/bin/kubectx && \
+    kubectx --version && \
+    CHECKSUM_VERIFY_STATUS=$(cat kubectx-${KUBECTX_VERSION}.sha256 | grep --color=never kubens_${KUBECTX_VERSION}_linux_x86_64.tar.gz | sha256sum -c -) && \
+    LAST_ERR=$? && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "kubens_${KUBECTX_VERSION}_linux_x86_64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    tar -xvzf kubens_${KUBECTX_VERSION}_linux_x86_64.tar.gz && \
+    install kubens /usr/local/bin/kubens && \
+    kubens --version
 
 # curl -L https://istio.io/downloadIstio | ISTIO_VERSION=$ISTIO_VERSION TARGET_ARCH=x86_64 sh - 
 RUN [ "${ISTIO_VERSION:-latest}" = "latest" ] && \
