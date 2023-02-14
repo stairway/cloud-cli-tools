@@ -52,11 +52,22 @@ RUN [ "${KUBECTL_CONVERT_VERSION:-latest}" = "latest" ] && \
         KUBECTL_CONVERT_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
         KUBECTL_CONVERT_VERSION="v$(echo ${KUBECTL_CONVERT_VERSION} | sed s/^v//g)" && \
     curl -LO "https://dl.k8s.io/release/${KUBECTL_CONVERT_VERSION}/bin/linux/amd64/kubectl-convert" && \
-    curl -LO "https://dl.k8s.io/${KUBECTL_CONVERT_VERSION}/bin/linux/amd64/kubectl-convert-${KUBECTL_CONVERT_VERSION}.sha256" && \
+    curl -L "https://dl.k8s.io/${KUBECTL_CONVERT_VERSION}/bin/linux/amd64/kubectl-convert.sha256" -o "kubectl-convert-${KUBECTL_CONVERT_VERSION}.sha256" && \
     CHECKSUM_VERIFY_STATUS=$(echo "$(cat kubectl-convert-${KUBECTL_CONVERT_VERSION}.sha256)  kubectl-convert" | sha256sum --check) && \
     LAST_ERR=$? && \
     [ "$CHECKSUM_VERIFY_STATUS" = "kubectl-convert: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     install -o root -g root -m 0755 kubectl-convert /usr/local/bin/kubectl-convert && \
+    kubectl version --short --client
+
+RUN [ "${KIND_VERSION:-latest}" = "latest" ] && \
+        KIND_VERSION=$(curl -L -s https://api.github.com/repos/kubernetes-sigs/kind/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        KIND_VERSION="v$(echo ${KIND_VERSION} | sed s/^v//g)" && \
+    curl -LO "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64" && \
+    curl -LO "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64.sha256sum" && \
+    CHECKSUM_VERIFY_STATUS=$(cat kind-linux-amd64.sha256sum | grep --color=never kind-linux-amd64 | sha256sum -c -) && \
+    LAST_ERR=$? && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "kind-linux-amd64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    install kind-linux-amd64 /usr/local/bin/kind && \
     kubectl version --short --client
 
 RUN sh -c "$(curl -sSL https://git.io/install-kubent)"
@@ -91,7 +102,7 @@ RUN [ "${ISTIO_VERSION:-latest}" = "latest" ] && \
     CHECKSUM_VERIFY_STATUS=$(cat istio-${ISTIO_VERSION}-linux-amd64.tar.gz.sha256 | grep --color=never istio-${ISTIO_VERSION}-linux-amd64.tar.gz | sha256sum -c -) && \
     LAST_ERR=$? && \
     [ "$CHECKSUM_VERIFY_STATUS" = "istio-${ISTIO_VERSION}-linux-amd64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
-    tar -xf istio-${ISTIO_VERSION}-linux-amd64.tar.gz && \
+    tar -xvzf istio-${ISTIO_VERSION}-linux-amd64.tar.gz && \
     install istio-${ISTIO_VERSION}/bin/istioctl /usr/local/bin/istioctl && \
     cp istio-${ISTIO_VERSION}/tools/istioctl.bash $HOME/istioctl.bash && \
     istioctl version --remote=false --short

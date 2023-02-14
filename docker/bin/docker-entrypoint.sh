@@ -26,16 +26,25 @@ terragrunt --version
 }
 
 init_ssh() {
-file_list=0
+local file_list=0
 file_list=($([ -d $HOME/.ssh ] && ls $HOME/.ssh 2>/dev/null))
-if [ ${#file_list[@]} -eq 0 ]; then
-    printf "\033[93m>\033[0m Generating ssh keypair with empty password ...\n\033[96;1m%s\033[0m\n" "ssh-keygen -t ed25519 -C '${RACFID}' -f '${HOME}/.ssh/id_ed25519'"
-    ssh-keygen -t ed25519 -C "${RACFID}" -f "${HOME}/.ssh/id_ed25519" > "${HOME}/.ssh/$(date -u +%Y%m%dT%H%M%SZ)"
+local gen_date=$(date -u +%Y%m%dT%H%M%SZ)
+local key_count=0
+key_count=$(ls -1 $HOME/.ssh | grep --color=never -o id_ed25519.fingerprint | wc -l)
+if [ ${key_count} -lt 1 ]; then
+    printf "\033[93m>\033[0m Generating ssh ed25519 keypair with empty password ...\n\033[96;1m%s\033[0m\n" "ssh-keygen -t ed25519 -C '${RACFID}' -f '${HOME}/.ssh/id_ed25519'"
+    ssh-keygen -t ed25519 -C "${RACFID}" -f "${HOME}/.ssh/id_ed25519" > "${HOME}/.ssh/${gen_date}.id_ed25519.fingerprint"
+fi
+key_count=0
+key_count=$(ls -1 $HOME/.ssh | grep --color=never -o id_rsa.fingerprint | wc -l)
+if [ ${key_count} -lt 1 ]; then
+    printf "\033[93m>\033[0m Generating ssh rsa keypair with empty password ...\n\033[96;1m%s\033[0m\n" "ssh-keygen -t rsa -b 4096 -C '${RACFID}' -f '${HOME}/.ssh/id_rsa'"
+    ssh-keygen -t rsa -b 4096 -C "${RACFID}" -f "${HOME}/.ssh/id_rsa" > "${HOME}/.ssh/${gen_date}.id_rsa.fingerprint"
 fi
 }
 
 init_gpg() {
-file_list=0
+local file_list=0
 file_list=($([ -d $HOME/.gnupg ] && ls $HOME/.gnupg/ 2>/dev/null))
 if [ ${#file_list[@]} -lt 9 ]; then
     printf "\033[93m>\033[0m Generating gpg key with empty passphrase ...\n\033[96;1m%s\033[0m\n" "gpg --quick-gen-key ..."
@@ -51,7 +60,7 @@ fi
 
 init_pass() {
 # THIS IS WHERE pass IS INITIALIZED
-file_list=0
+local file_list=0
 file_list=($([ -d $HOME/.password-store ] && ls $HOME/.password-store/ 2>/dev/null))
 if [ ${#file_list[@]} -lt 2 ]; then
     [ -f $HOME/.password-store/.gpg-id ] || pass init aws-vault

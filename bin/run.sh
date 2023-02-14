@@ -7,12 +7,12 @@ check_dependencies() {
     local needs_jq=$([ -n "$(which jq})" -a -f "$(which jq})" ] && echo true || echo false)
     local needs_openssl=$([ -n "$(which openssl})" -a -f "$(which openssl})" ] && echo true || echo false)
     local needs_uuidgen=$([ -n "$(which uuidgen})" -a -f "$(which uuidgen})" ] && echo true || echo false)
-    
-    if [ "$needs_jq" = "true" ] ; then printf "Missing '%s'. Please make sure '%s' is properly installed (%s).\nExiting ...\n" "jq" "https://stedolan.github.io/jq/download/" >&2 ; exit 1 ; fi
-    if [ "$needs_openssl" = "true" -a "$needs_uuidgen" = true ] ; then { printf "Please make sure either '%s' or '%s' are properly installed. Exiting ...\n" "openssl" "uuidgen" >&2; exit 1; } ; fi
+
+    if [ "$needs_jq" = "true" ] ; then printf "Please make sure '%s' is properly installed (%s).\nExiting ...\n" "jq" "https://stedolan.github.io/jq/download/" >&2 ; return 1 ; fi
+    if [ "$needs_openssl" = "true" -a "$needs_uuidgen" = true ] ; then printf "Please make sure either '%s' or '%s' are properly installed. Exiting ...\n" "openssl" "uuidgen" >&2; return 1 ; fi
 }
 
-check_dependencies
+check_dependencies || { printf "\033[91m[ERROR] Mising required dependency\033[0m\n" >&2; exit 1; }
 
 if [ -f "$0" ]; then
     SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
@@ -170,7 +170,6 @@ run_new() {
     local docker_user_home=/root
     [ "${DOCKER_USER:-root}" = "root" ] || docker_user_home="/home/${DOCKER_USER}"
     local mount_volumes=(
-        -v /var/run/docker.sock:/var/run/docker.sock
         -v "${mountpoint}/.awsvault:${docker_user_home}/.awsvault"
         -v "${mountpoint}/.gnupg:${docker_user_home}/.gnupg"
         -v "${mountpoint}/.password-store:${docker_user_home}/.password-store"
@@ -179,6 +178,7 @@ run_new() {
         -v "${PWD}/mount/dotfiles/${DOCKER_USER}/.dpctl:${docker_user_home}/.dpctl"
         -v "${PWD}/mount/dotfiles/${DOCKER_USER}/.ssh:${docker_user_home}/.ssh"
         -v "${PWD}/mount/data:/data"
+        -v /var/run/docker.sock:/var/run/docker.sock
     )
 
     local run_mode=()
@@ -206,7 +206,7 @@ run_new() {
         -e "GIT_CONFIG_EMAIL=\"${GIT_CONFIG_EMAIL}\""
         -e "GIT_CONFIG_FULL_NAME=\"${GIT_CONFIG_FULL_NAME}\""
         -e "EDITOR=${FILE_EDITOR}"
-        -e "TRUE=\"${TRUE}\""
+        # -e "TRUE=\"${TRUE}\""
     )
     [ -n "${AWS_ACCESS_KEY_ID}" -a -n "${AWS_SECRET_ACCESS_KEY}" ] && \
         environment_vars+=(

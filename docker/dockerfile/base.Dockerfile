@@ -115,6 +115,17 @@ RUN [ "${MINIKUBE_VERSION:-latest}" = "latest" ] && \
     install minikube-linux-amd64 /usr/local/bin/minikube && \
     minikube version
 
+RUN [ "${DOCKER_COMPOSE_VERSION:-latest}" = "latest" ] && \
+        DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        DOCKER_COMPOSE_VERSION="v$(echo ${DOCKER_COMPOSE_VERSION} | sed s/^v//g)" && \
+    curl -LO "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64" && \
+    curl -LO "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64.sha256" && \
+    CHECKSUM_VERIFY_STATUS=$(cat docker-compose-linux-x86_64.sha256 | grep --color=never docker-compose-linux-x86_64 | sha256sum -c -) && \
+    LAST_ERR=$? && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "docker-compose-linux-x86_64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    install docker-compose-linux-x86_64 /usr/local/bin/docker-compose && \
+    docker-compose --version
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 USER $USER
 WORKDIR $HOME
