@@ -75,7 +75,6 @@ download_version() {
     download_url="https://github.com/stairway/cloud-cli-tools/archive/refs/tags/v0.8.0-alpha.tar.gz"
     
     download_asset "${download_url}"
-
 }
 
 check_binaries

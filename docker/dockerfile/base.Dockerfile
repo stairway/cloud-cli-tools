@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
-ARG VERSION=jammy
-FROM ubuntu:$VERSION
+ARG VERSION=latest
+FROM --platform=linux/amd64 ubuntu:$VERSION
 LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@grainger.com>"
 
 ARG AWS_VAULT_VERSION=latest
@@ -29,6 +29,7 @@ ARG INSTALL_PKGS="\
     # awscli \
     openssl \
     nano \
+    vim \
     jq \
     zip \
     locales \
@@ -70,8 +71,9 @@ ARG DOCKER_PKGS="\
     docker-buildx-plugin \
     docker-compose-plugin"
 
-RUN apt-get remove -y remove docker docker-engine docker.io containerd runc; \
-    mkdir -m 0755 -p /etc/apt/keyrings && \
+WORKDIR /tmp/downloads
+
+RUN mkdir -m 0755 -p /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     chmod a+r /etc/apt/keyrings/docker.gpg && \
     echo \
@@ -79,41 +81,8 @@ RUN apt-get remove -y remove docker docker-engine docker.io containerd runc; \
         $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y $DOCKER_PKGS && \
-    apt-get clean -y
-
-WORKDIR /tmp/downloads
-
-# https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
-# *note* --install-dir /usr/local/aws-cli --update as a precaution in case awscli v1 (see above) has already been installed
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-    unzip awscliv2.zip && \
-    update_in_case_v1_installed() { [ -f /bin/aws ] && \
-        printf "\033[93;1m[WARNING] aws cli version 1 has been detected\033[0m\n" && \
-        ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update || \
-        ./aws/install; } && update_in_case_v1_installed && \
-    aws --version
-
-RUN [ "${AWS_VAULT_VERSION:-latest}" = "latest" ] && \
-        AWS_VAULT_VERSION=$(curl -s https://api.github.com/repos/99designs/aws-vault/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
-        AWS_VAULT_VERSION="v$(echo ${AWS_VAULT_VERSION} | sed s/^v//g)" && \
-    curl -LO "https://github.com/99designs/aws-vault/releases/download/${AWS_VAULT_VERSION}/aws-vault-linux-amd64" && \
-    curl -L "https://github.com/99designs/aws-vault/releases/download/${AWS_VAULT_VERSION}/SHA256SUMS" -o "aws-vault-${AWS_VAULT_VERSION}.sha256" && \
-    CHECKSUM_VERIFY_STATUS=$(cat aws-vault-${AWS_VAULT_VERSION}.sha256 | grep --color=never aws-vault-linux-amd64 | sha256sum -c -) && \
-    LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "aws-vault-linux-amd64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
-    install aws-vault-linux-amd64 /usr/local/bin/aws-vault && \
-    aws-vault --version
-
-RUN [ "${MINIKUBE_VERSION:-latest}" = "latest" ] && \
-        MINIKUBE_VERSION=$(curl -s https://api.github.com/repos/kubernetes/minikube/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
-        MINIKUBE_VERSION="v$(echo ${MINIKUBE_VERSION} | sed s/^v//g)" && \
-    curl -LO "https://storage.googleapis.com/minikube/releases/${MINIKUBE_VERSION}/minikube-linux-amd64" && \
-    curl -LO "https://storage.googleapis.com/minikube/releases/${MINIKUBE_VERSION}/minikube-linux-amd64.sha256" && \
-    CHECKSUM_VERIFY_STATUS=$(echo "$(cat minikube-linux-amd64.sha256)  minikube-linux-amd64" | sha256sum --check) && \
-    LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "minikube-linux-amd64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
-    install minikube-linux-amd64 /usr/local/bin/minikube && \
-    minikube version
+    apt-get clean -y && \
+    docker --version >> /.versions
 
 RUN [ "${DOCKER_COMPOSE_VERSION:-latest}" = "latest" ] && \
         DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
@@ -124,7 +93,50 @@ RUN [ "${DOCKER_COMPOSE_VERSION:-latest}" = "latest" ] && \
     LAST_ERR=$? && \
     [ "$CHECKSUM_VERIFY_STATUS" = "docker-compose-linux-x86_64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     install docker-compose-linux-x86_64 /usr/local/bin/docker-compose && \
-    docker-compose --version
+    docker-compose --version >> /.versions
+
+# https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+# *note* --install-dir /usr/local/aws-cli --update as a precaution in case awscli v1 (see above) has already been installed
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    update_in_case_v1_installed() { [ -f /bin/aws ] && \
+        printf "\033[93;1m[WARNING] aws cli version 1 has been detected\033[0m\n" && \
+        ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update || \
+        ./aws/install; } && update_in_case_v1_installed && \
+    aws --version >> /.versions
+
+RUN [ "${AWS_VAULT_VERSION:-latest}" = "latest" ] && \
+        AWS_VAULT_VERSION=$(curl -s https://api.github.com/repos/99designs/aws-vault/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        AWS_VAULT_VERSION="v$(echo ${AWS_VAULT_VERSION} | sed s/^v//g)" && \
+    curl -LO "https://github.com/99designs/aws-vault/releases/download/${AWS_VAULT_VERSION}/aws-vault-linux-amd64" && \
+    curl -L "https://github.com/99designs/aws-vault/releases/download/${AWS_VAULT_VERSION}/SHA256SUMS" -o "aws-vault-${AWS_VAULT_VERSION}.sha256" && \
+    CHECKSUM_VERIFY_STATUS=$(cat aws-vault-${AWS_VAULT_VERSION}.sha256 | grep --color=never aws-vault-linux-amd64 | sha256sum -c -) && \
+    LAST_ERR=$? && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "aws-vault-linux-amd64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    install aws-vault-linux-amd64 /usr/local/bin/aws-vault && \
+    printf "aws-vault: %s\n" "$(aws-vault --version 2>&1)" >> /.versions
+
+RUN wget -O- https://apt.releases.hashicorp.com/gpg \
+    | gpg --dearmor \
+    | tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null && \
+    echo \
+        "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com \
+        $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list > /dev/null && \
+    apt update -y && \
+    DEBIAN_FRONTEND=noninteractive apt install -y vault && \
+    apt-get clean -y && \
+    printf "Hashicorp %s\n" "$(vault --version | awk '{print $1" "$2}')" >> /.versions
+
+RUN [ "${MINIKUBE_VERSION:-latest}" = "latest" ] && \
+        MINIKUBE_VERSION=$(curl -s https://api.github.com/repos/kubernetes/minikube/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        MINIKUBE_VERSION="v$(echo ${MINIKUBE_VERSION} | sed s/^v//g)" && \
+    curl -LO "https://storage.googleapis.com/minikube/releases/${MINIKUBE_VERSION}/minikube-linux-amd64" && \
+    curl -LO "https://storage.googleapis.com/minikube/releases/${MINIKUBE_VERSION}/minikube-linux-amd64.sha256" && \
+    CHECKSUM_VERIFY_STATUS=$(echo "$(cat minikube-linux-amd64.sha256)  minikube-linux-amd64" | sha256sum --check) && \
+    LAST_ERR=$? && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "minikube-linux-amd64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    install minikube-linux-amd64 /usr/local/bin/minikube && \
+    printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 USER $USER

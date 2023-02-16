@@ -98,15 +98,20 @@ user_prompt() {
         printf "Enter your Email (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "${GIT_CONFIG_EMAIL_EXPECTED}"
         read GIT_CONFIG_EMAIL && GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-$GIT_CONFIG_EMAIL_EXPECTED}"
         #read -e -i $GIT_CONFIG_EMAIL_EXPECTED GIT_CONFIG_EMAIL < /dev/tty
-        if [ "$FILE_EDITOR_DEFAULT" = "nano" ]; then 
-            FILE_EDITOR_ALT="vim";
+        if [ "$FILE_EDITOR_DEFAULT" = "vim" ]; then 
+            FILE_EDITOR_ALT_1="nano"
         else
-            FILE_EDITOR_ALT="nano"; 
-            FILE_EDITOR_DEFAULT="vim"; 
+            FILE_EDITOR_DEFAULT="nano"
+            FILE_EDITOR_ALT_1="vim"
         fi
-        while  [ "$FILE_EDITOR" != "${FILE_EDITOR_DEFAULT}" -a "$FILE_EDITOR" != "${FILE_EDITOR_ALT}" ]; do
-            printf "Choose your desired editor (\033[32;3mdefault: \033[32;3;1m%s\033[0m | \033[32;3m%s\033[0m): " "${FILE_EDITOR_DEFAULT}" "${FILE_EDITOR_ALT}"
+        while  [ -z "$FILE_EDITOR" ]; do
+            printf "Choose your desired editor (\033[32;3mdefault: \033[32;3;1m%s\033[0m | \033[32;3m%s\033[0m): " "${FILE_EDITOR_DEFAULT}" "${FILE_EDITOR_ALT_1}"
             read FILE_EDITOR && FILE_EDITOR="${FILE_EDITOR:-$FILE_EDITOR_DEFAULT}"
+            if [ "$FILE_EDITOR" != "${FILE_EDITOR_DEFAULT}" ]; then
+                if [ "$FILE_EDITOR" != "${FILE_EDITOR_ALT_1}" ]; then
+                    FILE_EDITOR=
+                fi
+            fi
         done
         echo
 

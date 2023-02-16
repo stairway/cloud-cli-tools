@@ -78,7 +78,6 @@ build_new() {
         --label "org.opencontainers.image.source=${DOCKER_IMAGE_SOURCE}"
         --label "org.opencontainers.image.version=${DOCKER_IMAGE_VERSION}"
         --label "org.opencontainers.image.created-date=${created_date}"
-        --label "org.opencontainers.image.description=\"${DOCKER_IMAGE_DESCRIPTION}\""
         --label "org.opencontainers.image.title=\"${PROJECT_TITLE} (${PROJECT_NAME}) -- ${DOCKER_IMAGE_VERSION}\""
         --label "com.${CONSUMER_ORG}.image.name=${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}"
     )

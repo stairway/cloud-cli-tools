@@ -45,7 +45,7 @@ RUN [ "${KUBE_VERSION:-latest}" = "latest" ] && \
     LAST_ERR=$? && \
     [ "$CHECKSUM_VERIFY_STATUS" = "kubectl: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
-    kubectl version --short --client
+    printf "Kubernetes %s\n" "$(kubectl version --short --client)" >> /.versions
 
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-convert-plugin
 RUN [ "${KUBECTL_CONVERT_VERSION:-latest}" = "latest" ] && \
@@ -56,8 +56,7 @@ RUN [ "${KUBECTL_CONVERT_VERSION:-latest}" = "latest" ] && \
     CHECKSUM_VERIFY_STATUS=$(echo "$(cat kubectl-convert-${KUBECTL_CONVERT_VERSION}.sha256)  kubectl-convert" | sha256sum --check) && \
     LAST_ERR=$? && \
     [ "$CHECKSUM_VERIFY_STATUS" = "kubectl-convert: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
-    install -o root -g root -m 0755 kubectl-convert /usr/local/bin/kubectl-convert && \
-    kubectl version --short --client
+    install -o root -g root -m 0755 kubectl-convert /usr/local/bin/kubectl-convert
 
 RUN [ "${KIND_VERSION:-latest}" = "latest" ] && \
         KIND_VERSION=$(curl -L -s https://api.github.com/repos/kubernetes-sigs/kind/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
@@ -68,7 +67,7 @@ RUN [ "${KIND_VERSION:-latest}" = "latest" ] && \
     LAST_ERR=$? && \
     [ "$CHECKSUM_VERIFY_STATUS" = "kind-linux-amd64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     install kind-linux-amd64 /usr/local/bin/kind && \
-    kubectl version --short --client
+    kind --version >> /.versions
 
 RUN sh -c "$(curl -sSL https://git.io/install-kubent)"
 
@@ -85,13 +84,13 @@ RUN [ "${KUBECTX:-latest}" = "latest" ] && \
     [ "$CHECKSUM_VERIFY_STATUS" = "kubectx_${KUBECTX_VERSION}_linux_x86_64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     tar -xvzf kubectx_${KUBECTX_VERSION}_linux_x86_64.tar.gz && \
     install kubectx /usr/local/bin/kubectx && \
-    kubectx --version && \
+    printf "kubectx: %s\n" "$(kubectx --version)" >> /.versions && \
     CHECKSUM_VERIFY_STATUS=$(cat kubectx-${KUBECTX_VERSION}.sha256 | grep --color=never kubens_${KUBECTX_VERSION}_linux_x86_64.tar.gz | sha256sum -c -) && \
     LAST_ERR=$? && \
     [ "$CHECKSUM_VERIFY_STATUS" = "kubens_${KUBECTX_VERSION}_linux_x86_64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     tar -xvzf kubens_${KUBECTX_VERSION}_linux_x86_64.tar.gz && \
     install kubens /usr/local/bin/kubens && \
-    kubens --version
+    printf "kubens: %s\n" "$(kubens --version)" >> /.versions
 
 # curl -L https://istio.io/downloadIstio | ISTIO_VERSION=$ISTIO_VERSION TARGET_ARCH=x86_64 sh - 
 RUN [ "${ISTIO_VERSION:-latest}" = "latest" ] && \
@@ -105,7 +104,7 @@ RUN [ "${ISTIO_VERSION:-latest}" = "latest" ] && \
     tar -xvzf istio-${ISTIO_VERSION}-linux-amd64.tar.gz && \
     install istio-${ISTIO_VERSION}/bin/istioctl /usr/local/bin/istioctl && \
     cp istio-${ISTIO_VERSION}/tools/istioctl.bash $HOME/istioctl.bash && \
-    istioctl version --remote=false --short
+    printf "istio: %s\n" "$(istioctl version --remote=false --short)" >> /.versions
 
 RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
         TERRAFORM_VERSION=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') || \
@@ -117,7 +116,7 @@ RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
     [ "$CHECKSUM_VERIFY_STATUS" = "terraform_${TERRAFORM_VERSION}_linux_amd64.zip: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     unzip "terraform_${TERRAFORM_VERSION}_linux_amd64.zip" && \
     install terraform /usr/local/bin/terraform && \
-    terraform version && \
+    echo "$(echo $(terraform version))" | awk '{print $1" "$2}' >> /.versions && \
     terraform -install-autocomplete
 
 RUN [ "${TERRAGRUNT_VERSION:-latest}" = "latest" ] && \
@@ -129,7 +128,7 @@ RUN [ "${TERRAGRUNT_VERSION:-latest}" = "latest" ] && \
     LAST_ERR=$? && \
     [ "$CHECKSUM_VERIFY_STATUS" = "terragrunt_linux_amd64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     install terragrunt_linux_amd64 /usr/local/bin/terragrunt && \
-    terraform version
+    terragrunt --version >> /.versions
 
 RUN [ "${K9S_VERSION:-latest}" = "latest" ] && \
         K9S_VERSION=$(curl -s https://api.github.com/repos/derailed/k9s/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
@@ -166,3 +165,5 @@ ENTRYPOINT [ "/usr/local/bin/docker-entrypoint.sh" ]
 ARG VERSION=base-latest
 ARG IMAGE_NAME=
 LABEL org.opencontainers.image.base.name="${IMAGE_NAME}:${VERSION}"
+LABEL org.opencontainers.image.description="usage: \
+   run.sh -u|--racfid <racfid> -t|--team <team_name> -n|--name <full_name> -m|--email <email> -e|--editor <editor>"
