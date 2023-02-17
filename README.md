@@ -126,7 +126,7 @@ Additional build args or flags to pass to `docker build` command.
 # Example 1
 $ bin/build.sh
 # Example 2
-$ bin/build.sh -C
+$ bin/build.sh -N
 # Example 3
 $ bin/build.sh -F -N
 ```
