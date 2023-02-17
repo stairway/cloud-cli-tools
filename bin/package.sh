@@ -14,13 +14,6 @@ cd "${PACKAGE_PARENT_DIR}"
 
 [ -d "${SCRIPT_DIR}/../dist" ] || mkdir "${SCRIPT_DIR}/../dist"
 
-reset_values() {
-    unset INCLUDES
-    INCLUDES=()
-    unset EXCLUDES
-    EXCLUDES=()
-}
-
 create_tar() {
     printf "\033[93m>\033[0m Creating '%s' ...\n" "${ARCHIVE_NAME}.tgz"
 
@@ -59,7 +52,10 @@ create_zip() {
 }
 
 package() {
-    reset_values
+    unset INCLUDES
+    INCLUDES=()
+    unset EXCLUDES
+    EXCLUDES=()
 
     INCLUDES+=(
         "${PACKAGE_NAME}/bin/*"
