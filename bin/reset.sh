@@ -10,10 +10,10 @@ NOTHING_MSG="Nothing to remove."
 
 cd "${SCRIPT_DIR}/../"
 
-source conf/docker.env
 source conf/defaults.env
 source conf/project.env
 source conf/versions.env
+source conf/docker.env
 
 [ -f "${PWD}/.container" ] && source ${PWD}/.container
 WORKING_DIRECTORY=

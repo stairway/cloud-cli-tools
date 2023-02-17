@@ -12,10 +12,10 @@ pushd "${SCRIPT_DIR}/../"
 export DOCKER_BUILDKIT=0
 export COMPOSE_DOCKER_CLI_BUILD=0
 
-source conf/docker.env
 source conf/defaults.env
 source conf/project.env
 source conf/versions.env
+source conf/docker.env
 
 build_base() {
     local build_opts=(

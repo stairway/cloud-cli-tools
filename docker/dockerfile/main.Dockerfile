@@ -50,7 +50,7 @@ RUN [ "${KUBE_VERSION:-latest}" = "latest" ] && \
 
 # https://helm.sh/docs/intro/install/
 RUN [ "${HELM_VERSION:-latest}" = "latest" ] && \
-        HELM_VERSION=$(curl -s https://api.github.com/repos/helm/helm/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        HELM_VERSION=$(./gh-get-latest-release.sh "helm/helm") || \
         HELM_VERSION="v$(echo ${HELM_VERSION} | sed s/^v//g)" && \
     curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && \
     chmod 700 get_helm.sh && \
@@ -70,7 +70,7 @@ RUN [ "${KUBECTL_CONVERT_VERSION:-latest}" = "latest" ] && \
 
 # https://kind.sigs.k8s.io/
 RUN [ "${KIND_VERSION:-latest}" = "latest" ] && \
-        KIND_VERSION=$(curl -L -s https://api.github.com/repos/kubernetes-sigs/kind/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        KIND_VERSION=$(./gh-get-latest-release.sh "kubernetes-sigs/kind") || \
         KIND_VERSION="v$(echo ${KIND_VERSION} | sed s/^v//g)" && \
     curl -LO "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64" && \
     curl -LO "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64.sha256sum" && \
@@ -86,7 +86,7 @@ RUN sh -c "$(curl -sSL https://git.io/install-kubent)"
 # Install kubectx and kubens
 # https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
 RUN [ "${KUBECTX:-latest}" = "latest" ] && \
-        KUBECTX_VERSION=$(curl -s https://api.github.com/repos/ahmetb/kubectx/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        KUBECTX_VERSION=$(./gh-get-latest-release.sh "ahmetb/kubectx") || \
         KUBECTX_VERSION="v$(echo ${KUBECTX_VERSION} | sed s/^v//g)" && \
     curl -LO "https://github.com/ahmetb/kubectx/releases/download/${KUBECTX_VERSION}/kubectx_${KUBECTX_VERSION}_linux_x86_64.tar.gz" && \
     curl -LO "https://github.com/ahmetb/kubectx/releases/download/${KUBECTX_VERSION}/kubens_${KUBECTX_VERSION}_linux_x86_64.tar.gz" && \
@@ -106,7 +106,7 @@ RUN [ "${KUBECTX:-latest}" = "latest" ] && \
 
 # curl -L https://istio.io/downloadIstio | ISTIO_VERSION=$ISTIO_VERSION TARGET_ARCH=x86_64 sh - 
 RUN [ "${ISTIO_VERSION:-latest}" = "latest" ] && \
-        ISTIO_VERSION=$(curl -s https://api.github.com/repos/istio/istio/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        ISTIO_VERSION=$(./gh-get-latest-release.sh "istio/istio") || \
         ISTIO_VERSION="$(echo ${ISTIO_VERSION} | sed s/^v//g)" && \
     curl -LO "https://github.com/istio/istio/releases/download/${ISTIO_VERSION}/istio-${ISTIO_VERSION}-linux-amd64.tar.gz" && \
     curl -LO "https://github.com/istio/istio/releases/download/${ISTIO_VERSION}/istio-${ISTIO_VERSION}-linux-amd64.tar.gz.sha256" && \
@@ -132,7 +132,7 @@ RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
     terraform -install-autocomplete
 
 RUN [ "${TERRAGRUNT_VERSION:-latest}" = "latest" ] && \
-        TERRAGRUNT_VERSION=$(curl -s https://api.github.com/repos/gruntwork-io/terragrunt/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        TERRAGRUNT_VERSION=$(./gh-get-latest-release.sh "gruntwork-io/terragrunt") || \
         TERRAGRUNT_VERSION="v$(echo ${TERRAGRUNT_VERSION} | sed s/^v//g)" && \
     curl -LO "https://github.com/gruntwork-io/terragrunt/releases/download/${TERRAGRUNT_VERSION}/terragrunt_linux_amd64" && \
     curl -L "https://github.com/gruntwork-io/terragrunt/releases/download/${TERRAGRUNT_VERSION}/SHA256SUMS" -o "terragrunt_${TERRAGRUNT_VERSION}_SHA256SUMS" && \
@@ -143,7 +143,7 @@ RUN [ "${TERRAGRUNT_VERSION:-latest}" = "latest" ] && \
     terragrunt --version >> /.versions
 
 RUN [ "${K9S_VERSION:-latest}" = "latest" ] && \
-        K9S_VERSION=$(curl -s https://api.github.com/repos/derailed/k9s/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        K9S_VERSION=$(./gh-get-latest-release.sh "derailed/k9s") || \
         K9S_VERSION="v$(echo ${K9S_VERSION} | sed s/^v//g)" && \
     curl -LO "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz" && \
     curl -L "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/checksums.txt" -o "k9s-${K9S_VERSION}-checksums.txt" && \

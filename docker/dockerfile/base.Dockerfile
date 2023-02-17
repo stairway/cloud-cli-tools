@@ -56,7 +56,8 @@ RUN apt-get update -y && \
     sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
     touch /usr/share/locale/locale.alias && \
     locale-gen && \
-    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
+    . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -73,6 +74,17 @@ ARG DOCKER_PKGS="\
 
 WORKDIR /tmp/downloads
 
+RUN touch gh-get-latest-release.sh && \
+    chmod +x gh-get-latest-release.sh && \
+    echo  "#!/bin/sh -x\n\
+gh_latest_release() {\n\
+  curl --silent \"https://api.github.com/repos/\$1/releases/latest\" | # Get latest release from GitHub api\n\
+    grep '\"tag_name\":' |                                            # Get tag line\n\
+    sed -E 's/.*\"([^\"]+)\".*/\\\1/'                                    # Pluck JSON value\n\
+}\n\
+gh_latest_release \"\$@\"\n\
+"> gh-get-latest-release.sh
+
 RUN mkdir -m 0755 -p /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     chmod a+r /etc/apt/keyrings/docker.gpg && \
@@ -85,7 +97,7 @@ RUN mkdir -m 0755 -p /etc/apt/keyrings && \
     docker --version >> /.versions
 
 RUN [ "${DOCKER_COMPOSE_VERSION:-latest}" = "latest" ] && \
-        DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        DOCKER_COMPOSE_VERSION=$(./gh-get-latest-release.sh "docker/compose") || \
         DOCKER_COMPOSE_VERSION="v$(echo ${DOCKER_COMPOSE_VERSION} | sed s/^v//g)" && \
     curl -LO "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64" && \
     curl -LO "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64.sha256" && \
@@ -106,7 +118,7 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     aws --version >> /.versions
 
 RUN [ "${AWS_VAULT_VERSION:-latest}" = "latest" ] && \
-        AWS_VAULT_VERSION=$(curl -s https://api.github.com/repos/99designs/aws-vault/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        AWS_VAULT_VERSION=$(./gh-get-latest-release.sh "99designs/aws-vault") || \
         AWS_VAULT_VERSION="v$(echo ${AWS_VAULT_VERSION} | sed s/^v//g)" && \
     curl -LO "https://github.com/99designs/aws-vault/releases/download/${AWS_VAULT_VERSION}/aws-vault-linux-amd64" && \
     curl -L "https://github.com/99designs/aws-vault/releases/download/${AWS_VAULT_VERSION}/SHA256SUMS" -o "aws-vault-${AWS_VAULT_VERSION}.sha256" && \
@@ -128,7 +140,7 @@ RUN wget -O- https://apt.releases.hashicorp.com/gpg \
     printf "Hashicorp %s\n" "$(vault --version | awk '{print $1" "$2}')" >> /.versions
 
 RUN [ "${MINIKUBE_VERSION:-latest}" = "latest" ] && \
-        MINIKUBE_VERSION=$(curl -s https://api.github.com/repos/kubernetes/minikube/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        MINIKUBE_VERSION=$(./gh-get-latest-release.sh "kubernetes/minikube") || \
         MINIKUBE_VERSION="v$(echo ${MINIKUBE_VERSION} | sed s/^v//g)" && \
     curl -LO "https://storage.googleapis.com/minikube/releases/${MINIKUBE_VERSION}/minikube-linux-amd64" && \
     curl -LO "https://storage.googleapis.com/minikube/releases/${MINIKUBE_VERSION}/minikube-linux-amd64.sha256" && \
