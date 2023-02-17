@@ -8,6 +8,7 @@ ARG KUBE_VERSION=v1.21.0
 ARG ISTIO_VERSION=1.11.8
 ARG TERRAFORM_VERSION=1.3.6
 ARG TERRAGRUNT_VERSION=0.31.1
+ARG HELM_VERSION=v3.9.4
 
 ENV TZ=America/Chicago
 ENV TERM=xterm-color
@@ -47,6 +48,15 @@ RUN [ "${KUBE_VERSION:-latest}" = "latest" ] && \
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
     printf "Kubernetes %s\n" "$(kubectl version --short --client)" >> /.versions
 
+# https://helm.sh/docs/intro/install/
+RUN [ "${HELM_VERSION:-latest}" = "latest" ] && \
+        HELM_VERSION=$(curl -s https://api.github.com/repos/helm/helm/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
+        HELM_VERSION="v$(echo ${HELM_VERSION} | sed s/^v//g)" && \
+    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && \
+    chmod 700 get_helm.sh && \
+    ./get_helm.sh --version ${HELM_VERSION} && \
+    printf "Helm %s\n" "$(helm version --short)" >> /.versions
+
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-convert-plugin
 RUN [ "${KUBECTL_CONVERT_VERSION:-latest}" = "latest" ] && \
         KUBECTL_CONVERT_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
@@ -58,6 +68,7 @@ RUN [ "${KUBECTL_CONVERT_VERSION:-latest}" = "latest" ] && \
     [ "$CHECKSUM_VERIFY_STATUS" = "kubectl-convert: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     install -o root -g root -m 0755 kubectl-convert /usr/local/bin/kubectl-convert
 
+# https://kind.sigs.k8s.io/
 RUN [ "${KIND_VERSION:-latest}" = "latest" ] && \
         KIND_VERSION=$(curl -L -s https://api.github.com/repos/kubernetes-sigs/kind/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
         KIND_VERSION="v$(echo ${KIND_VERSION} | sed s/^v//g)" && \
@@ -69,6 +80,7 @@ RUN [ "${KIND_VERSION:-latest}" = "latest" ] && \
     install kind-linux-amd64 /usr/local/bin/kind && \
     kind --version >> /.versions
 
+# https://github.com/doitintl/kube-no-trouble
 RUN sh -c "$(curl -sSL https://git.io/install-kubent)"
 
 # Install kubectx and kubens

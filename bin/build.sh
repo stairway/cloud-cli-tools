@@ -86,12 +86,11 @@ build_new() {
         --build-arg IMAGE_NAME="${DOCKER_IMAGE_PARENT}"
         --build-arg VERSION="${DOCKER_IMAGE_PARENT_VERSION}"
     )
-    [ -n "${KUBE_VERSION}" ] && build_args+=(--build-arg KUBE_VERSION="${KUBE_VERSION}")
-    [ -n "${ISTIO_VERSION}" ] && build_args+=(--build-arg ISTIO_VERSION="${ISTIO_VERSION}")
-    [ -n "${TERRAFORM_VERSION}" ] && build_args+=(--build-arg TERRAFORM_VERSION="${TERRAFORM_VERSION}")
-    [ -n "${TERRAGRUNT_VERSION}" ] && build_args+=(--build-arg TERRAGRUNT_VERSION="${TERRAGRUNT_VERSION}")
-    [ -n "${KUBECTL_CONVERT_VERSION}" ] && build_args+=(--build-arg KUBECTL_CONVERT_VERSION="${KUBECTL_CONVERT_VERSION}")
-    [ -n "${K9S_VERSION}" ] && build_args+=(--build-arg K9S_VERSION="${K9S_VERSION}")
+    [ "${KUBE_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg KUBE_VERSION="${KUBE_VERSION}")
+    [ "${ISTIO_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg ISTIO_VERSION="${ISTIO_VERSION}")
+    [ "${TERRAFORM_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg TERRAFORM_VERSION="${TERRAFORM_VERSION}")
+    [ "${TERRAGRUNT_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg TERRAGRUNT_VERSION="${TERRAGRUNT_VERSION}")
+    [ "${HELM_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg HELM_VERSION="${HELM_VERSION}")
     
     local build_command=(docker build)
     build_command+=(

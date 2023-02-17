@@ -127,18 +127,6 @@ RUN wget -O- https://apt.releases.hashicorp.com/gpg \
     apt-get clean -y && \
     printf "Hashicorp %s\n" "$(vault --version | awk '{print $1" "$2}')" >> /.versions
 
-RUN [ "${HELM_VERSION:-latest}" = "latest" ] && \
-        HELM_VERSION=$(curl -s https://api.github.com/repos/helm/helm/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
-        HELM_VERSION="v$(echo ${HELM_VERSION} | sed s/^v//g)" && \
-    curl -LO "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" && \
-    curl -LO "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz.sha256sum" && \
-    CHECKSUM_VERIFY_STATUS=$(cat helm-${HELM_VERSION}-linux-amd64.tar.gz.sha256sum | sha256sum --check) && \
-    LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "helm-${HELM_VERSION}-linux-amd64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
-    tar -xvzf helm-${HELM_VERSION}-linux-amd64.tar.gz && \
-    install linux-amd64/helm /usr/local/bin/helm && \
-    printf "helm: %s\n" "$(helm version --short)" >> /.versions
-
 RUN [ "${MINIKUBE_VERSION:-latest}" = "latest" ] && \
         MINIKUBE_VERSION=$(curl -s https://api.github.com/repos/kubernetes/minikube/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') || \
         MINIKUBE_VERSION="v$(echo ${MINIKUBE_VERSION} | sed s/^v//g)" && \
