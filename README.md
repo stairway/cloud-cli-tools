@@ -91,15 +91,6 @@ bin/reset.sh [OPTIONS]
 
 **`-F|--full`**: _**Full** mode. Destroys container and persisted dotfiles (~/.ssh folder will remain untouched)_
 
-### **Build**
-2 types of reset: **_quick_** and **_full_**
-
-_Usage:_
-```
-bin/build.sh
-bin/build.sh [OPTIONS] [ADDITIONAL_ARGS]
-```
-
 #### **Examples**
 
 ```bash
@@ -107,6 +98,15 @@ bin/build.sh [OPTIONS] [ADDITIONAL_ARGS]
 $ bin/reset.sh
 # Example 2
 $ bin/reset.sh -F
+```
+
+### **Build**
+2 types of build: **_quick_** and **_full_**
+
+_Usage:_
+```
+bin/build.sh
+bin/build.sh [OPTIONS] [ADDITIONAL_ARGS]
 ```
 
 #### **Options**
@@ -128,7 +128,7 @@ $ bin/build.sh
 # Example 2
 $ bin/build.sh -C
 # Example 3
-$ bin/build.sh -F -C
+$ bin/build.sh -F -N
 ```
 
 
