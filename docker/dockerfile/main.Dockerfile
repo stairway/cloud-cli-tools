@@ -31,9 +31,12 @@ COPY docs/* /docs/
 COPY opt/* /opt/bin/
 COPY bin/* /usr/local/bin/
 COPY profile/* /etc/profile.d/
-ADD dpctl-latest-linux-amd64.tgz dpctl-latest-linux-amd64
 
-RUN echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi"  >> "${HOME}/.bashrc" && \
+ADD dpctl/ /tmp/dpctl/
+
+RUN mkdir -p /tmp/dpctl && \
+    for f in $(ls -1 /tmp/dpctl); do install "/tmp/dpctl/${f}" "/usr/local/bin/${f}"; done && \
+    rm -rf /tmp/dpctl && \
     chmod +x /opt/bin/describe
 
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux
@@ -154,8 +157,7 @@ RUN [ "${K9S_VERSION:-latest}" = "latest" ] && \
     install k9s /usr/local/bin/k9s && \
     k9s version
 
-RUN install dpctl-latest-linux-amd64/dpctl /usr/local/bin/dpctl && \
-    rm -rf /tmp/downloads && \
+RUN rm -rf /tmp/downloads && \
     echo "EDITOR=\${EDITOR}" >> "${HOME}/.profile" && \
     echo "VISUAL=\${EDITOR}" >> "${HOME}/.profile" && \
     echo "GIT_EDITOR=\${EDITOR}" >> "${HOME}/.profile" && \
