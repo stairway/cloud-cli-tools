@@ -7,7 +7,17 @@ printf "\033[92;1m>>>\033[94;1m %s: %s\033[92;1m <<<\033[0m\n" "cloud-cli-tools"
 
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-pushd "${SCRIPT_DIR}/../"
+pushd "${SCRIPT_DIR}/../" >/dev/null
+
+convert_zip() {
+    base_dir="${1:-docker/dpctl}"
+    for f in $(ls -1 "${base_dir}" | grep -v ^_); do 
+        _fname="$(basename ${f} .zip)"
+        _ext=$(echo $f | awk -F"$_fname" '{print $2}')
+        _command="bin/zip2tgz.sh ${base_dir}/${f} ${base_dir}/${_fname}"
+        [ "$_ext" = ".zip" ] && printf "\033[96;1m%s\033[0m\n" "${_command}" && sh -c "${_command}" || continue
+    done
+}
 
 export DOCKER_BUILDKIT=0
 export COMPOSE_DOCKER_CLI_BUILD=0
@@ -110,6 +120,8 @@ build_new() {
     eval ${build_command[@]}
 }
 
+convert_zip
+
 mode=quick
 
 while [ $# -gt 0 ]; do
@@ -148,4 +160,4 @@ else
     build_new ${ADDITIONAL_BUILD_OPTS[@]}
 fi
 
-popd
+popd >/dev/null

@@ -32,7 +32,7 @@ COPY opt/* /opt/bin/
 COPY bin/* /usr/local/bin/
 COPY profile/* /etc/profile.d/
 
-ADD dpctl/ /tmp/dpctl/
+ADD dpctl/*.tgz /tmp/dpctl/
 
 RUN mkdir -p /tmp/dpctl && \
     for f in $(ls -1 /tmp/dpctl); do install "/tmp/dpctl/${f}" "/usr/local/bin/${f}"; done && \
