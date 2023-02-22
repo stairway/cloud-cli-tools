@@ -20,14 +20,16 @@ init_ssh() {
     local key_count=0
     key_count=$(ls -1 $HOME/.ssh | grep --color=never -o id_ed25519.fingerprint | wc -l)
     if [ ${key_count} -lt 1 ]; then
-        printf "\033[93m>\033[0m Generating ssh ed25519 keypair with empty password ...\n\033[96;1m%s\033[0m\n" "ssh-keygen -t ed25519 -C '${RACFID}' -f '${HOME}/.ssh/id_ed25519'"
-        ssh-keygen -t ed25519 -C "${RACFID}" -f "${HOME}/.ssh/id_ed25519" > "${HOME}/.ssh/${gen_date}.id_ed25519.fingerprint"
+        printf "\033[93m>\033[0m Generating ssh ed25519 keypair with empty password ...\n\033[96;1m%s\033[0m\n" "ssh-keygen -t ed25519 -C '${RACFID}' -f '${HOME}/.ssh/id_ed25519' -N ''"
+        ssh-keygen -t ed25519 -C "${RACFID}" -f "${HOME}/.ssh/id_ed25519" -N "" > "${HOME}/.ssh/${gen_date}.id_ed25519.fingerprint" \
+            && cat "${HOME}/.ssh/id_ed25519.pub"
     fi
     key_count=0
     key_count=$(ls -1 $HOME/.ssh | grep --color=never -o id_rsa.fingerprint | wc -l)
     if [ ${key_count} -lt 1 ]; then
-        printf "\033[93m>\033[0m Generating ssh rsa keypair with empty password ...\n\033[96;1m%s\033[0m\n" "ssh-keygen -t rsa -b 4096 -C '${RACFID}' -f '${HOME}/.ssh/id_rsa'"
-        ssh-keygen -t rsa -b 4096 -C "${RACFID}" -f "${HOME}/.ssh/id_rsa" > "${HOME}/.ssh/${gen_date}.id_rsa.fingerprint"
+        printf "\033[93m>\033[0m Generating ssh rsa keypair with empty password ...\n\033[96;1m%s\033[0m\n" "ssh-keygen -t rsa -b 4096 -C '${RACFID}' -f '${HOME}/.ssh/id_rsa' -N ''"
+        ssh-keygen -t rsa -b 4096 -C "${RACFID}" -f "${HOME}/.ssh/id_rsa" -N "" > "${HOME}/.ssh/${gen_date}.id_rsa.fingerprint" \
+            && cat "${HOME}/.ssh/id_rsa.pub"
     fi
 }
 

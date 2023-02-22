@@ -61,4 +61,4 @@ init_aws() {
     [ $last_err -eq 0 -a -f /.initialized ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "AWS (and dpctl)"
 }
 
-init_aws
+[ -z "$(which dpctl)" ] || init_aws
