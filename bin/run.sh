@@ -45,7 +45,6 @@ CONTAINER_ID=
 # RANDOMSTR="$(check_lockfile ${_MOUNT_CACHE_FILE})" && CONTAINER_ID="$(check_lockfile ${_CONTAINER_CACHE_FILE})"
 RANDOMSTR="$(check_lockfile $PWD/${_MOUNT_CACHE_FILE})" && source "${PWD}/.container"
 CONTAINER_NAME="${CONTAINER_NAME:-$RANDOMSTR}"
-CONTAINER_DESCRIPTION="${DOCKER_CONTAINER_NAME_PREFIX:-cloud-cli-tools}-${DOCKER_IMAGE_VERSION}"
 
 init_mountcache() {
     [ -n "$(which uuidgen)" ] && RANDOMSTR=$(uuidgen) || RANDOMSTR="$(openssl rand -hex 16)"
@@ -222,7 +221,6 @@ run_new() {
     local run_command=(docker run)
     run_command+=(
         --name "$CONTAINER_NAME"
-        --label description="'${CONTAINER_DESCRIPTION}'"
         --platform linux/amd64
         --network=host
         ${environment_vars[@]}
