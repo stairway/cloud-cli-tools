@@ -18,7 +18,7 @@ create_tar() {
     printf "\033[93m>\033[0m Creating '%s' ...\n" "${ARCHIVE_NAME}.tgz"
 
     for e in ${EXCLUDES[@]}; do
-        exclude+=(--exclude="$e")
+        exclude+=("--exclude=$e")
     done
 
     tar_command=(
@@ -29,7 +29,8 @@ create_tar() {
         "${INCLUDES[@]}"
     )
 
-    ${tar_command[@]}
+    printf "\033[96;1m%s\033[0m\n" "$(echo ${tar_command[@]})"
+    eval "${tar_command[@]}"
 }
 
 create_zip() {
@@ -37,7 +38,7 @@ create_zip() {
     
     local exclude=()
     for e in ${EXCLUDES[@]}; do
-        exclude+=(-x "$e")
+        exclude+=("-x ${e}")
     done
 
     zip_command=(
@@ -46,9 +47,11 @@ create_zip() {
         -
         "${INCLUDES[@]}"
         "${exclude[@]}"
+        \>"${ARCHIVE_NAME}.zip"
     )
 
-    ${zip_command[@]} >"${ARCHIVE_NAME}.zip"
+    printf "\033[96;1m%s\033[0m\n" "$(echo ${zip_command[@]})"
+    eval "${zip_command[@]}"
 }
 
 package() {
@@ -67,7 +70,10 @@ package() {
         "${PACKAGE_NAME}/README.md"
     )
 
-    EXCLUDES+=(".DS_Store")
+    EXCLUDES+=(
+        ".DS_Store"
+        "'${PACKAGE_NAME}/docker/addons/_*'"
+    )
 
     case "${1}" in
         tar)

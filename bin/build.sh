@@ -11,8 +11,8 @@ pushd "${SCRIPT_DIR}/../" >/dev/null
 
 convert_zip() {
     base_dir="${1:-docker/addons}"
-    for d in $(find ${base_dir} -mindepth 1 -type d | grep -v ^_); do
-        for f in $(ls -1 ${d}/ | grep -v ^_); do 
+    for d in $(find ${base_dir} -mindepth 1 -type d | grep --color=never -v /_); do
+        for f in $(ls -1 ${d}/ | grep --color=never -v '^_'); do 
             _fname="$(basename ${f} .zip)"
             _ext=$(echo $f | awk -F"$_fname" '{print $2}')
             _command="bin/zip2tgz.sh ${d}/${f} ${d}/${_fname}"
