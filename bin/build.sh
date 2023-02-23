@@ -10,12 +10,14 @@ SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 pushd "${SCRIPT_DIR}/../" >/dev/null
 
 convert_zip() {
-    base_dir="${1:-docker/dpctl}"
-    for f in $(ls -1 "${base_dir}" | grep -v ^_); do 
-        _fname="$(basename ${f} .zip)"
-        _ext=$(echo $f | awk -F"$_fname" '{print $2}')
-        _command="bin/zip2tgz.sh ${base_dir}/${f} ${base_dir}/${_fname}"
-        [ "$_ext" = ".zip" ] && printf "\033[96;1m%s\033[0m\n" "${_command}" && sh -c "${_command}" || continue
+    base_dir="${1:-docker/addons}"
+    for d in $(find ${base_dir} -mindepth 1 -type d | grep -v ^_); do
+        for f in $(ls -1 ${d}/ | grep -v ^_); do 
+            _fname="$(basename ${f} .zip)"
+            _ext=$(echo $f | awk -F"$_fname" '{print $2}')
+            _command="bin/zip2tgz.sh ${d}/${f} ${d}/${_fname}"
+            [ "$_ext" = ".zip" ] && printf "\033[96;1m%s\033[0m\n" "${_command}" && sh -c "${_command}" || continue
+        done
     done
 }
 

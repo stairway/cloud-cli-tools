@@ -32,11 +32,10 @@ COPY opt/* /opt/bin/
 COPY bin/* /usr/local/bin/
 COPY profile/* /etc/profile.d/
 
-ADD dpctl/*.tgz /tmp/dpctl/
+ADD addons/**/*.tgz /tmp/addons/
 
-RUN mkdir -p /tmp/dpctl && \
-    for f in $(ls -1 /tmp/dpctl); do install "/tmp/dpctl/${f}" "/usr/local/bin/${f}"; done && \
-    rm -rf /tmp/dpctl && \
+RUN for f in $(ls -1 /tmp/addons); do install "/tmp/addons/${f}" "/usr/local/bin/${f}"; done && \
+    rm -rf /tmp/addons && \
     chmod +x /opt/bin/describe
 
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux
