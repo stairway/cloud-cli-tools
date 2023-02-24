@@ -85,10 +85,34 @@ check_crypto() {
     [ $last_err -eq 0 -a -f /.crypto ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "Crypto (ssh, gpg, pass)"
 }
 
-versions && init_git && check_crypto
+exit_code=0
+waiting() { printf "${1:-.}"; sleep 1; }
+die() { 
+    local color=$exit_code
+    [ $exit_code -eq 0 ] && color=92 || color=91
+    printf "\n\033[%d;1mExiting with code %d " $color $exit_code
+    for i in {1..2}; do waiting; done
+    printf "\033[0m\n"
+}
 
-ln -s /data ${HOME}/data
+versions
 
-[ $# -gt 0 -a "${1}x" != "x" ] && /bin/bash -c "$@"
+trap die INT
 
-[ "${KEEP_ALIVE:-true}" = "true" ] && tail -f /dev/null
+case "$1" in
+    describe)
+        describe
+        ;;
+    help)
+        describe
+        ;;
+    *)
+        init_git && check_crypto
+        ln -s /data ${HOME}/data
+        [ $# -gt 0 -a "${1}x" != "x" ] && bash -c "$@"
+        exit_code=$?
+        ;;
+esac
+
+# bash
+[ "${KEEP_ALIVE:-false}" = "true" ] && tail -f /dev/null

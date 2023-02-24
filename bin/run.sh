@@ -25,7 +25,7 @@ fi
 echo
 printf "\033[92;1m>>>\033[94;1m %s: %s\033[92;1m <<<\033[0m\n" "cloud-cli-tools" "Run Script"
 
-pushd "${SCRIPT_DIR}/../"
+cd "${SCRIPT_DIR}/../"
 
 source conf/defaults.env
 source conf/project.env
@@ -189,7 +189,6 @@ run_new() {
     if [ "${script}" = "true" ]; then
         run_mode+=(
             -d
-            --platform linux/amd64
             "${docker_image}"
         )
         KEEP_ALIVE=true
@@ -198,7 +197,7 @@ run_new() {
             --rm
             -it
             "${docker_image}"
-            "/bin/bash -c 'init.sh && tail -f /dev/null'"
+            "init.sh"
         )
         KEEP_ALIVE=false
     fi
@@ -240,5 +239,3 @@ run_new() {
 
 [ -n "${CONTAINER_NAME}" -a -n "$(get_running_container_by_name ${CONTAINER_NAME})" ] || run_new "$@"
 [ "${script}" = "true" ] && exec_container "${CONTAINER_ID}"
-
-popd

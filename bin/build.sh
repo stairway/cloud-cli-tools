@@ -31,7 +31,6 @@ source conf/docker.env
 
 build_base() {
     local build_opts=(
-        # --push
         -f docker/dockerfile/base.Dockerfile
     )
     if [ "${DOCKER_BUILD_NO_CACHE:-false}" = "true" ] ; then build_opts+=(--no-cache); fi
@@ -47,9 +46,8 @@ build_base() {
         --label "org.opencontainers.image.version=${DOCKER_IMAGE_PARENT_VERSION}"
         --label "org.opencontainers.image.created-date=${created_date}"
         --label "org.opencontainers.image.title=\"${PROJECT_TITLE} (${PROJECT_NAME}) -- Base Image\""
-        --label "org.opencontainers.image.description=\"Intended to be used as a parent image\""
-        --label "org.opencontainers.image.vendor=${VENDOR_ORGANIZATION:-stairwaytowonderland}"
-        --label "com.${CONSUMER_ORG}.image.name=${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}"
+        --label "org.opencontainers.image.vendor=\"${VENDOR_ORGANIZATION}\""
+        --label "com.${CONSUMER_ORG_LOWER}.image.name=${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}"
     )
 
     [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg USER="${DOCKER_USER}")
@@ -90,9 +88,8 @@ build_new() {
         --label "org.opencontainers.image.version=${DOCKER_IMAGE_VERSION}"
         --label "org.opencontainers.image.created-date=${created_date}"
         --label "org.opencontainers.image.title=\"${PROJECT_TITLE} (${PROJECT_NAME}) -- ${DOCKER_IMAGE_VERSION}\""
-        --label "org.opencontainers.image.description=${DOCKER_CONTAINER_NAME_PREFIX:-cloud-cli-tools}-${DOCKER_IMAGE_VERSION}"
-        --label "org.opencontainers.image.vendor=${VENDOR_ORGANIZATION:-stairwaytowonderland}"
-        --label "com.${CONSUMER_ORG}.image.name=${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}"
+        --label "org.opencontainers.image.vendor=\"${VENDOR_ORGANIZATION}\""
+        --label "com.${CONSUMER_ORG_LOWER}.image.name=${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}"
     )
 
     local build_args=(

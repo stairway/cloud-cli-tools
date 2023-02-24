@@ -24,7 +24,7 @@ dpctl_stuff() {
     fi    
 }
 
-waiting() { printf "."; sleep 1; }
+waiting() { printf "${1:-.}"; sleep 1; }
 
 init_aws() {
     local last_err=0

@@ -10,12 +10,7 @@ ARG TERRAFORM_VERSION=1.3.6
 ARG TERRAGRUNT_VERSION=0.31.1
 ARG HELM_VERSION=v3.9.4
 
-ENV TZ=America/Chicago
-ENV TERM=xterm-color
-ENV EDITOR=nano
-
-ENV AWS_VAULT_BACKEND=pass
-ENV KEEP_ALIVE=true
+ENV KEEP_ALIVE=false
 
 # https://yaml.org/type/bool.html
 ENV TRUE='y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1'
@@ -164,19 +159,20 @@ RUN rm -rf /tmp/downloads && \
     echo "complete -C /usr/local/bin/aws_completer aws" >> "${HOME}/.bashrc" && \
     echo "source <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
     echo "[ -f ~/istioctl.bash ] && . ~/istioctl.bash" >> "${HOME}/.bashrc" && \
-    echo "init.sh" >> "${HOME}/.bashrc" && \
-    echo "source ${HOME}/.platform_aliases"
+    echo "init.sh" >> "${HOME}/.bashrc"
 
 USER $USER
 WORKDIR $HOME
 
 VOLUME [ "/data", "$HOME/.ssh", "$HOME/.gnupg", "$HOME/.password-store", "$HOME/.awsvault" ]
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENTRYPOINT [ "/usr/local/bin/docker-entrypoint.sh" ]
 
 # Additional Metadata
 ARG VERSION=base-latest
 ARG IMAGE_NAME=
 LABEL org.opencontainers.image.base.name="${IMAGE_NAME}:${VERSION}"
-LABEL org.opencontainers.image.description="usage: \
-   run.sh -u|--racfid <racfid> -t|--team <team_name> -n|--name <full_name> -m|--email <email> -e|--editor <editor>"
+LABEL org.opencontainers.image.description="docker run --platform linux/amd64 <image>:<tag> describe"
+LABEL org.opencontainers.image.vendor="StairwayToWonderland Co"
+LABEL org.opencontainers.image.title="Cloud Cli Tools"

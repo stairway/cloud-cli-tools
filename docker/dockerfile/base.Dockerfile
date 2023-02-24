@@ -16,6 +16,11 @@ ARG UID=1001
 ENV USER=${USER}
 ENV HOME=${HOME}
 
+ENV TZ=America/Chicago
+ENV TERM=xterm-color
+ENV EDITOR=nano
+ENV AWS_VAULT_BACKEND=pass
+
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y apt-utils && \
     apt-get clean -y
@@ -160,3 +165,6 @@ WORKDIR $HOME
 
 ARG VERSION=latest
 LABEL org.opencontainers.image.base.name="ubuntu:$VERSION"
+LABEL org.opencontainers.image.description="Intended to be used as a parent image"
+LABEL org.opencontainers.image.vendor="StairwayToWonderland Co"
+LABEL org.opencontainers.image.title="Cloud Cli Tools - Base Image"
