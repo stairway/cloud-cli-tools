@@ -164,7 +164,16 @@ WORKDIR $HOME
 # Additional Metadata
 
 ARG VERSION=latest
+ARG IMAGE_NAME="stairway/cloud-cli-tools"
+ARG IMAGE_VERSION=base-latest
+ARG GIT_COMMIT=
+ARG BUILD_DATE=
 LABEL org.opencontainers.image.base.name="ubuntu:$VERSION"
-LABEL org.opencontainers.image.description="Intended to be used as a parent image"
-LABEL org.opencontainers.image.vendor="StairwayToWonderland Co"
-LABEL org.opencontainers.image.title="Cloud Cli Tools - Base Image"
+LABEL org.opencontainers.image.description="${IMAGE_NAME}:${IMAGE_VERSION}"
+LABEL org.opencontainers.image.vendor="stairwaytowonderland"
+LABEL org.opencontainers.image.title="Cloud CLI Tools - Base Image"
+LABEL org.opencontainers.image.created-date="${BUILD_DATE}"
+LABEL org.opencontainers.image.documentation="https://github.com/${IMAGE_NAME}/tree/main/docker#readme"
+LABEL org.opencontainers.image.url="https://github.com/${IMAGE_NAME}"
+LABEL org.opencontainers.image.source="https://github.com/${IMAGE_NAME}/blob/main/docker/dockerfiles/Dockerfile.base"
+LABEL org.opencontainers.image.revision="${GIT_COMMIT}"

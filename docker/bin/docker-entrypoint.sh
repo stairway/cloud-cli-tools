@@ -114,5 +114,5 @@ case "$1" in
         ;;
 esac
 
-# bash
+[ "${DEBUG:-false}" = "true" ] && bash
 [ "${KEEP_ALIVE:-false}" = "true" ] && tail -f /dev/null

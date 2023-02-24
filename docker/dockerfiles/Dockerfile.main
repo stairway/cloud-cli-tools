@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG VERSION=base-latest
-ARG IMAGE_NAME=
-FROM ${IMAGE_NAME}:${VERSION}
+ARG IMAGE_BASE_NAME=
+FROM ${IMAGE_BASE_NAME}:${VERSION}
 LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@grainger.com>"
 
 ARG KUBE_VERSION=v1.21.0
@@ -171,8 +171,18 @@ ENTRYPOINT [ "/usr/local/bin/docker-entrypoint.sh" ]
 
 # Additional Metadata
 ARG VERSION=base-latest
-ARG IMAGE_NAME=
-LABEL org.opencontainers.image.base.name="${IMAGE_NAME}:${VERSION}"
-LABEL org.opencontainers.image.description="docker run --platform linux/amd64 <image>:<tag> describe"
-LABEL org.opencontainers.image.vendor="StairwayToWonderland Co"
-LABEL org.opencontainers.image.title="Cloud Cli Tools"
+ARG IMAGE_BASE_NAME="stairway/cloud-cli-tools"
+ARG IMAGE_NAME="stairway/cloud-cli-tools"
+ARG IMAGE_VERSION=latest
+ARG GIT_COMMIT=
+ARG BUILD_DATE=
+LABEL org.opencontainers.image.base.name="${IMAGE_BASE_NAME}:${VERSION}"
+LABEL org.opencontainers.image.description="docker run <image>:<tag> describe"
+LABEL org.opencontainers.image.vendor="stairwaytowonderland"
+LABEL org.opencontainers.image.title="Cloud CLI Tools"
+LABEL org.opencontainers.image.created-date="${BUILD_DATE}"
+LABEL org.opencontainers.image.documentation="https://github.com/${IMAGE_NAME}/tree/main/docker#readme"
+LABEL org.opencontainers.image.url="https://github.com/${IMAGE_NAME}"
+LABEL org.opencontainers.image.source="https://github.com/${IMAGE_NAME}/blob/main/docker/dockerfiles/Dockerfile.main"
+LABEL org.opencontainers.image.version="${IMAGE_VERSION}"
+LABEL org.opencontainers.image.revision="${GIT_COMMIT}"

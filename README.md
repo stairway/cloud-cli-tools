@@ -174,9 +174,9 @@ usage:  run.sh -u <racfid> -t <team_name> -n <full_name> -m <email> -e <editor>
 |   |   |-- docker-entrypoint.sh
 |   |   |-- init.sh
 |   |   `-- wtf
-|   +-- dockerfile/
-|   |   |-- base.Dockerfile
-|   |   `-- main.Dockerfile
+|   +-- dockerfiles/
+|   |   |-- Dockerfile.base
+|   |   `-- Dockerfile.main
 |   +-- dotfiles/
 |   |   |-- .bashrc
 |   |   |-- .platform_aliases
@@ -193,7 +193,11 @@ usage:  run.sh -u <racfid> -t <team_name> -n <full_name> -m <email> -e <editor>
 |   |               `-- [files]
 |   |           +-- .aws/
 |   |               `-- [files]
-|   `-- dpctl-latest-linux-amd64.tgz
+|   +-- addons/
+|   |   +-- blank/
+|   |       `-- blank.tgz
+|   |   +-- <package-group>/
+|   |       `-- <package-name>.zip
 `-- README.md
 ```
 
@@ -215,3 +219,6 @@ usage:  run.sh -u <racfid> -t <team_name> -n <full_name> -m <email> -e <editor>
 * {mountpoint}/.awsvault:/root/.awsvault"
 * {mountpoint}/.gnupg:/root/.gnupg"
 * {mountpoint}/.password-store:/root/.password-store"
+
+#### **Docker-in-Docker**
+* /var/run/docker.sock:/var/run/docker.sock

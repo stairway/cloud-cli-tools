@@ -10,8 +10,8 @@ NOTHING_MSG="Nothing to remove."
 
 cd "${SCRIPT_DIR}/../"
 
-source conf/defaults.env
 source conf/project.env
+source conf/defaults.env
 source conf/versions.env
 source conf/docker.env
 

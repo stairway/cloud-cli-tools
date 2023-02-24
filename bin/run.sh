@@ -27,8 +27,8 @@ printf "\033[92;1m>>>\033[94;1m %s: %s\033[92;1m <<<\033[0m\n" "cloud-cli-tools"
 
 cd "${SCRIPT_DIR}/../"
 
-source conf/defaults.env
 source conf/project.env
+source conf/defaults.env
 source conf/versions.env
 source conf/docker.env
 
@@ -197,7 +197,7 @@ run_new() {
             --rm
             -it
             "${docker_image}"
-            "init.sh"
+            bash -c "init.sh && bash"
         )
         KEEP_ALIVE=false
     fi
