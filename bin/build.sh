@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 
-set -e
+set -euf
+LC_CTYPE=C
+
+if [ -f "$0" ]; then
+    SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+    script=true
+else
+    SCRIPT_DIR="$(pwd)/bin"
+    script=false
+fi
 
 echo
 printf "\033[92;1m>>>\033[94;1m %s: %s\033[92;1m <<<\033[0m\n" "cloud-cli-tools" "Build Script"
 
-SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
-
-pushd "${SCRIPT_DIR}/../" >/dev/null
+cd "${SCRIPT_DIR}/../"
 
 convert_zip() {
     base_dir="${1:-docker/addons}"
@@ -21,19 +28,20 @@ convert_zip() {
     done
 }
 
-export DOCKER_BUILDKIT=0
-export COMPOSE_DOCKER_CLI_BUILD=0
-
 source conf/project.env
 source conf/defaults.env
 source conf/versions.env
 source conf/docker.env
 
+export DOCKER_BUILDKIT="${DOCKER_BUILDKIT:-0}"
+export COMPOSE_DOCKER_CLI_BUILD="${COMPOSE_DOCKER_CLI_BUILD:-0}"
+DOCKER_BUILD_NO_CACHE="${DOCKER_BUILD_NO_CACHE:-false}"
+
 build_base() {
     local build_opts=(
         -f docker/dockerfiles/Dockerfile.base
     )
-    if [ "${DOCKER_BUILD_NO_CACHE:-false}" = "true" ] ; then build_opts+=(--no-cache); fi
+    if [ "${DOCKER_BUILD_NO_CACHE}" = "true" ] ; then build_opts+=(--no-cache); fi
     
     local created_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
     local build_args=(
@@ -103,7 +111,7 @@ build_new() {
         ${build_opts[@]}
         ${build_args[@]}
         ${build_labels[@]}
-        ${@}
+        "$@"
         -t "${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}"
         "./docker"
     )
@@ -118,14 +126,14 @@ build_new() {
 
 convert_zip
 
-mode=quick
+BUILD_MODE="${BUILD_MODE:-quick}"
 
 while [ $# -gt 0 ]; do
     option="$1"
     shift
     case "${option}" in
         -F|--full)
-            mode="full"
+            BUILD_MODE="full"
             ;;
         -N|--no-cache)
             DOCKER_BUILD_NO_CACHE=true
@@ -147,13 +155,11 @@ if [ $argc -gt 1 ]; then
     done
 fi
 
-printf "\033[92mBuild Mode: \033[92;1m%s\033[0m\n" "${mode}"
+printf "\033[92mBuild Mode: \033[92;1m%s\033[0m\n" "${BUILD_MODE}"
 
-if [ "$mode" = "full" ]; then
-    build_base ${ADDITIONAL_BUILD_OPTS[@]}
+if [ "$BUILD_MODE" = "full" ]; then
+    build_base ${ADDITIONAL_BUILD_OPTS[@]+"${ADDITIONAL_BUILD_OPTS[@]}"}
     build_new
 else
-    build_new ${ADDITIONAL_BUILD_OPTS[@]}
+    build_new ${ADDITIONAL_BUILD_OPTS[@]+"${ADDITIONAL_BUILD_OPTS[@]}"}
 fi
-
-popd >/dev/null
