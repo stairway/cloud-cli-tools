@@ -81,7 +81,6 @@ build_base() {
 
 build_new() {
     local build_opts=(
-        --pull=false
         -f docker/dockerfiles/Dockerfile.main
     )
     if [ "${DOCKER_BUILD_NO_CACHE:-false}" = "true" ] ; then build_opts+=(--no-cache); fi

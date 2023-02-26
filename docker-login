@@ -1,22 +1,26 @@
 #!/usr/bin/env sh
 
-set -e
+set -euf
+LC_TYPE=C
 
 echo
 printf "\033[92;1m>>>\033[94;1m%s\033[92;1m <<<\033[0m\n" "Docker Hub Login Script"
 
-printf ""
-HUB_USERNAME="${HUB_USERNAME}"
-while [ -z "$HUB_USERNAME" ]; do
-    printf "Username: "
-    read HUB_USERNAME
-done
+REGISTRY_USERNAME="${REGISTRY_USERNAME:-""}"
+REGISTRY_PASSWORD="${REGISTRY_PASSWORD:-""}"
 
-HUB_PASSWORD="${HUB_PASSWORD}"
-while [ -z "$HUB_PASSWORD" ]; do
-    printf "Password: "
-    read -s HUB_PASSWORD
-done
+if [ -z "$REGISTRY_USERNAME" -o -z "$REGISTRY_PASSWORD" ]; then
+    printf ""
+    while [ -z "$REGISTRY_USERNAME" ]; do
+        printf "Username: "
+        read REGISTRY_USERNAME
+    done
 
-echo
-echo "${HUB_PASSWORD}" | docker login -u "${HUB_USERNAME}" --password-stdin
+    while [ -z "$REGISTRY_PASSWORD" ]; do
+        printf "Password: "
+        read -s REGISTRY_PASSWORD
+    done
+    echo
+fi
+
+echo "${REGISTRY_PASSWORD}" | docker login -u "${REGISTRY_USERNAME}" --password-stdin
