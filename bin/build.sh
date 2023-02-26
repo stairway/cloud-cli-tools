@@ -80,7 +80,9 @@ build_base() {
 }
 
 build_new() {
+    local platform_opts=(--platform=linux/amd64,linux/arm64,linux/arm/v7)
     local build_opts=(
+        --push
         -f docker/dockerfiles/Dockerfile.main
     )
     if [ "${DOCKER_BUILD_NO_CACHE:-false}" = "true" ] ; then build_opts+=(--no-cache); fi
@@ -105,13 +107,14 @@ build_new() {
         --label "com.${CONSUMER_ORG_LOWER}.image.name=${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}"
     )
 
-    local build_command=(docker build)
+    local build_command=(docker buildx build)
     build_command+=(
         ${build_opts[@]}
         ${build_args[@]}
         ${build_labels[@]}
         "$@"
         -t "${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}"
+        ${platform_opts[@]}
         "./docker"
     )
 
@@ -156,8 +159,11 @@ fi
 
 printf "\033[92mBuild Mode: \033[92;1m%s\033[0m\n" "${BUILD_MODE}"
 
+REGISTRY_USERNAME="$DOCKER_HUB_USER" REGISTRY_PASSWORD="$DOCKER_HUB_PAT" sh -c "$(cat ./docker-login)"
+
 if [ "$BUILD_MODE" = "full" ]; then
     build_base ${ADDITIONAL_BUILD_OPTS[@]+"${ADDITIONAL_BUILD_OPTS[@]}"}
+    docker push "${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}"
     build_new
 else
     build_new ${ADDITIONAL_BUILD_OPTS[@]+"${ADDITIONAL_BUILD_OPTS[@]}"}
