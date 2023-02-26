@@ -67,7 +67,7 @@ build_base() {
         ${build_opts[@]}
         ${build_args[@]}
         ${build_labels[@]}
-        ${@}
+        "$@"
         -t "${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}"
         "./docker"
     )
