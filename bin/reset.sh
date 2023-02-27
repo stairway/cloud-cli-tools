@@ -107,4 +107,6 @@ quick_clean "${CONTAINER_NAME}"
 
 if [ "$mode" = "full" ]; then
     [ -d "${PWD}/mount/dotfiles/${DOCKER_USER}" ] && full_clean "${PWD}/mount/dotfiles/${DOCKER_USER}"
+    printf "\033[93m>\033[0m Removing '%s' ...\n" "${PWD}/mount/addons"
+    rm -rf "${PWD}/mount/addons"
 fi

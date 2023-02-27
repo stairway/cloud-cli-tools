@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+count() { echo $#; }
+
 quick_iam_test() {
     local team="${1:-di}"
     local cluster="${2:-nonprod}"
@@ -60,5 +62,20 @@ init_aws() {
 
     [ $last_err -eq 0 -a -f /.initialized ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "AWS (and dpctl)"
 }
+
+files="$(ls -1 /tmp/addons/*.tgz)"
+if [ $(count $files) -gt 0 ]; then
+    [ -d /tmp/addons/archive ] || mkdir /tmp/addons/archive
+    for f in ${files[@]}; do 
+        tar -xzvf "${f}"
+    done
+    mv ${files[@]} /tmp/addons/archive/
+fi
+
+for f in $(find /tmp/addons -mindepth 1 -type f | grep -v archive/); do
+    fname="$(basename ${f})"
+    printf "\033[93m>\033[0m Installing '%s' to '%s'\n" "${f}" "/usr/local/bin/${fname}"
+    install "${f}" "/usr/local/bin/${fname}"
+done
 
 [ -z "$(which dpctl)" ] || init_aws
