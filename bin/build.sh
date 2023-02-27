@@ -159,7 +159,7 @@ fi
 
 printf "\033[92mBuild Mode: \033[92;1m%s\033[0m\n" "${BUILD_MODE}"
 
-REGISTRY_USERNAME="$DOCKER_HUB_USER" REGISTRY_PASSWORD="$DOCKER_HUB_PAT" sh -c "$(cat ./docker-login)"
+sh -c "$(cat ./docker-login)"
 
 if [ "$BUILD_MODE" = "full" ]; then
     build_base ${ADDITIONAL_BUILD_OPTS[@]+"${ADDITIONAL_BUILD_OPTS[@]}"}
