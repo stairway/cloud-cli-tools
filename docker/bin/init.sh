@@ -63,7 +63,7 @@ init_aws() {
     [ $last_err -eq 0 -a -f /.initialized ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "AWS (and dpctl)"
 }
 
-files="$(ls -1 /tmp/addons/*.tgz)"
+files="$(find /tmp/addons -mindepth 1 -type f -name *.tgz)"
 if [ $(count $files) -gt 0 ]; then
     [ -d /tmp/addons/archive ] || mkdir /tmp/addons/archive
     for f in ${files[@]}; do 

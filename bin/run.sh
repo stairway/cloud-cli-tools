@@ -166,18 +166,19 @@ user_prompt() {
 
 convert_zip() {
     base_dir="${1:-docker/addons}"
-    folders="$(find ${base_dir} -mindepth 1 -type d)"
-    if [ $(count $folders) -gt 1 ]; then
+    addons="$(find ${base_dir} -mindepth 1 -type f -name *.zip)"
+    if [ $(count "$addons") -gt 0 ]; then
         [ -d mount/addons ] || mkdir mount/addons
-        for d in ${folders[@]}; do
-            for f in $(ls -1 ${d}/ | grep --color=never -v '^_'); do 
-                _fname="$(basename ${f} .zip)"
-                _ext=$(echo $f | awk -F"$_fname" '{print $2}')
-                _command="bin/zip2tgz.sh ${d}/${f} ${d}/${_fname}"
-                [ "$_ext" = ".zip" ] && printf "\033[96;1m%s\033[0m\n" "${_command}" && sh -c "${_command}" || continue
-                printf "\033[93m>\033[0m Moving '%s' to '%s'\n" "${d}/${_fname}.tgz" "mount/addons/${_fname}.tgz"
-                mv "${d}/${_fname}.tgz" "mount/addons/${_fname}.tgz"
-            done
+        for f in ${addons[@]}; do 
+            _fname="$(basename ${f} .zip)"
+            _ext=$(echo ${f} | awk -F"$_fname" '{print $2}')
+            _dir="$(dirname ${f})"
+            _command="bin/zip2tgz.sh ${f} ${_dir}/${_fname}"
+            [ "$_ext" = ".zip" ] && printf "\033[96;1m%s\033[0m\n" "${_command}" && sh -c "${_command}" || continue
+            if [ -f "${_dir}/${_fname}.tgz" ]; then
+                printf "\033[93m>\033[0m Moving '%s' to '%s'\n" "${_dir}/${_fname}.tgz" "mount/addons/${_fname}.tgz"
+                mv "${_dir}/${_fname}.tgz" "mount/addons/${_fname}.tgz"
+            fi
         done
     fi
 }
@@ -204,9 +205,9 @@ run_new() {
         -v "${PWD}/mount/dotfiles/${DOCKER_USER}/.dpctl:${docker_user_home}/.dpctl"
         -v "${PWD}/mount/dotfiles/${DOCKER_USER}/.ssh:${docker_user_home}/.ssh"
         -v "${PWD}/mount/data:/data"
-        -v "${PWD}/mount/addons:/tmp/addons"
         -v /var/run/docker.sock:/var/run/docker.sock
     )
+    [ $(count $(ls -1 ${PWD}/mount/addons)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/addons:/tmp/addons")
 
     local run_mode=()
     if [ "${script}" = "true" ]; then
@@ -260,5 +261,5 @@ run_new() {
     [ -n "${CONTAINER_ID}" ] && echo "CONTAINER_ID=${CONTAINER_ID}" >> "${_CONTAINER_CACHE_FILE}"
 }
 
-[ -n "${CONTAINER_NAME}" -a -n "$(get_running_container_by_name ${CONTAINER_NAME})" ] || run_new "$@"
+[ -n "${CONTAINER_NAME}" -a -n "$(get_running_container_by_name ${CONTAINER_NAME})" ] && printf "Found existing\n" || run_new "$@"
 [ "${script}" = "true" ] && exec_container "${CONTAINER_ID}"
