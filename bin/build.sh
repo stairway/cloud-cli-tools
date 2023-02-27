@@ -38,9 +38,7 @@ export COMPOSE_DOCKER_CLI_BUILD="${COMPOSE_DOCKER_CLI_BUILD:-0}"
 DOCKER_BUILD_NO_CACHE="${DOCKER_BUILD_NO_CACHE:-false}"
 
 build_base() {
-    local build_opts=(
-        -f docker/dockerfiles/Dockerfile.base
-    )
+    local build_opts=()
     if [ "${DOCKER_BUILD_NO_CACHE}" = "true" ] ; then build_opts+=(--no-cache); fi
     
     local created_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
@@ -65,6 +63,7 @@ build_base() {
     local build_command=(docker build)
     build_command+=(
         ${build_opts[@]}
+        -f docker/dockerfiles/Dockerfile.base
         ${build_args[@]}
         ${build_labels[@]}
         "$@"
@@ -80,10 +79,9 @@ build_base() {
 }
 
 build_new() {
-    local platform_opts=(--platform=linux/amd64,linux/arm64,linux/arm/v7)
     local build_opts=(
         --push
-        -f docker/dockerfiles/Dockerfile.main
+        --platform=linux/amd64,linux/arm64,linux/arm/v7
     )
     if [ "${DOCKER_BUILD_NO_CACHE:-false}" = "true" ] ; then build_opts+=(--no-cache); fi
 
@@ -110,11 +108,11 @@ build_new() {
     local build_command=(docker buildx build)
     build_command+=(
         ${build_opts[@]}
+        -f docker/dockerfiles/Dockerfile.main
         ${build_args[@]}
         ${build_labels[@]}
         "$@"
         -t "${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}"
-        ${platform_opts[@]}
         "./docker"
     )
 
