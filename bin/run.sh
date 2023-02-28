@@ -193,6 +193,11 @@ run_new() {
     local docker_image="${DOCKER_IMAGE}:${1:-$DOCKER_IMAGE_VERSION}"
 
     docker volume create "${RANDOMSTR}"
+
+    local pull_command=(docker pull "${docker_image}")
+    printf "\033[93m>\033[0m Attempting to pull '%s' from remote ...\n\033[96;1m%s\033[0m\n" "${docker_image}" "$(echo ${pull_command[@]})"
+    { eval "${pull_command[@]}"; } || true
+
     local mountpoint=$(get_mountpoint)
     local docker_user_home=/root
     [ "${DOCKER_USER:-root}" = "root" ] || docker_user_home="/home/${DOCKER_USER}"
