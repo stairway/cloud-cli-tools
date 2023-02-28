@@ -38,4 +38,4 @@ trap cleanup INT TERM EXIT
 
 unzip -q $src -d $tmp
 chmod -R +r $tmp
-tar -c -z -f "${dest}.tgz" -C $tmp .
+tar -cz --no-xattrs -f "${dest}.tgz" -C $tmp .

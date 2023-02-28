@@ -4,7 +4,7 @@ set -euf
 LC_TYPE=C
 
 echo
-printf "\033[92;1m>>>\033[94;1m%s\033[92;1m <<<\033[0m\n" "Docker Hub Login Script"
+printf "\033[92;1m>>> \033[94;1m%s\033[92;1m <<<\033[0m\n" "Docker Hub Login Script"
 
 REGISTRY_USERNAME="${REGISTRY_USERNAME:-""}"
 REGISTRY_PASSWORD="${REGISTRY_PASSWORD:-""}"

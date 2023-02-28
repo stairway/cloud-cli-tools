@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+####################
+### https://www.docker.com/blog/how-to-rapidly-build-multi-architecture-images-with-buildx/
+###
+### `docker buildx create --name mybuilder --use --bootstrap`
+####################
+
 set -euf
 LC_CTYPE=C
 
@@ -117,7 +123,8 @@ build_new() {
     )
 
     # If parent image remotely
-    # docker pull "${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}"
+    printf "\033[93m>\033[0m Attempting to pull parent from remote ...\n"
+    docker pull "${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}" || true
 
     printf "\033[96;1m%s\n\033[0m" "$(echo ${build_command[@]})"
 
