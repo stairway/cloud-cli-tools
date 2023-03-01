@@ -89,7 +89,7 @@ bin/reset.sh [OPTIONS]
 
 **`No Flags` -- `bin/reset.sh`**: _**Quick** mode. Destroys container. All other persisted files will remain untouched._
 
-**`-F|--full`**: _**Full** mode. Destroys container and persisted dotfiles (~/.ssh folder will remain untouched)_
+**`-F | --full`**: _**Full** mode. Destroys container and persisted dotfiles (~/.ssh folder will remain untouched)_
 
 #### **Examples**
 
@@ -113,9 +113,9 @@ bin/build.sh [OPTIONS] [ADDITIONAL_ARGS]
 
 **`No Flags` -- `bin/build.sh`**: _**Quick** mode. Quick rebuild. Does not build parent image, so quick builds are not intended for the [first build](#step-2-first-build)_
 
-**`-F|--full`**: _Full (deep) build. Required for first build. Builds all necessary images._
+**`-F | --full`**: _Full (deep) build. Required for first build. Builds all necessary images._
 
-**`-N|--no-cache`**: _Sets the `--no-cache` flag on the `docker build` command._
+**`-N | --no-cache`**: _Sets the `--no-cache` flag on the `docker build` command._
 
 #### **Additional Args**
 Additional build args or flags to pass to `docker build` command.
@@ -163,13 +163,19 @@ usage:  run.sh -u <racfid> -t <team_name> -n <full_name> -m <email> -e <editor>
 |   |-- build.sh
 |   |-- package.sh
 |   |-- reset.sh
-|   `-- run.sh
+|   |-- run.sh
+|   `-- zip2tgz.sh
 +-- conf/
 |   |-- defaults.env
 |   |-- docker.env
-|   |-- vars.env
+|   |-- project.env
 |   `-- versions.env
 +-- docker/
+|   +-- addons/
+|   |   +-- blank/
+|   |       `-- blank.tgz
+|   |   +-- <package-group>/
+|   |       `-- <package-name>.zip
 |   +-- bin/
 |   |   |-- docker-entrypoint.sh
 |   |   |-- init.sh
@@ -177,27 +183,25 @@ usage:  run.sh -u <racfid> -t <team_name> -n <full_name> -m <email> -e <editor>
 |   +-- dockerfiles/
 |   |   |-- Dockerfile.base
 |   |   `-- Dockerfile.main
+|   +-- docs/
+|   |   `-- README.md
+|   +-- opt/
+|   |   `-- describe
+|   +-- profile/
+|   |   |-- 98-kubectl-aliases.sh
+|   |   `-- 99-platform-aliases.sh
++-- mount/ # Only created after first run
+|   +-- data/
 |   +-- dotfiles/
-|   |   |-- .bashrc
-|   |   |-- .platform_aliases
-|   |   `-- .profile
-|   +-- mount/ # Only created after first run
-|   |   +-- data/
-|   |   +-- dotfiles/
-|   |       +-- root/
-|   |           +-- .aws/
-|   |               `-- [files]
-|   |           +-- .dpctl/
-|   |               `-- [files]
-|   |           +-- .kube/
-|   |               `-- [files]
-|   |           +-- .aws/
-|   |               `-- [files]
-|   +-- addons/
-|   |   +-- blank/
-|   |       `-- blank.tgz
-|   |   +-- <package-group>/
-|   |       `-- <package-name>.zip
+|       +-- root/
+|           +-- .aws/
+|               `-- [files]
+|           +-- .dpctl/
+|               `-- [files]
+|           +-- .kube/
+|               `-- [files]
+|           +-- .ssh/
+|               `-- [files]
 `-- README.md
 ```
 
@@ -205,15 +209,17 @@ usage:  run.sh -u <racfid> -t <team_name> -n <full_name> -m <email> -e <editor>
 
 #### **Standard data**
 
-* mount/dotfiles/root/.aws:/root/.aws"
-* mount/dotfiles/root/.kube:/root/.kube"
-* mount/dotfiles/root/.dpctl:/root/.dpctl"
-* mount/dotfiles/root/.ssh:/root/.ssh"
-* mount/data:/data"
+* mount/dotfiles/root/.aws:/root/.aws
+* mount/dotfiles/root/.kube:/root/.kube
+* mount/dotfiles/root/.dpctl:/root/.dpctl
+* mount/dotfiles/root/.ssh:/root/.ssh
+* mount/data:/data
+* mount/addons:/tmp/addons
 
 #### **Password data**
 
 **_{mountpoint}_** -- _/var/lib/docker/volumes/**{randomstr}**/\_data_
+
 **_{randomstr}_** -- a random string being generated in the run.sh script
 
 * {mountpoint}/.awsvault:/root/.awsvault"
