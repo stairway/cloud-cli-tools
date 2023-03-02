@@ -63,21 +63,34 @@ init_aws() {
     [ $last_err -eq 0 -a -f /.initialized ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "AWS (and dpctl)"
 }
 
-files="$(find /tmp/addons -mindepth 1 -type f -name '*.tgz')"
-if [ $(count $files) -gt 0 ]; then
+tarballs="$(find /tmp/addons -mindepth 1 -type f -name '*.tgz' | grep -v /archive)"
+if [ $(count ${tarballs[@]}) -gt 0 ]; then
     [ -d /tmp/addons/archive ] || mkdir /tmp/addons/archive
     pushd /tmp/addons
-    for f in ${files[@]}; do 
-        tar -xzvf "${f}"
-    done
+    for f in ${tarballs[@]}; do tar -xzvf "${f}"; done
     popd
-    mv ${files[@]} /tmp/addons/archive/
+    mv ${tarballs[@]} /tmp/addons/archive/ 2>/dev/null || true
 fi
 
-for f in $(find /tmp/addons -mindepth 1 -type f | grep -v archive/); do
-    fname="$(basename ${f})"
-    printf "\033[93m>\033[0m Installing '%s' to '%s'\n" "${f}" "/usr/local/bin/${fname}"
-    install "${f}" "/usr/local/bin/${fname}"
-done
+zips="$(find /tmp/addons -mindepth 1 -type f -name '*.zip' | grep -v /archive)"
+if [ $(count ${zips[@]}) -gt 0 ]; then
+    [ -d /tmp/addons/archive ] || mkdir /tmp/addons/archive
+    pushd /tmp/addons
+    for f in ${zips[@]}; do unzip -o "${f}"; done
+    popd
+    mv ${zips[@]} /tmp/addons/archive/ 2>/dev/null || true
+fi
+
+files="$(find /tmp/addons -mindepth 1 -type f | grep -v -P '\.tgz|\.zip|/archive')"
+if [ $(count ${files[@]}) -gt 0 ]; then
+    for f in ${files[@]}; do
+        fname="$(basename ${f})"
+        target="/usr/local/bin/${fname}"
+        if [ ! -f "${target}" ]; then
+            printf "\033[93m>\033[0m Installing '%s' to '%s'\n" "${f}" "/usr/local/bin/${fname}"
+            install "${f}" "${target}"
+        fi
+    done
+fi
 
 [ -z "$(which dpctl)" ] || init_aws

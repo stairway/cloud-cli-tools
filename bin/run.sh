@@ -1,6 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-set -e
+set -euf
+LC_TYPE=C
 
 check_dependencies() {
     # check for other required dependencies on host machine
@@ -81,7 +82,7 @@ exec_container() {
 user_prompt() {
     if [ $# -eq 0 ]; then
         echo
-        while [ -z "$RACFID" ]; do
+        while [ -z "${RACFID:-""}" ]; do
             printf "Enter your RACFID: "
             read RACFID
         done
@@ -89,7 +90,7 @@ user_prompt() {
         printf "Enter your Team Name (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "${TEAM_NAME_DEFAULT}"
         read TEAM_NAME && TEAM_NAME="${TEAM_NAME:-$TEAM_NAME_DEFAULT}"
         #read -e -i $TEAM_NAME_DEFAULT TEAM_NAME < /dev/tty
-        while [ -z "$GIT_CONFIG_FULL_NAME" ]; do
+        while [ -z "${GIT_CONFIG_FULL_NAME:-""}" ]; do
             printf "Enter your Full Name: "
             read GIT_CONFIG_FULL_NAME
         done
@@ -97,13 +98,13 @@ user_prompt() {
         printf "Enter your Email (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "${GIT_CONFIG_EMAIL_EXPECTED}"
         read GIT_CONFIG_EMAIL && GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-$GIT_CONFIG_EMAIL_EXPECTED}"
         #read -e -i $GIT_CONFIG_EMAIL_EXPECTED GIT_CONFIG_EMAIL < /dev/tty
-        if [ "$FILE_EDITOR_DEFAULT" = "vim" ]; then 
+        if [ "${FILE_EDITOR_DEFAULT:-""}" = "vim" ]; then 
             FILE_EDITOR_ALT_1="nano"
         else
             FILE_EDITOR_DEFAULT="nano"
             FILE_EDITOR_ALT_1="vim"
         fi
-        while  [ -z "$FILE_EDITOR" ]; do
+        while  [ -z "${FILE_EDITOR:-""}" ]; do
             printf "Choose your desired editor (\033[32;3mdefault: \033[32;3;1m%s\033[0m | \033[32;3m%s\033[0m): " "${FILE_EDITOR_DEFAULT}" "${FILE_EDITOR_ALT_1}"
             read FILE_EDITOR && FILE_EDITOR="${FILE_EDITOR:-$FILE_EDITOR_DEFAULT}"
             if [ "$FILE_EDITOR" != "${FILE_EDITOR_DEFAULT}" ]; then
@@ -167,19 +168,12 @@ user_prompt() {
 convert_zip() {
     base_dir="${1:-docker/addons}"
     addons="$(find ${base_dir} -mindepth 1 -type f -name *.zip)"
-    if [ $(count "$addons") -gt 0 ]; then
+    if [ $(count "${addons[@]}") -gt 0 ]; then
         [ -d mount/addons ] || mkdir mount/addons
-        for f in ${addons[@]}; do 
-            _fname="$(basename ${f} .zip)"
-            _ext=$(echo ${f} | awk -F"$_fname" '{print $2}')
-            _dir="$(dirname ${f})"
-            _command="bin/zip2tgz.sh ${f} ${_dir}/${_fname}"
-            [ "$_ext" = ".zip" ] && printf "\033[96;1m%s\033[0m\n" "${_command}" && sh -c "${_command}" || continue
-            if [ -f "${_dir}/${_fname}.tgz" ]; then
-                printf "\033[93m>\033[0m Moving '%s' to '%s'\n" "${_dir}/${_fname}.tgz" "mount/addons/${_fname}.tgz"
-                mv "${_dir}/${_fname}.tgz" "mount/addons/${_fname}.tgz"
-            fi
+        for f in ${addons[@]}; do
+            printf "\033[93m>\033[0m Copying '%s' to '%s'\n" "${f}" "mount/addons/$(basename ${f} .zip).zip"
         done
+        cp ${addons[@]} mount/addons/ 2>/dev/null || true
     fi
 }
 
@@ -240,7 +234,7 @@ run_new() {
         -e "EDITOR=${FILE_EDITOR}"
         # -e "TRUE=\"${TRUE}\""
     )
-    [ -n "${AWS_ACCESS_KEY_ID}" -a -n "${AWS_SECRET_ACCESS_KEY}" ] && \
+    [ -n "${AWS_ACCESS_KEY_ID:-""}" -a -n "${AWS_SECRET_ACCESS_KEY:-""}" ] && \
         environment_vars+=(
             -e "AWS_ACCESS_KEY_ID=\"${AWS_ACCESS_KEY_ID}\""
             -e "AWS_SECRET_ACCESS_KEY=\"${AWS_SECRET_ACCESS_KEY}\""

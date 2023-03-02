@@ -58,6 +58,7 @@ init_pass() {
 }
 
 versions() {
+    uname -a
     cat /.versions || { printf "Versions file '%s' not found. Exiting ...\n" "/.versions" >&2; return 1; }
 }
 

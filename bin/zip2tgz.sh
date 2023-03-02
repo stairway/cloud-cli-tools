@@ -7,7 +7,7 @@ if [ $# -lt 2 ]; then
     exit 1
 fi
 
-function realpath() (
+realpath() (
     file=
     path=$1
     [ -d "$path" ] || {
@@ -29,13 +29,13 @@ printf "  \033[97m=>  %s\033[0m\n" "${dest}.tgz"
 
 tmp="$(mktemp -d)"
 printf "\033[2;3m> Using temp dir %s\033[0m\n" "$tmp"
-function cleanup() {
+cleanup() {
     printf "\033[93m>\033[0m %s ...\n" "Cleaning up"
     rm -rf $tmp
     printf "\033[92m>\033[0m \033[92;1m%s\033[0m\n" "Done"
 }
 trap cleanup INT TERM EXIT
 
-unzip -q $src -d $tmp
+unzip $src -d $tmp
 chmod -R +r $tmp
-tar -cz --no-xattrs -f "${dest}.tgz" -C $tmp .
+tar --no-xattrs -czvf "${dest}.tgz" -C $tmp .
