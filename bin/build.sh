@@ -85,9 +85,6 @@ build_base() {
 }
 
 build_new() {
-    # Copy zip2tgz.sh script to build context, to built for use in container
-    cp bin/zip2tgz.sh docker/bin/
-
     local build_opts=(
         --push
         --platform=linux/amd64,linux/arm64,linux/arm/v7
