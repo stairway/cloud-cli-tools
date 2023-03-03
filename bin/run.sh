@@ -165,22 +165,40 @@ user_prompt() {
     fi
 }
 
-convert_zip() {
-    base_dir="${1:-docker/addons}"
-    addons="$(find ${base_dir} -mindepth 1 -type f -name *.zip)"
-    if [ $(count "${addons[@]}") -gt 0 ]; then
-        [ -d mount/addons ] || mkdir mount/addons
-        for f in ${addons[@]}; do
-            printf "\033[93m>\033[0m Copying '%s' to '%s'\n" "${f}" "mount/addons/$(basename ${f} .zip).zip"
+copy_addons() {
+    local source_dir="${1:-docker/addons}"
+    local target_dir="${2:-mount/addons}"
+    local files="$(find ${source_dir} -mindepth 1 -type f -name *.zip)"
+    if [ $(count "${files[@]}") -gt 0 ]; then
+        [ -d "${target_dir}" ] || mkdir "${target_dir}"
+        for f in ${files[@]}; do
+            printf "\033[93m>\033[0m Copying '%s' to '%s'\n" "${f}" "${target_dir}/$(basename ${f} .zip).zip"
         done
-        cp ${addons[@]} mount/addons/ 2>/dev/null || true
+        cp ${files[@]} "${target_dir}/" 2>/dev/null || true
+    fi
+}
+
+copy_profile() {
+    local source_dir="${1:-docker/profile}"
+    local target_dir="${2:-mount/profile}"
+    local files="$(find ${source_dir} -mindepth 1 -type f -name *.sh)"
+    if [ $(count "${files[@]}") -gt 0 ]; then
+        [ -d "${target_dir}" ] || mkdir "${target_dir}"
+        for f in ${files[@]}; do
+            printf "\033[93m>\033[0m Copying '%s' to '%s'\n" "${f}" "${target_dir}/$(basename ${f} .sh).sh"
+        done
+        cp ${files[@]} "${target_dir}/" 2>/dev/null || true
     fi
 }
 
 run_new() {
+    local docker_user_home=/root
+    [ "${DOCKER_USER:-root}" = "root" ] || docker_user_home="/home/${DOCKER_USER}"
+
     [ -d "mount" ] || mkdir mount
 
-    convert_zip
+    copy_addons
+    copy_profile "docker/profile" "mount/home/${DOCKER_USER}/.profile.d"
     
     user_prompt "$@"
 
@@ -193,16 +211,15 @@ run_new() {
     { eval "${pull_command[@]}"; } || true
 
     local mountpoint=$(get_mountpoint)
-    local docker_user_home=/root
-    [ "${DOCKER_USER:-root}" = "root" ] || docker_user_home="/home/${DOCKER_USER}"
     local mount_volumes=(
         -v "${mountpoint}/.awsvault:${docker_user_home}/.awsvault"
         -v "${mountpoint}/.gnupg:${docker_user_home}/.gnupg"
         -v "${mountpoint}/.password-store:${docker_user_home}/.password-store"
-        -v "${PWD}/mount/dotfiles/${DOCKER_USER}/.aws:${docker_user_home}/.aws"
-        -v "${PWD}/mount/dotfiles/${DOCKER_USER}/.kube:${docker_user_home}/.kube"
-        -v "${PWD}/mount/dotfiles/${DOCKER_USER}/.dpctl:${docker_user_home}/.dpctl"
-        -v "${PWD}/mount/dotfiles/${DOCKER_USER}/.ssh:${docker_user_home}/.ssh"
+        -v "${PWD}/mount/home/${DOCKER_USER}/.aws:${docker_user_home}/.aws"
+        -v "${PWD}/mount/home/${DOCKER_USER}/.kube:${docker_user_home}/.kube"
+        -v "${PWD}/mount/home/${DOCKER_USER}/.dpctl:${docker_user_home}/.dpctl"
+        -v "${PWD}/mount/home/${DOCKER_USER}/.ssh:${docker_user_home}/.ssh"
+        -v "${PWD}/mount/home/${DOCKER_USER}/.profile.d:${docker_user_home}/.local/profile.d"
         -v "${PWD}/mount/data:/data"
         -v /var/run/docker.sock:/var/run/docker.sock
     )

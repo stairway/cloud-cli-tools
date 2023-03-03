@@ -21,10 +21,13 @@ docker run \
     -v /var/lib/docker/volumes/{instance-name}/_data/.awsvault:/root/.awsvault \
     -v /var/lib/docker/volumes/{instance-name}/_data/.gnupg:/root/.gnupg \
     -v /var/lib/docker/volumes/{instance-name}/_data/.password-store:/root/.password-store \
-    -v ${PWD}/mount/dotfiles/root/.aws:/root/.aws \
-    -v ${PWD}/mount/dotfiles/root/.kube:/root/.kube \
-    -v ${PWD}/mount/dotfiles/root/.dpctl:/root/.dpctl \
-    -v ${PWD}/mount/dotfiles/root/.ssh:/root/.ssh \
+    -v ${PWD}/mount/home/root/.aws:/root/.aws \
+    -v ${PWD}/mount/home/root/.kube:/root/.kube \
+    -v ${PWD}/mount/home/root/.dpctl:/root/.dpctl \
+    -v ${PWD}/mount/home/root/.ssh:/root/.ssh \
+    -v ${PWD}/mount/home/root/.profile.d:/root/.local/profile.d \
+    -v ${PWD}/mount/data:/data \
+    -v ${PWD}/mount/addons:/tmp/addons \
     -v ${PWD}/cloud-cli-tools/mount/data:/data \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -it \
@@ -48,10 +51,13 @@ docker run \
     -v /var/lib/docker/volumes/{instance-name}/_data/.awsvault:/root/.awsvault \
     -v /var/lib/docker/volumes/{instance-name}/_data/.gnupg:/root/.gnupg \
     -v /var/lib/docker/volumes/{instance-name}/_data/.password-store:/root/.password-store \
-    -v ${PWD}/mount/dotfiles/root/.aws:/root/.aws \
-    -v ${PWD}/mount/dotfiles/root/.kube:/root/.kube \
-    -v ${PWD}/mount/dotfiles/root/.dpctl:/root/.dpctl \
-    -v ${PWD}/mount/dotfiles/root/.ssh:/root/.ssh \
+    -v ${PWD}/mount/home/root/.aws:/root/.aws \
+    -v ${PWD}/mount/home/root/.kube:/root/.kube \
+    -v ${PWD}/mount/home/root/.dpctl:/root/.dpctl \
+    -v ${PWD}/mount/home/root/.ssh:/root/.ssh \
+    -v ${PWD}/mount/home/root/.profile.d:/root/.local/profile.d \
+    -v ${PWD}/mount/data:/data \
+    -v ${PWD}/mount/addons:/tmp/addons \
     -v ${PWD}/cloud-cli-tools/mount/data:/data \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -d \

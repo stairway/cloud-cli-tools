@@ -192,7 +192,7 @@ usage:  run.sh -u <racfid> -t <team_name> -n <full_name> -m <email> -e <editor>
 |   |   `-- 99-platform-aliases.sh
 +-- mount/ # Only created after first run
 |   +-- data/
-|   +-- dotfiles/
+|   +-- home/
 |       +-- root/
 |           +-- .aws/
 |               `-- [files]
@@ -202,6 +202,8 @@ usage:  run.sh -u <racfid> -t <team_name> -n <full_name> -m <email> -e <editor>
 |               `-- [files]
 |           +-- .ssh/
 |               `-- [files]
+|           +-- .profile.d/
+|               `-- [files]
 `-- README.md
 ```
 
@@ -209,10 +211,11 @@ usage:  run.sh -u <racfid> -t <team_name> -n <full_name> -m <email> -e <editor>
 
 #### **Standard data**
 
-* mount/dotfiles/root/.aws:/root/.aws
-* mount/dotfiles/root/.kube:/root/.kube
-* mount/dotfiles/root/.dpctl:/root/.dpctl
-* mount/dotfiles/root/.ssh:/root/.ssh
+* mount/home/root/.aws:/root/.aws
+* mount/home/root/.kube:/root/.kube
+* mount/home/root/.dpctl:/root/.dpctl
+* mount/home/root/.ssh:/root/.ssh
+* mount/home/root/.profile.d:/root/.local/profile.d
 * mount/data:/data
 * mount/addons:/tmp/addons
 

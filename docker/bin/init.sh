@@ -91,6 +91,7 @@ if [ $(count ${files[@]}) -gt 0 ]; then
             install "${f}" "${target}"
         fi
     done
+    rm -f ${files[@]}
 fi
 
 [ -z "$(which dpctl)" ] || init_aws

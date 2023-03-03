@@ -25,7 +25,8 @@ WORKDIR /tmp/downloads
 COPY docs/* /docs/
 COPY opt/* /opt/bin/
 COPY bin/* /usr/local/bin/
-COPY profile/* /etc/profile.d/
+
+COPY profile/* $HOME/.local/profile.d/
 
 ADD addons/**/*.tgz /tmp/addons/
 
@@ -152,14 +153,25 @@ RUN [ "${K9S_VERSION:-latest}" = "latest" ] && \
     k9s version
 
 RUN rm -rf /tmp/downloads && \
-    echo "EDITOR=\${EDITOR}" >> "${HOME}/.profile" && \
-    echo "VISUAL=\${EDITOR}" >> "${HOME}/.profile" && \
-    echo "GIT_EDITOR=\${EDITOR}" >> "${HOME}/.profile" && \
-    echo "KUBE_EDITOR=\${EDITOR}" >> "${HOME}/.profile" && \
     echo "complete -C /usr/local/bin/aws_completer aws" >> "${HOME}/.bashrc" && \
     echo "source <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
     echo "[ -f ~/istioctl.bash ] && . ~/istioctl.bash" >> "${HOME}/.bashrc" && \
-    echo "init.sh" >> "${HOME}/.bashrc"
+    cat >> "${HOME}/.profile" <<EOF
+
+EDITOR="${EDITOR}"
+VISUAL="${EDITOR}"
+GIT_EDITOR="${EDITOR}"
+KUBE_EDITOR="${EDITOR}"
+
+if [ -d $HOME/.local/profile.d ]; then
+    for f in \$(find $HOME/.local/profile.d -mindepth 1 -type f -name *.sh); do
+        . "\${f}"
+    done
+fi
+
+init.sh
+
+EOF
 
 USER $USER
 WORKDIR $HOME

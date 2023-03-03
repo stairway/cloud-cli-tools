@@ -3,3 +3,4 @@ function ve() {
 }
 
 alias k='ve kubectl $@' #Included in .aliasas_platform
+alias tf='ve terraform $@'
