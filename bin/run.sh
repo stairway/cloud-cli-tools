@@ -195,7 +195,7 @@ run_new() {
     local docker_user_home=/root
     [ "${DOCKER_USER:-root}" = "root" ] || docker_user_home="/home/${DOCKER_USER}"
 
-    [ -d "mount" ] || mkdir mount
+    [ -d "mount/home/${DOCKER_USER}" ] || mkdir -p "mount/home/${DOCKER_USER}"
 
     copy_addons
     copy_profile "docker/profile" "mount/home/${DOCKER_USER}/.profile.d"
