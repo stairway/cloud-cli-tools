@@ -94,7 +94,7 @@ user_prompt() {
             printf "Enter your Full Name: "
             read GIT_CONFIG_FULL_NAME
         done
-        GIT_CONFIG_EMAIL_EXPECTED="$(echo ${GIT_CONFIG_FULL_NAME} | awk '{ print tolower($1"."$2"@grainger.com") }')"
+        GIT_CONFIG_EMAIL_EXPECTED="$(echo ${GIT_CONFIG_FULL_NAME} | awk '{ print tolower($1"."$2) }')""@${CONSUMER_DOMAIN}"
         printf "Enter your Email (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "${GIT_CONFIG_EMAIL_EXPECTED}"
         read GIT_CONFIG_EMAIL && GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-$GIT_CONFIG_EMAIL_EXPECTED}"
         #read -e -i $GIT_CONFIG_EMAIL_EXPECTED GIT_CONFIG_EMAIL < /dev/tty
