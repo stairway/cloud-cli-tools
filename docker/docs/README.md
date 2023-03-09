@@ -31,8 +31,7 @@ docker run \
     -v ${PWD}/cloud-cli-tools/mount/data:/data \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -it \
-    {image}:{tag} \
-    init.sh
+    {image}:{tag}
 ```
 
 ## Daeomonized
@@ -62,4 +61,5 @@ docker run \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -d \
     {image}:{tag}
+    bash -c "init.sh"
 ```

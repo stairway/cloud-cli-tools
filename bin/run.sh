@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 set -euf
-LC_TYPE=C
+LC_CTYPE=C
 
 check_dependencies() {
     # check for other required dependencies on host machine
@@ -237,7 +237,7 @@ run_new() {
             --rm
             -it
             "${docker_image}"
-            bash -c "init.sh && bash"
+            bash -c "init.sh"
         )
         KEEP_ALIVE=false
     fi

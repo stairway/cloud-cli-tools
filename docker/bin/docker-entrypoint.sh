@@ -2,6 +2,11 @@
 
 set -eo pipefail
 
+RACFID="${RACFID:-""}"
+GIT_CONFIG_FULL_NAME="${GIT_CONFIG_FULL_NAME:-""}"
+GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-""}"
+EDITOR="${EDITOR:-""}"
+
 git_config() {
     git config --global user.name "${GIT_CONFIG_FULL_NAME}"
     GIT_CONFIG_EMAIL_DEFAULT="$(echo ${GIT_CONFIG_FULL_NAME} | awk '{ print tolower($1"."$2"@grainger.com") }')"
@@ -96,6 +101,11 @@ die() {
     printf "\033[0m\n"
 }
 
+do_init() {
+    init_git && check_crypto
+    ln -s /data ${HOME}/data
+}
+
 versions
 
 trap die INT
@@ -108,12 +118,12 @@ case "$1" in
         describe
         ;;
     *)
-        init_git && check_crypto
-        ln -s /data ${HOME}/data
-        [ $# -gt 0 -a "${1}x" != "x" ] && bash -c "$@"
+        do_init
+        [ $# -gt 0 -a "${1}x" != "x" ] && eval "bash -c '$@'"
+        bash -l -s "$@"
         exit_code=$?
         ;;
 esac
 
-[ "${DEBUG:-false}" = "true" ] && bash
+[ "${DEBUG:-false}" = "true" ] && bash -l
 [ "${KEEP_ALIVE:-false}" = "true" ] && tail -f /dev/null

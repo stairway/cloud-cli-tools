@@ -191,6 +191,7 @@ usage:  run.sh -u <racfid> -t <team_name> -n <full_name> -m <email> -e <editor>
 |   |   |-- 98-kubectl-aliases.sh
 |   |   `-- 99-platform-aliases.sh
 +-- mount/ # Only created after first run
+|   +-- addons/
 |   +-- data/
 |   +-- home/
 |       +-- root/

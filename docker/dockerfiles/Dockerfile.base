@@ -3,7 +3,7 @@ ARG VERSION=latest
 FROM --platform=linux/amd64 ubuntu:$VERSION
 LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@grainger.com>"
 
-ARG AWS_VAULT_VERSION=latest
+ARG AWS_VAULT_VERSION=v6.6.2
 ARG MINIKUBE_VERSION=latest
 
 # default values
