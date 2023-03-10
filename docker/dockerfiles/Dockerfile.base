@@ -155,6 +155,8 @@ RUN [ "${MINIKUBE_VERSION:-latest}" = "latest" ] && \
     install minikube-linux-amd64 /usr/local/bin/minikube && \
     printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
+RUN curl -sSL https://install.python-poetry.org | python3 - 
+
 RUN echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi"  >> "${HOME}/.bashrc"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
