@@ -102,11 +102,10 @@ die() {
 }
 
 do_init() {
+    versions
     init_git && check_crypto
     ln -s /data ${HOME}/data
 }
-
-versions
 
 trap die INT
 
@@ -118,11 +117,12 @@ case "$1" in
         describe
         ;;
     *)
-        do_init
-        if [ $# -gt 0 -a "${1}x" != "x" ]; then 
+        if [ $# -gt 0 -a "${1}x" != "x" ]; then
+            [ "$(basename $1)" = "$(basename $SHELL)" ] && do_init
             eval "bash -c '$@'"
             bash -l -s "$@"
         else
+            do_init
             bash -l
         fi
         exit_code=$?
