@@ -156,10 +156,10 @@ RUN rm -rf /tmp/downloads && \
     echo "complete -C /usr/local/bin/aws_completer aws" >> "${HOME}/.bashrc" && \
     echo "source <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
     echo "[ -f ~/istioctl.bash ] && . ~/istioctl.bash" >> "${HOME}/.bashrc" && \
-    [ -d $HOME/.local/bin ] || mkdir $HOME/.local/bin && \
     echo "[ \$# -eq 0 ] && . /usr/local/bin/init.sh" > $HOME/.local/init.sh && \
     cat >> "${HOME}/.profile" <<EOF
 
+export PATH="${HOME}/.local/bin:${PATH}"
 export EDITOR="${EDITOR}"
 export VISUAL="${EDITOR}"
 export GIT_EDITOR="${EDITOR}"
