@@ -156,8 +156,8 @@ RUN rm -rf /tmp/downloads && \
     echo "complete -C /usr/local/bin/aws_completer aws" >> "${HOME}/.bashrc" && \
     echo "source <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
     echo "[ -f ~/istioctl.bash ] && . ~/istioctl.bash" >> "${HOME}/.bashrc" && \
-    echo "[ \$# -eq 0 ] && . /usr/local/bin/init.sh" > $HOME/.local/init.sh && \
-    cat >> "${HOME}/.profile" <<EOF
+    echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > $HOME/.local/init.sh && \
+    cat >> "${HOME}/.bashrc" <<EOF
 
 export PATH="${HOME}/.local/bin:${PATH}"
 export EDITOR="${EDITOR}"
@@ -180,7 +180,7 @@ WORKDIR $HOME
 
 VOLUME [ "/data", "$HOME/.ssh", "$HOME/.gnupg", "$HOME/.password-store", "$HOME/.awsvault" ]
 
-SHELL [ "/bin/bash", "-o", "pipefail", "--login", "-c" ]
+SHELL [ "/bin/bash", "-o", "pipefail", "-c" ]
 ENTRYPOINT [ "/usr/local/bin/docker-entrypoint.sh" ]
 
 # Additional Metadata

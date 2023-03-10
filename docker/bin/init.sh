@@ -48,8 +48,8 @@ init_aws() {
 
         if [ ! -d "${HOME}/.dpctl" -o ! -f "${HOME}/.dpctl/config.yaml" ]; then
             dpctl_stuff
-            local teamname=$(sed -e 's/:[^:\/\/]/="/g;s/$/"/g;s/ *=/=/g' ~/.dpctl/config.yaml | grep teamname | sed s/\"\//g | awk -F'=' '{ print $2 }')
-            [ "$teamname" = "${TEAM_NAME}" ] || dpctl_stuff
+            # local teamname=$(sed -e 's/:[^:\/\/]/="/g;s/$/"/g;s/ *=/=/g' ~/.dpctl/config.yaml | grep teamname | sed s/\"\//g | awk -F'=' '{ print $2 }')
+            # [ "$teamname" = "${TEAM_NAME}" ] || dpctl_stuff
 
             sed -Ei 's/(^credential_process.+user$)/#\1/g' .aws/config
             aws configure set credential_process "aws-vault exec --no-session --json --prompt=pass user" --profile user

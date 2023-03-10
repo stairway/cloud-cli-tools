@@ -119,8 +119,12 @@ case "$1" in
         ;;
     *)
         do_init
-        [ $# -gt 0 -a "${1}x" != "x" ] && eval "bash -c '$@'"
-        bash -l -s "$@"
+        if [ $# -gt 0 -a "${1}x" != "x" ]; then 
+            eval "bash -c '$@'"
+            bash -l -s "$@"
+        else
+            bash -l
+        fi
         exit_code=$?
         ;;
 esac
