@@ -198,7 +198,7 @@ run_new() {
     [ -d "mount/home/${DOCKER_USER}" ] || mkdir -p "mount/home/${DOCKER_USER}"
 
     copy_addons
-    copy_profile "docker/profile" "mount/home/${DOCKER_USER}/.profile.d"
+    # copy_profile "docker/profile" "mount/home/${DOCKER_USER}/.profile.d"
     
     user_prompt "$@"
 
@@ -219,7 +219,7 @@ run_new() {
         -v "${PWD}/mount/home/${DOCKER_USER}/.kube:${docker_user_home}/.kube"
         -v "${PWD}/mount/home/${DOCKER_USER}/.dpctl:${docker_user_home}/.dpctl"
         -v "${PWD}/mount/home/${DOCKER_USER}/.ssh:${docker_user_home}/.ssh"
-        -v "${PWD}/mount/home/${DOCKER_USER}/.profile.d:${docker_user_home}/.local/profile.d"
+        # -v "${PWD}/mount/home/${DOCKER_USER}/.profile.d:${docker_user_home}/.local/profile.d"
         -v "${PWD}/mount/data:/data"
         -v /var/run/docker.sock:/var/run/docker.sock
     )
