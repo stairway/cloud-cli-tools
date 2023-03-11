@@ -46,6 +46,8 @@ CONTAINER_ID=
 # RANDOMSTR="$(check_lockfile ${_MOUNT_CACHE_FILE})" && CONTAINER_ID="$(check_lockfile ${_CONTAINER_CACHE_FILE})"
 RANDOMSTR="$(check_lockfile $PWD/${_MOUNT_CACHE_FILE})" && source "${PWD}/.container"
 CONTAINER_NAME="${CONTAINER_NAME:-$RANDOMSTR}"
+TARGET_ARCH="${TARGET_ARCH:-"linux/amd/64"}"
+PLATFORM="${PLATFORM:-$TARGET_ARCH}"
 
 init_mountcache() {
     [ -n "$(which uuidgen)" ] && RANDOMSTR=$(uuidgen) || RANDOMSTR="$(openssl rand -hex 16)"
@@ -119,11 +121,12 @@ user_prompt() {
         [ -f "$0" ] && command_msg+=($0) || command_msg+=(bin/run.sh)
 
         command_msg+=(
-            -u "${RACFID}"
-            -t "${TEAM_NAME}"
-            -n "'${GIT_CONFIG_FULL_NAME}'"
-            -m "'${GIT_CONFIG_EMAIL}'"
             -e "${FILE_EDITOR}"
+            -m "'${GIT_CONFIG_EMAIL}'"
+            -n "'${GIT_CONFIG_FULL_NAME}'"
+            -p "${PLATFORM}"
+            -t "${TEAM_NAME}"
+            -u "${RACFID}"
         )
         printf "\033[96m>\033[0m Advanced Command: \033[1m%s\033[0m\n" "$(echo ${command_msg[@]})"
     else
@@ -131,19 +134,9 @@ user_prompt() {
             option="$1"
             shift
             case "${option}" in
-                -u|--user|--racfid)
+                -e|--editor)
                     [ -n "$1" ] || { usage >&2; exit 1; }
-                    RACFID="$1"
-                    shift
-                    ;;
-                -t|--team|--team-name)
-                    [ -n "$1" ] || { usage >&2; exit 1; }
-                    TEAM_NAME="$1"
-                    shift
-                    ;;
-                -n|--name|--full-name)
-                    [ -n "$1" ] || { usage >&2; exit 1; }
-                    GIT_CONFIG_FULL_NAME="$1"
+                    FILE_EDITOR="$1"
                     shift
                     ;;
                 -m|--email)
@@ -151,9 +144,24 @@ user_prompt() {
                     GIT_CONFIG_EMAIL="$1"
                     shift
                     ;;
-                -e|--editor)
+                -n|--name|--full-name)
                     [ -n "$1" ] || { usage >&2; exit 1; }
-                    FILE_EDITOR="$1"
+                    GIT_CONFIG_FULL_NAME="$1"
+                    shift
+                    ;;
+                -p|--platform)
+                    [ -n "$1" ] || { usage >&2; exit 1; }
+                    PLATFORM="$1"
+                    shift
+                    ;;
+                -t|--team|--team-name)
+                    [ -n "$1" ] || { usage >&2; exit 1; }
+                    TEAM_NAME="$1"
+                    shift
+                    ;;
+                -u|--user|--racfid)
+                    [ -n "$1" ] || { usage >&2; exit 1; }
+                    RACFID="$1"
                     shift
                     ;;
                 *)
@@ -261,7 +269,7 @@ run_new() {
     local run_command=(docker run)
     run_command+=(
         --name "$CONTAINER_NAME"
-        # --platform linux/amd64
+        --platform "linux/${PLATFORM}"
         --network=host
         ${environment_vars[@]}
         ${mount_volumes[@]}
