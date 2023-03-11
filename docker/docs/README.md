@@ -25,7 +25,6 @@ docker run \
     -v ${PWD}/mount/home/root/.kube:/root/.kube \
     -v ${PWD}/mount/home/root/.dpctl:/root/.dpctl \
     -v ${PWD}/mount/home/root/.ssh:/root/.ssh \
-    -v ${PWD}/mount/home/root/.profile.d:/root/.local/profile.d \
     -v ${PWD}/mount/data:/data \
     -v ${PWD}/mount/addons:/tmp/addons \
     -v ${PWD}/cloud-cli-tools/mount/data:/data \
@@ -54,7 +53,6 @@ docker run \
     -v ${PWD}/mount/home/root/.kube:/root/.kube \
     -v ${PWD}/mount/home/root/.dpctl:/root/.dpctl \
     -v ${PWD}/mount/home/root/.ssh:/root/.ssh \
-    -v ${PWD}/mount/home/root/.profile.d:/root/.local/profile.d \
     -v ${PWD}/mount/data:/data \
     -v ${PWD}/mount/addons:/tmp/addons \
     -v ${PWD}/cloud-cli-tools/mount/data:/data \

@@ -227,11 +227,11 @@ run_new() {
         -v "${PWD}/mount/home/${DOCKER_USER}/.kube:${docker_user_home}/.kube"
         -v "${PWD}/mount/home/${DOCKER_USER}/.dpctl:${docker_user_home}/.dpctl"
         -v "${PWD}/mount/home/${DOCKER_USER}/.ssh:${docker_user_home}/.ssh"
-        # -v "${PWD}/mount/home/${DOCKER_USER}/.profile.d:${docker_user_home}/.local/profile.d"
         -v "${PWD}/mount/data:/data"
         -v /var/run/docker.sock:/var/run/docker.sock
     )
     [ $(count $(ls -1 ${PWD}/mount/addons)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/addons:/tmp/addons")
+    [ $(count $(ls -1 ${PWD}/mount/home/${DOCKER_USER}/.profile.d)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/home/${DOCKER_USER}/.profile.d:${docker_user_home}/.local/profile.d")
 
     local run_mode=()
     if [ "${script}" = "true" ]; then
@@ -267,9 +267,9 @@ run_new() {
         )
     
     local run_command=(docker run)
+    [ -n "$PLATFORM" ] && run_command+=(--platform "linux/${PLATFORM}")
     run_command+=(
         --name "$CONTAINER_NAME"
-        --platform "linux/${PLATFORM}"
         --network=host
         ${environment_vars[@]}
         ${mount_volumes[@]}
