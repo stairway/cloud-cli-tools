@@ -230,6 +230,7 @@ run_new() {
         run_mode+=(
             -d
             "${docker_image}"
+            bash
         )
         KEEP_ALIVE=true
     else
@@ -260,7 +261,7 @@ run_new() {
     local run_command=(docker run)
     run_command+=(
         --name "$CONTAINER_NAME"
-        --platform linux/amd64
+        # --platform linux/amd64
         --network=host
         ${environment_vars[@]}
         ${mount_volumes[@]}
