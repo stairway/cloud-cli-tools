@@ -4,17 +4,18 @@
 **Clone/Build/Run**
 
 ```bash
-git clone git@github.com:stairway/cloud-cli-tools.git && \
-    cd cloud-cli-tools && bin/build.sh -F && sh -c "$(cat bin/run.sh)"
+git clone --single-branch --branch multi git@github.com:stairway/cloud-cli-tools.git && \
+   cd cloud-cli-tools && sh -c "$(cat bin/run.sh)"
 ```
 
 ## **Table of Contents**
 
 1. [Summary](#summary)
-1. [Pre-Requisites](#pre-requisites)
+1. [Setup Requirements](#setup-requirements)
    1. [Required Dependencies](#required-dependencies)
 1. [Setup Instructions](#setup-instructions)
-   1. [Initial Setup](#initial-setup)
+   1. [Run Only](#run-only)
+   1. [Build & Run](#build--run)
       1. [Step 1 - Extract](#step-1-extract)
       1. [Step 2 - First Build](#step-2-first-build)
    1. [Run Instructions](#run-instructions)
@@ -45,13 +46,19 @@ Password data is encrypted and persisted in an obfuscated directory.
 * [docker](https://docs.docker.com/get-docker/)
 * [jq](https://stedolan.github.io/jq/download/)
 
-#### **\*IMPORTANT (Especially for M1 users)\***
+**\*NOTE\***
+
 If you're having trouble building, check if you have Experimental Features enabled in the Settings for Docker Desktop. If it's enabled, then disable it.
 
 ## **Setup Instructions**
 3 easy steps: extract, build, run
 
-### **Initial Setup**
+### **Run Only**
+**(recommended)**
+
+*see [Run Instructions](#run-instructions) (below)*
+
+### **Build & Run**
 
 #### **Step 1: Extract**
 
@@ -67,8 +74,6 @@ $ bin/build.sh -F
 ```
 
 ### **Run Instructions**
-
-#### **Step 3: Run**
 
 ```bash
 $ bin/run.sh
