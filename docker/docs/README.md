@@ -13,7 +13,7 @@ docker run \
     --network=host \
     --name {instance-name} \
     -e KEEP_ALIVE={true|false} \
-    -e RACFID={racfid} \
+    -e USERNAME={user} \
     -e TEAM_NAME={team-name} \
     -e GIT_CONFIG_EMAIL="{email}" \
     -e GIT_CONFIG_FULL_NAME="{First-Name Last-Name}" \
@@ -41,7 +41,7 @@ docker run \
     --network=host \
     --name {instance-name} \
     -e KEEP_ALIVE={true|false} \
-    -e RACFID={racfid} \
+    -e USERNAME={user} \
     -e TEAM_NAME={team-name} \
     -e GIT_CONFIG_EMAIL="{email}" \
     -e GIT_CONFIG_FULL_NAME="{First-Name Last-Name}" \

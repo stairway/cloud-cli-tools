@@ -19,7 +19,7 @@ quick_iam_test() {
 
 dpctl_stuff() {
     dpctl configure --team-name=${TEAM_NAME}
-    dpctl workstation awsconfig ${TEAM_NAME} --user-name=${RACFID}
+    dpctl workstation awsconfig ${TEAM_NAME} --user-name=${USERNAME}
 
     if [ -f ~/.aws/config_new ]; then
         mv ~/.aws/config_new ~/.aws/config

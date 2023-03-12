@@ -42,9 +42,11 @@ source conf/docker.env
 export DOCKER_BUILDKIT="${DOCKER_BUILDKIT:-0}"
 export COMPOSE_DOCKER_CLI_BUILD="${COMPOSE_DOCKER_CLI_BUILD:-0}"
 DOCKER_BUILD_NO_CACHE="${DOCKER_BUILD_NO_CACHE:-false}"
+DOCKER_IMAGE_PARENT="${DOCKER_IMAGE_PARENT:-""}"
+DOCKER_IMAGE_PARENT_VERSION="${DOCKER_IMAGE_PARENT_VERSION:-""}"
 
 build_base() {
-    local build_opts=()
+    local build_opts=("")
     if [ "${DOCKER_BUILD_NO_CACHE}" = "true" ] ; then build_opts+=(--no-cache); fi
     
     local created_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')

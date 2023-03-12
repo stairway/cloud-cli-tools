@@ -60,8 +60,8 @@ init_mountcache() {
 usage() {
     cat <<EOF
 
-usage: run.sh -u <racfid> -t <team_name> -n <full_name> -m <email> -e <editor>
-       run.sh --racfid <racfid> --team <team_name> --name <full_name> --email <email> --editor <editor>
+usage: run.sh -u <user> -t <team_name> -n <full_name> -m <email> -e <editor>
+       run.sh --user <user> --team <team_name> --name <full_name> --email <email> --editor <editor>
 
 *Note* Parameters with spaces (i.e. full_name) MUST be wrapped in quotes.
 
@@ -84,9 +84,9 @@ exec_container() {
 user_prompt() {
     if [ $# -eq 0 ]; then
         echo
-        while [ -z "${RACFID:-""}" ]; do
-            printf "Enter your RACFID: "
-            read RACFID
+        while [ -z "${USERNAME:-""}" ]; do
+            printf "Enter your USERNAME: "
+            read USERNAME
         done
         
         printf "Enter your Team Name (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "${TEAM_NAME_DEFAULT}"
@@ -126,7 +126,7 @@ user_prompt() {
             -n "'${GIT_CONFIG_FULL_NAME}'"
             -p "${PLATFORM}"
             -t "${TEAM_NAME}"
-            -u "${RACFID}"
+            -u "${USERNAME}"
         )
         printf "\033[96m>\033[0m Advanced Command: \033[1m%s\033[0m\n" "$(echo ${command_msg[@]})"
     else
@@ -154,14 +154,14 @@ user_prompt() {
                     PLATFORM="$1"
                     shift
                     ;;
-                -t|--team|--team-name)
+                -t|--team)
                     [ -n "$1" ] || { usage >&2; exit 1; }
                     TEAM_NAME="$1"
                     shift
                     ;;
-                -u|--user|--racfid)
+                -u|--user)
                     [ -n "$1" ] || { usage >&2; exit 1; }
-                    RACFID="$1"
+                    USERNAME="$1"
                     shift
                     ;;
                 *)
@@ -253,7 +253,7 @@ run_new() {
 
     local environment_vars=(
         -e "KEEP_ALIVE=${KEEP_ALIVE}"
-        -e "RACFID=${RACFID}"
+        -e "USERNAME=${USERNAME}"
         -e "TEAM_NAME=${TEAM_NAME}"
         -e "GIT_CONFIG_EMAIL=\"${GIT_CONFIG_EMAIL}\""
         -e "GIT_CONFIG_FULL_NAME=\"${GIT_CONFIG_FULL_NAME}\""
