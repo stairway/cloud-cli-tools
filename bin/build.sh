@@ -153,7 +153,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-ADDITIONAL_BUILD_OPTS=()
+ADDITIONAL_BUILD_OPTS=("")
 argc=$#
 
 if [ $argc -gt 1 ]; then
