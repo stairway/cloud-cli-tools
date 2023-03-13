@@ -1,7 +1,6 @@
 #!/usr/bin/env sh
 
 # git clone git@github.com:${GITHUB_REPO}.git && cd ${PROJECT_NAME} && bin/build.sh -F && sh -c "$(cat bin/run.sh)"
-# git config --global url."git@github.com:".insteadOf "https://github.com/"
 # mkdir "${PROJECT_NAME}" && curl -sL -H 'Authorization: token $PAT' -o- 'https://github.com/${GITHUB_REPO}/archive/refs/heads/multi.tar.gz' | tar -xz -C "${PROJECT_NAME}" --strip-components=1
 
 # Set strict error checking
