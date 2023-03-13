@@ -85,7 +85,7 @@ user_prompt() {
     if [ $# -eq 0 ]; then
         echo
         while [ -z "${USERNAME:-""}" ]; do
-            printf "Enter your USERNAME: "
+            printf "Enter your USERNAME (e.g. racfid): "
             read USERNAME
         done
         
