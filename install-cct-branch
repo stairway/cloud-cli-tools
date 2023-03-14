@@ -104,5 +104,3 @@ printf "\033[93m>\033[0m Copying addons to '%s' ...\n" "${CCT_ADDON_TARGET_DIR}/
 for f in $(find "${CCT_ADDON_SOURCE_DIR}" -type f -name '*.zip' -mindepth 1 -print); do
     cp "$f" "${CCT_ADDON_TARGET_DIR}/"
 done
-
-echo
