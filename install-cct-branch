@@ -26,6 +26,8 @@ TARGET_OS="${TARGET_OS:="$(uname -s | tr '[:upper:]' '[:lower:]')"}"
 REQUIRED_BINARIES=${REQUIRED_BINARIES:='tar curl docker jq'}
 SKIP_DOWNLOAD=${SKIP_DOWNLOAD:-false}
 DOWNLOAD_DIR="${TARGET_DIR}/${PROJECT_NAME}"
+CCT_ADDON_SOURCE="${CCT_ADDON_SOURCE-.}"
+CCT_ADDON_TARGET="${CCT_ADDON_TARGET:-${DOWNLOAD_DIR}/docker/addons}"
 
 if [ -z "$GH_PAT" ]; then
     printf "Github Personal Access Token (press Enter for none)\n"
@@ -96,8 +98,8 @@ printf "\033[93m>\033[0;1m\033[92;1m Done! %s was downloaded to '\033[3m%s\033[0
 printf "\033[93m>\033[0m Changing directory to '%s' ...\n" "${DOWNLOAD_DIR}"
 
 printf "\033[93m>\033[0m Copying addons ...\n"
-mkdir -p "${DOWNLOAD_DIR}/mount/addons"
-for f in $(find ./docker/addons -type f -name '*.zip' -mindepth 1 -print); do
-    cp "$f" "${DOWNLOAD_DIR}/mount/addons/"
+[ -d "${CCT_ADDON_TARGET_DIR}" ] || mkdir -p "${CCT_ADDON_TARGET_DIR}"
+for f in $(find "${CCT_ADDON_SOURCE_DIR}" -type f -name '*.zip' -mindepth 1 -print); do
+    cp "$f" "${CCT_ADDON_TARGET_DIR}/"
 done
 echo
