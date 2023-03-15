@@ -6,16 +6,19 @@ USERNAME="${USERNAME:-""}"
 GIT_CONFIG_FULL_NAME="${GIT_CONFIG_FULL_NAME:-""}"
 GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-""}"
 EDITOR="${EDITOR:-""}"
+GIT_DEFAULT_BRANCH="${GIT_DEFAULT_BRANCH:-main}"
 
 git_config() {
     git config --global user.name "${GIT_CONFIG_FULL_NAME}"
-    GIT_CONFIG_EMAIL_DEFAULT="$(echo ${GIT_CONFIG_FULL_NAME} | awk '{ print tolower($1"."$2"@grainger.com") }')"
+    GIT_CONFIG_EMAIL_DEFAULT="$(echo ${GIT_CONFIG_FULL_NAME} | awk -v domain_var="$CONSUMER_DOMAIN" '{ print tolower($1"."$2"@"domain_var) }')"
     git config --global user.email "${GIT_CONFIG_EMAIL:-$GIT_CONFIG_EMAIL_DEFAULT}"
     git config --global user.username "${USERNAME}"
 
     git config --global core.pager "less -S"
     git config --global core.editor "${EDITOR}"
     git config --global color.diff auto
+    
+    git config --global init.defaultBranch "$GIT_DEFAULT_BRANCH"
 }
 
 init_ssh() {
