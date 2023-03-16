@@ -1,6 +1,5 @@
 #!/usr/bin/env sh
 
-# git clone git@github.com:${GITHUB_REPO}.git && cd ${PROJECT_NAME} && bin/build.sh -F && sh -c "$(cat bin/run.sh)"
 # mkdir "${PROJECT_NAME}" && curl -sL -H 'Authorization: token $PAT' -o- 'https://github.com/${GITHUB_REPO}/archive/refs/heads/multi.tar.gz' | tar -xz -C "${PROJECT_NAME}" --strip-components=1
 
 # Set strict error checking
@@ -26,8 +25,10 @@ TARGET_OS="${TARGET_OS:="$(uname -s | tr '[:upper:]' '[:lower:]')"}"
 REQUIRED_BINARIES=${REQUIRED_BINARIES:='tar curl docker jq'}
 SKIP_DOWNLOAD=${SKIP_DOWNLOAD:-false}
 DOWNLOAD_DIR="${TARGET_DIR}/${PROJECT_NAME}"
-CCT_ADDON_SOURCE_DIR="${CCT_ADDON_SOURCE_DIR-.}"
+CCT_ADDON_SOURCE_DIR="${CCT_ADDON_SOURCE_DIR:-.}"
 CCT_ADDON_TARGET_DIR="${CCT_ADDON_TARGET_DIR:-${PROJECT_NAME}/mount/addons}"
+DOWNLOAD_TAG="${DOWNLOAD_TAG:-false}"
+RELEASE_BRANCH="${RELEASE_BRANCH:-"main"}"
 
 if [ -z "$GH_PAT" ]; then
     printf "Github Personal Access Token (press Enter for none)\n"
@@ -57,6 +58,7 @@ download_asset() {
     curl_command="curl -sL";
     [ -n "${PAT}" ] && curl_command="${curl_command} -H 'Authorization: token $PAT'"
     curl_command="${curl_command} -o- '${download_url}'"
+    # printf "\033[96;1m%s\033[0m\n" "$curl_command"
     [ -d "${DOWNLOAD_DIR}" ] || mkdir "${DOWNLOAD_DIR}"
     [ "${SKIP_DOWNLOAD}" = "true" ] || \
         eval "$curl_command" \
@@ -88,10 +90,8 @@ do
 done
 printf "\033[93m>\033[0m Detected: %s (%s)\n" "${TARGET_ARCH}" "${TARGET_OS}"
 
-branch_name=multi
-
-printf "\033[93m>\033[0m Downloading %s (%s) ...\n" "${PROJECT_NAME}" "${branch_name}"
-download_version "${branch_name}" || fail "There was a problem."
+printf "\033[93m>\033[0m Downloading %s (%s) ...\n" "${PROJECT_NAME}" "${RELEASE_BRANCH}"
+download_version "${RELEASE_BRANCH}" || fail "There was a problem."
 
 printf "\033[93m>\033[0;1m\033[92;1m Done! %s was downloaded to '\033[3m%s\033[0m'\n" "${PROJECT_NAME}" "${DOWNLOAD_DIR}"
 

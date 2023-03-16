@@ -1,12 +1,19 @@
-# GH_PAT=<pat> eval "$(<cct)"
+# GH_PAT=<pat> RELEASE_VERSION=<version> DOWNLOAD_TAG=<true|false(default)> eval "$(<cct)"
 
 printf "\033[92;1m>>>\033[97;1m %s\033[92;1m <<<\033[0m\n" "And away we go"'!'
 export GH_PAT="${GH_PAT:-""}"
 export PROJECT_NAME="cloud-cli-tools"
 export GITHUB_REPO="stairway/cloud-cli-tools"
+export RELEASE_BRANCH=multi
+export RELEASE_VERSION=""
+export DOWNLOAD_TAG=true
 [ -d "${PROJECT_NAME}" ] || mkdir "${PROJECT_NAME}"
 
-sh -c "$(curl -sSL -H "Authorization: token ${GH_PAT}" "https://raw.githubusercontent.com/${GITHUB_REPO}/multi/install-cct-branch")" \
+sh -c "$(curl -sSL -H "Authorization: token ${GH_PAT}" "https://raw.githubusercontent.com/${GITHUB_REPO}/multi/install-cct")" || \
+    sh -c "$(curl -sSL -H "Authorization: token ${GH_PAT}" "https://raw.githubusercontent.com/${GITHUB_REPO}/multi/install-cct-branch")"
+
+### Local Testing
+# sh -c "$(cat install-cct)" || sh -c "$(cat install-cct-branch)"
 
 printf "\033[93m>\033[0m Changing directory to '%s' ...\n" "${PROJECT_NAME}"
 cd "${PROJECT_NAME}"

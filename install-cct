@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-# git clone git@github.com:${GITHUB_REPO}.git && cd "${PROJECT_NAME}" && bin/build.sh -F && sh -c "$(cat bin/run.sh)"
+# mkdir "${PROJECT_NAME}" && curl -sL -H 'Authorization: token $PAT' -o- 'https://github.com/${GITHUB_REPO}/archive/refs/heads/multi.tar.gz' | tar -xz -C "${PROJECT_NAME}" --strip-components=1
 
 # Set strict error checking
 set -euf
@@ -24,6 +24,15 @@ TARGET_ARCH="${TARGET_ARCH:="$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/'
 TARGET_OS="${TARGET_OS:="$(uname -s | tr '[:upper:]' '[:lower:]')"}"
 REQUIRED_BINARIES=${REQUIRED_BINARIES:='tar curl docker jq'}
 SKIP_DOWNLOAD=${SKIP_DOWNLOAD:-false}
+DOWNLOAD_DIR="${TARGET_DIR}/${PROJECT_NAME}"
+CCT_ADDON_SOURCE_DIR="${CCT_ADDON_SOURCE_DIR:-.}"
+CCT_ADDON_TARGET_DIR="${CCT_ADDON_TARGET_DIR:-${PROJECT_NAME}/mount/addons}"
+DOWNLOAD_TAG="${DOWNLOAD_TAG:-false}"
+if [ "$DOWNLOAD_TAG" = "true" ]; then
+    RELEASE_VERSION="${RELEASE_VERSION:-""}"
+else
+    RELEASE_VERSION="${RELEASE_VERSION:-"latest"}"
+fi
 
 if [ -z "$GH_PAT" ]; then
     printf "Github Personal Access Token (press Enter for none)\n"
@@ -45,7 +54,8 @@ check_binaries() {
 }
 
 get_latest_release() {
-    local url="${1:-https://api.github.com/repos/${GITHUB_REPO}/releases/tags/v0.8.0-alpha}"
+    local url_default="https://api.github.com/repos/${GITHUB_REPO}/releases/${RELEASE_VERSION}"
+    local url="${1:-$url_default}"
     curl_command="curl -sL -H 'Accept: application/vnd.github+json'";
     [ -n "${PAT}" ] && curl_command="${curl_command} -H 'Authorization: token $PAT'"
     curl_command="${curl_command} ${url}"
@@ -64,17 +74,21 @@ download_asset() {
     curl_command="curl -sL";
     [ -n "${PAT}" ] && curl_command="${curl_command} -H 'Authorization: token $PAT'"
     curl_command="${curl_command} -o- '${download_url}'"
+    # printf "\033[96;1m%s\033[0m\n" "$curl_command"
+    [ -d "${DOWNLOAD_DIR}" ] || mkdir "${DOWNLOAD_DIR}"
     [ "${SKIP_DOWNLOAD}" = "true" ] || \
         eval "$curl_command" \
-                | tar -xz -C "${TARGET_DIR}"
+                | tar -xz -C "${DOWNLOAD_DIR}" --strip-components=1
 }
 
 download_version() {
     local version="${1}"
-    local download_url="https://github.com/${GITHUB_REPO}/releases/download/${version}/${APP_NAME}-${version}-${TARGET_OS}-${TARGET_ARCH}.tar.gz"
-    download_url="https://github.com/${GITHUB_REPO}/archive/refs/tags/v0.8.0-alpha.tar.gz"
     
-    download_asset "${download_url}"
+    if [ "$DOWNLOAD_TAG" = "true" ]; then
+        download_asset "https://github.com/${GITHUB_REPO}/archive/refs/tags/${version}.tar.gz"
+    else
+        download_asset "https://github.com/${GITHUB_REPO}/releases/download/${version}/${APP_NAME}-${version}-${TARGET_OS}-${TARGET_ARCH}.tar.gz"
+    fi
 }
 
 check_binaries
@@ -95,23 +109,24 @@ do
 done
 
 release=
-printf "\033[93m>\033[0m Detecting latest version ...\n"
-release="$(get_latest_release)" || fail "There was a problem."
+if [ "$DOWNLOAD_TAG" = "true" ]; then
+    release="${RELEASE_VERSION}"
+else
+    printf "\033[93m>\033[0m Detecting latest version ...\n"
+    release="$(get_latest_release)" || fail "There was a problem."
+fi
 
 printf "\033[93m>\033[0m Downloading %s %s ...\n" "${PROJECT_NAME}" "${release}"
 download_version "${release}" || fail "There was a problem."
 
-printf "\033[93m>\033[0m Done. \033[92m%s\033[0m was installed to '\033[3m%s\033[0m'.\n" "${PROJECT_NAME}" "${TARGET_DIR}/"
-echo
+printf "\033[93m>\033[0;1m\033[92;1m Done! %s was downloaded to '\033[3m%s\033[0m'\n" "${PROJECT_NAME}" "${DOWNLOAD_DIR}"
 
-BUILD_NOW_CHOICE=
-while [ "${BUILD_NOW_CHOICE}" != "y" -a "${BUILD_NOW_CHOICE}" != "N" ]; do
-    printf "Build now? [y/N]: "
-    read BUILD_NOW_CHOICE
-done
-
-if [ "${BUILD_NOW_CHOICE}" = "y" ]; then
-    cd "${TARGET_DIR}/${PROJECT_NAME}"
-    printf "\033[93m>\033[0m Building ...\n"
-    bin/build.sh -F -N
+if [ ! -d "${CCT_ADDON_TARGET_DIR}" ]; then
+    printf "\033[93m>\033[0m Creating '%s' ...\n" "${CCT_ADDON_TARGET_DIR}/"
+    mkdir -p "${CCT_ADDON_TARGET_DIR}"
 fi
+
+printf "\033[93m>\033[0m Copying addons to '%s' ...\n" "${CCT_ADDON_TARGET_DIR}/"
+for f in $(find "${CCT_ADDON_SOURCE_DIR}" -type f -name '*.zip' -mindepth 1 -print); do
+    cp "$f" "${CCT_ADDON_TARGET_DIR}/"
+done
