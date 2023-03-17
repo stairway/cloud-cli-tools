@@ -3,7 +3,12 @@
 ####################
 ### https://www.docker.com/blog/how-to-rapidly-build-multi-architecture-images-with-buildx/
 ###
+### Create builder instance with `docker-container` driver:
+### https://docs.docker.com/engine/reference/commandline/buildx_create/#driver
 ### `docker buildx create --name mybuilder --use --bootstrap`
+### https://docs.docker.com/engine/reference/commandline/buildx_build/#platform
+### docker buildx inspect --bootstrap
+### `alias docker_clean='echo y | docker buildx prune && echo y | docker image prune'`
 ####################
 
 set -euf
@@ -44,10 +49,11 @@ export COMPOSE_DOCKER_CLI_BUILD="${COMPOSE_DOCKER_CLI_BUILD:-0}"
 DOCKER_BUILD_NO_CACHE="${DOCKER_BUILD_NO_CACHE:-false}"
 DOCKER_IMAGE_PARENT="${DOCKER_IMAGE_PARENT:-""}"
 DOCKER_IMAGE_PARENT_VERSION="${DOCKER_IMAGE_PARENT_VERSION:-""}"
+DOCKER_BUILD_LATEST="${DOCKER_BUILD_LATEST:-false}"
 
 build_base() {
     local build_opts=("")
-    if [ "${DOCKER_BUILD_NO_CACHE}" = "true" ] ; then build_opts+=(--no-cache); fi
+    [ "${DOCKER_BUILD_NO_CACHE}" = "true" ] && build_opts+=(--no-cache)
     
     local created_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
     local build_args=(
@@ -87,11 +93,13 @@ build_base() {
 }
 
 build_new() {
+    # https://docs.docker.com/engine/reference/commandline/buildx_build/#output
+    # https://docs.docker.com/engine/reference/commandline/buildx_build/#push
     local build_opts=(
         --push
         --platform=linux/amd64,linux/arm64,linux/arm/v7
     )
-    if [ "${DOCKER_BUILD_NO_CACHE:-false}" = "true" ] ; then build_opts+=(--no-cache); fi
+    [ "${DOCKER_BUILD_NO_CACHE:-false}" = "true" ] && build_opts+=(--no-cache)
 
     local created_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
     local build_args=(
@@ -113,6 +121,11 @@ build_new() {
         --label "com.${CONSUMER_ORG_LOWER}.image.name=${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}"
     )
 
+    local build_tags=(-t "${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}")
+    if [ "${DOCKER_BUILD_LATEST}" = "true" ]; then
+        [ "${DEBUG:-false}" != "true" -a "latest" != "$DOCKER_IMAGE_VERSION" ] && build_tags+=(-t "${DOCKER_IMAGE}:latest")
+    fi
+
     local build_command=(docker buildx build)
     build_command+=(
         ${build_opts[@]}
@@ -120,7 +133,7 @@ build_new() {
         ${build_args[@]}
         ${build_labels[@]}
         "$@"
-        -t "${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}"
+        ${build_tags[@]}
         "./docker"
     )
 
