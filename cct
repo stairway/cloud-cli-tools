@@ -1,12 +1,17 @@
-# GH_PAT=<pat> RELEASE_VERSION=<version> DOWNLOAD_TAG=<true|false(default)> eval "$(<cct)"
+# Usage:
+# `GH_PAT=<pat> RELEASE_VERSION=latest eval "$(<cct)"``
+# `GH_PAT=<pat> RELEASE_VERSION=<version> DOWNLOAD_TAG=true eval "$(<cct)"``
+
+# package:
+# `zip cct.zip cct dpctl-admin-latest.zip dpctl-latest.zip README.md`
 
 printf "\033[92;1m>>>\033[97;1m %s\033[92;1m <<<\033[0m\n" "And away we go"'!'
 export GH_PAT="${GH_PAT:-""}"
 export PROJECT_NAME="cloud-cli-tools"
 export GITHUB_REPO="stairway/cloud-cli-tools"
 export RELEASE_BRANCH=multi
-export RELEASE_VERSION=""
-export DOWNLOAD_TAG=true
+export RELEASE_VERSION="${RELEASE_VERSION:-""}"
+export DOWNLOAD_TAG="${DOWNLOAD_TAG:-false}"
 [ -d "${PROJECT_NAME}" ] || mkdir "${PROJECT_NAME}"
 
 sh -c "$(curl -sSL -H "Authorization: token ${GH_PAT}" "https://raw.githubusercontent.com/${GITHUB_REPO}/multi/install-cct")" || \
