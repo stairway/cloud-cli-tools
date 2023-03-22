@@ -166,6 +166,7 @@ export EDITOR="${EDITOR}"
 export VISUAL="${EDITOR}"
 export GIT_EDITOR="${EDITOR}"
 export KUBE_EDITOR="${EDITOR}"
+export CLUSTER_PREFIX="${CLUSTER_PREFIX:-di}"
 
 if [ -d $HOME/.local/profile.d ]; then
     for f in \$(find $HOME/.local/profile.d -mindepth 1 -type f -name '*.sh' | sort -u); do
