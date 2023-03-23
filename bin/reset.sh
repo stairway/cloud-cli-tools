@@ -26,13 +26,22 @@ get_container_by_name() { docker ps -aq --filter name="$1"; }
 cleanup_dotfiles() {
     [ -d "${WORKING_DIRECTORY}" ] || { printf "\033[91m[ERROR] Not a valid directory. Received '%s'. Exiting ...\033[0m\n" "${WORKING_DIRECTORY}" >&2; exit 1; }
     
+    printf "\033[93m>\033[0m Checking sub-directories: %s\n" "${WORKING_DIRECTORY}"
+
+    local aws_config_restore=false
+    if [ -f "${WORKING_DIRECTORY}/.aws/config" -a -f "${WORKING_DIRECTORY}/.aws/config_restore" ]; then
+        printf "\033[93m>\033[0m Restoring '%s' ...\n" "${WORKING_DIRECTORY}/.aws/config"
+        mv "${WORKING_DIRECTORY}/.aws/config_restore" "${WORKING_DIRECTORY}/.aws/config"
+        aws_config_restore=true
+    fi
+
     if [ $# -gt 0 ]; then
         local remove_command=(rm -rf)
         local targeted=()
         for item in $@; do
             item_basename="$(basename ${item})"
-            [ "${item_basename}" = ".aws" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
-            [ "${item_basename}" = ".awsvault" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
+            [ "${item_basename}" = ".aws" -a "${aws_config_restore}" != "true" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
+            [ "${item_basename}" = ".awsvault" -a "${flag}" = "true"  ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
             [ "${item_basename}" = ".dpctl" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
             [ "${item_basename}" = ".gnupg" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
             [ "${item_basename}" = ".kube" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
@@ -41,7 +50,6 @@ cleanup_dotfiles() {
         done
     fi
 
-    printf "\033[93m>\033[0m Checking sub-directories: %s\n" "${WORKING_DIRECTORY}"
     if [ ${#targeted[@]} -gt 0 ]; then
         printf "\033[93m>\033[0m Removing %d sub-directories ...\n" ${#targeted[@]}
         remove_command+=(${targeted[@]})
