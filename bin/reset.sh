@@ -41,11 +41,11 @@ cleanup_dotfiles() {
         for item in $@; do
             item_basename="$(basename ${item})"
             [ "${item_basename}" = ".aws" -a "${aws_config_restore}" != "true" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
-            [ "${item_basename}" = ".awsvault" -a "${flag}" = "true"  ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
+            [ "${item_basename}" = ".awsvault" -a "${aws_config_restore}" != "true" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
+            [ "${item_basename}" = ".gnupg" -a "${aws_config_restore}" != "true" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
+            [ "${item_basename}" = ".password-store" -a "${aws_config_restore}" != "true" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
             [ "${item_basename}" = ".dpctl" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
-            [ "${item_basename}" = ".gnupg" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
             [ "${item_basename}" = ".kube" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
-            [ "${item_basename}" = ".password-store" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
             [ "${item_basename}" = ".profile.d" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
         done
     fi
@@ -79,9 +79,7 @@ quick_clean() {
     clean_lockfile "${_CONTAINER_CACHE_FILE}"
 }
 
-full_clean() {
-    WORKING_DIRECTORY="$1"
-    cleanup_dotfiles $(ls -d ${WORKING_DIRECTORY}/.*)
+remove_volume() {
     if [ -f "${_MOUNT_CACHE_FILE}" ]; then
         RANDOMSTR="$(check_lockfile ${_MOUNT_CACHE_FILE})"
         printf "\033[93m>\033[0m Removing docker volume '%s' ...\n" "${RANDOMSTR}"
@@ -90,12 +88,33 @@ full_clean() {
     fi
 }
 
+full_clean() {
+    WORKING_DIRECTORY="$1"
+    cleanup_dotfiles $(ls -d ${WORKING_DIRECTORY}/.*)
+}
+
+deep_clean() {
+    WORKING_DIRECTORY="$1"
+    printf "\033[93m>\033[0m Checking: %s\n" "${WORKING_DIRECTORY}/.aws"
+    if [ -d "${WORKING_DIRECTORY}/.aws" ]; then
+        rm -rf "${WORKING_DIRECTORY}/.aws"
+    else
+        printf "\033[91m>\033[0m Not Found. %s\n" "${NOTHING_MSG}"
+    fi
+    remove_volume
+}
+
 mode=quick
+deep=false
 
 while [ $# -gt 0 ]; do
     option="$1"
     shift
     case "${option}" in
+        -D|--deep)
+            deep=true
+            mode="full"
+            ;;
         -F|--full)
             mode="full"
             ;;
@@ -105,7 +124,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-printf "\033[92mCleanup Mode: \033[92;1m%s\033[0m\n" "${mode}"
+printf "\033[92mCleanup Mode: \033[92;1m%s (deep: %s)\033[0m\n" "${mode}" "${deep}"
 
 quick_clean "${CONTAINER_NAME}"
 
@@ -115,4 +134,10 @@ if [ "$mode" = "full" ]; then
         printf "\033[93m>\033[0m Removing '%s' ...\n" "${PWD}/mount/addons"
         rm -rf "${PWD}/mount/addons"
     fi
+else
+    deep=false
+fi
+
+if [ "$deep" = "true" ]; then
+    deep_clean "${PWD}/mount/home/${DOCKER_USER}"
 fi

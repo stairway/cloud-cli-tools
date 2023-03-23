@@ -22,9 +22,8 @@ dpctl_stuff() {
     dpctl workstation awsconfig ${TEAM_NAME} --user-name=${USERNAME}
 
     if [ -f ~/.aws/config_new ]; then
-        mv ~/.aws/config ~/.aws/config_restore
         mv ~/.aws/config_new ~/.aws/config
-    fi    
+    fi
 }
 
 waiting() { printf "${1:-.}"; sleep 1; }
@@ -35,23 +34,21 @@ init_aws() {
 
     if [ ! -f /.initialized ]; then
         DEFAULT_VAULT_USER="${DEFAULT_VAULT_USER:-user}"
-        local current_vault_user="$(aws-vault list | grep user | awk '{ print $1 }')"
+        local current_vault_user="$(aws-vault list | grep user | awk '{ print $2 }')"
         if [ "${current_vault_user}" != "${DEFAULT_VAULT_USER}" ]; then
-            [ ! -f "$HOME/.password-store/.gpg-id" -o ! -f "$HOME/.gnupg/trustdb.gpg" ] && printf "Still Initializing ..." && \
-                while [ ! -f "$HOME/.password-store/.gpg-id" -o ! -f "$HOME/.gnupg/trustdb.gpg" ]; do waiting; done; echo
-            # [ -f "${HOME}/.aws/config_restore" ] && mv "${HOME}/.aws/config_restore" "${HOME}/.aws/config"
-            local matched="$(aws-vault list | grep ${DEFAULT_VAULT_USER})"
-            local vault_user=""
-            [ -n "${matched}" ] && vault_user="$(echo ${matched} | awk '{print $1}' 2>/dev/null)"
-            if [ "${vault_user}" = "${DEFAULT_VAULT_USER}" ]; then
+            #if [ ! -f "${HOME}/.aws/config" ]; then
+                [ ! -f "$HOME/.password-store/.gpg-id" -o ! -f "$HOME/.gnupg/trustdb.gpg" ] && printf "Still Initializing ..." && \
+                    while [ ! -f "$HOME/.password-store/.gpg-id" -o ! -f "$HOME/.gnupg/trustdb.gpg" ]; do waiting; done; echo
                 if [ -n "${AWS_ACCESS_KEY_ID}" -a -n "${AWS_SECRET_ACCESS_KEY}" ]; then
                     printf "\033[93m>\033[0m Found existing AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.\n"
                     aws-vault add --env "${DEFAULT_VAULT_USER}"
                 else
                     aws-vault add "${DEFAULT_VAULT_USER}"
                 fi
-            fi
+            #fi
         fi
+        
+        echo "[profile $DEFAULT_VAULT_USER]" > ~/.aws/config_restore
 
         if [ ! -d "${HOME}/.dpctl" -o ! -f "${HOME}/.dpctl/config.yaml" ]; then
             dpctl_stuff
