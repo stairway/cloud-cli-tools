@@ -79,9 +79,11 @@ ARG DOCKER_PKGS="\
 
 WORKDIR /tmp/downloads
 
+# TODO
+# https://github.com/moby/buildkit/blob/dockerfile/1.4.0/frontend/dockerfile/docs/syntax.md#here-documents
 RUN touch gh-get-latest-release.sh && \
     chmod +x gh-get-latest-release.sh && \
-    echo  "#!/bin/sh -x\n\
+    echo "#!/bin/sh -x\n\
 gh_latest_release() {\n\
   curl --silent \"https://api.github.com/repos/\$1/releases/latest\" | # Get latest release from GitHub api\n\
     grep '\"tag_name\":' |                                            # Get tag line\n\

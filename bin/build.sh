@@ -8,7 +8,12 @@
 ### `docker buildx create --name mybuilder --use --bootstrap`
 ### https://docs.docker.com/engine/reference/commandline/buildx_build/#platform
 ### docker buildx inspect --bootstrap
+###
+### Prune danglers
 ### `alias docker_clean='echo y | docker buildx prune && echo y | docker image prune'`
+###
+### usage:
+### REGISTRY_USERNAME="$DOCKER_HUB_USER" REGISTRY_PASSWORD="$DOCKER_HUB_PAT" bin/build.sh [OPTIONS]
 ####################
 
 set -euf
@@ -69,7 +74,7 @@ build_base() {
     [ "${AWS_VAULT_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg AWS_VAULT_VERSION="${AWS_VAULT_VERSION}")
     [ "${MINIKUBE_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg MINIKUBE_VERSION="${MINIKUBE_VERSION}")
 
-     local build_labels=(
+    local build_labels=(
         --label "org.opencontainers.image.vendor=\"${VENDOR_ORGANIZATION}\""
         --label "com.${CONSUMER_ORG_LOWER}.image.name=${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}"
     )
