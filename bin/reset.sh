@@ -31,7 +31,7 @@ cleanup_dotfiles() {
     local aws_config_restore=false
     if [ -f "${WORKING_DIRECTORY}/.aws/config" -a -f "${WORKING_DIRECTORY}/.aws/config_restore" ]; then
         printf "\033[93m>\033[0m Restoring '%s' ...\n" "${WORKING_DIRECTORY}/.aws/config"
-        mv "${WORKING_DIRECTORY}/.aws/config_restore" "${WORKING_DIRECTORY}/.aws/config"
+        cp "${WORKING_DIRECTORY}/.aws/config_restore" "${WORKING_DIRECTORY}/.aws/config"
         aws_config_restore=true
     fi
 
@@ -55,8 +55,6 @@ cleanup_dotfiles() {
         remove_command+=(${targeted[@]})
         printf "%s\n" "${targeted[@]}"
         ${remove_command[@]}
-    else
-        printf "\033[91m>\033[0m Not Found. %s\n" "${NOTHING_MSG}"
     fi
 }
 
