@@ -94,7 +94,9 @@ bin/reset.sh [OPTIONS]
 
 **`No Flags` -- `bin/reset.sh`**: _**Quick** mode. Destroys container. All other persisted files will remain untouched._
 
-**`-F | --full`**: _**Full** mode. Destroys container and persisted dotfiles (~/.ssh folder will remain untouched)_
+**`-D | --deep`**: _**Deep** mode. Performs a full reset, deletes aws creds, deletes volume. (~/.ssh folder will remain untouched)_
+
+**`-F | --full`**: _**Full** mode. Destroys container and persisted dotfiles. Preserves aws creds. (~/.ssh folder will remain untouched)_
 
 #### **Examples**
 
