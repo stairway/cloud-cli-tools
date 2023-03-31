@@ -19,6 +19,7 @@ git_config() {
     git config --global color.diff auto
     
     git config --global init.defaultBranch "$GIT_DEFAULT_BRANCH"
+    git config --global pull.rebase true
 }
 
 init_ssh() {
