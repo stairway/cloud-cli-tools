@@ -177,6 +177,7 @@ RUN [ "${MINIKUBE_VERSION:-latest}" = "latest" ] && \
     printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
 RUN curl -sSL https://install.python-poetry.org | python3 - 
+RUN pip install pre-commit
 
 RUN echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi"  >> "${HOME}/.bashrc"
 
@@ -185,7 +186,6 @@ USER $USER
 WORKDIR $HOME
 
 # Additional Metadata
-
 ARG VERSION=latest
 ARG IMAGE_NAME="stairway/cloud-cli-tools"
 ARG IMAGE_VERSION=base-latest
