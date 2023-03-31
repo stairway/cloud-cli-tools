@@ -173,7 +173,7 @@ user_prompt() {
                     PLATFORM="$1"
                     shift
                     ;;
-                -r|--aws-default-region)
+                -r|--aws-vault-user-region)
                     [ -n "$1" ] || { usage >&2; exit 1; }
                     AWS_VAULT_USER_REGION="$1"
                     shift
