@@ -6,6 +6,7 @@ LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@grainger.co
 
 ARG KUBE_VERSION=latest
 ARG ISTIO_VERSION=latest
+ARG HASHICORP_VAULT_VERSION=latest
 ARG TERRAFORM_VERSION=latest
 ARG TERRAGRUNT_VERSION=latest
 ARG HELM_VERSION=latest
@@ -79,7 +80,7 @@ RUN [ "${KIND_VERSION:-latest}" = "latest" ] && \
     kind --version >> /.versions
 
 # https://github.com/doitintl/kube-no-trouble
-RUN sh -c "$(curl -sSL https://git.io/install-kubent)"
+RUN curl -sSL https://git.io/install-kubent | sh -
 
 # Install kubectx and kubens
 # https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
@@ -116,6 +117,18 @@ RUN [ "${ISTIO_VERSION:-latest}" = "latest" ] && \
     cp istio-${ISTIO_VERSION}/tools/istioctl.bash $HOME/.istioctl.bash && \
     printf "istio: %s\n" "$(istioctl version --remote=false --short)" >> /.versions
 
+RUN [ "${HASHICORP_VAULT_VERSION:-latest}" = "latest" ] && \
+        HASHICORP_VAULT_VERSION=$(./gh-get-latest-release.sh "hashicorp/vault") || echo >/dev/null && \
+        HASHICORP_VAULT_VERSION="$(echo ${HASHICORP_VAULT_VERSION} | sed s/^v//g)" && \
+    curl -LO "https://releases.hashicorp.com/vault/${HASHICORP_VAULT_VERSION}/vault_${HASHICORP_VAULT_VERSION}_linux_amd64.zip" && \
+    curl -LO "https://releases.hashicorp.com/vault/${HASHICORP_VAULT_VERSION}/vault_${HASHICORP_VAULT_VERSION}_SHA256SUMS" && \
+    CHECKSUM_VERIFY_STATUS=$(cat vault_${HASHICORP_VAULT_VERSION}_SHA256SUMS | grep --color=never vault_${HASHICORP_VAULT_VERSION}_linux_amd64.zip | sha256sum -c -) && \
+    LAST_ERR=$? && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "vault_${HASHICORP_VAULT_VERSION}_linux_amd64.zip: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    unzip "vault_${HASHICORP_VAULT_VERSION}_linux_amd64.zip" && \
+    install vault /usr/local/bin/vault && \
+    printf "Hashicorp %s\n" "$(vault --version | awk '{print $1" "$2}')" >> /.versions
+
 RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
         TERRAFORM_VERSION=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') || \
         TERRAFORM_VERSION="$(echo ${TERRAFORM_VERSION} | sed s/^v//g)" && \
@@ -126,7 +139,7 @@ RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
     [ "$CHECKSUM_VERIFY_STATUS" = "terraform_${TERRAFORM_VERSION}_linux_amd64.zip: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     unzip "terraform_${TERRAFORM_VERSION}_linux_amd64.zip" && \
     install terraform /usr/local/bin/terraform && \
-    echo "$(echo $(terraform version))" | awk '{print $1" "$2}' >> /.versions && \
+    printf "Hashicorp %s\n" "$(echo $(terraform version) | awk '{print $1" "$2}')" >> /.versions && \
     terraform -install-autocomplete
 
 RUN [ "${TERRAGRUNT_VERSION:-latest}" = "latest" ] && \
