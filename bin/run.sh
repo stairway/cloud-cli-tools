@@ -49,6 +49,13 @@ CONTAINER_NAME="${CONTAINER_NAME:-$RANDOMSTR}"
 TARGET_ARCH="${TARGET_ARCH:-"linux/amd/64"}"
 PLATFORM="${PLATFORM:-$TARGET_ARCH}"
 
+USERNAME="${USERNAME:-""}"
+TEAM_NAME="${TEAM_NAME:-""}"
+AWS_VAULT_USER_REGION="${AWS_VAULT_USER_REGION:-""}"
+GIT_CONFIG_FULL_NAME="${GIT_CONFIG_FULL_NAME:-""}"
+GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-""}"
+FILE_EDITOR="${FILE_EDITOR:-""}"
+
 init_mountcache() {
     [ -n "$(which uuidgen)" ] && RANDOMSTR=$(uuidgen) || RANDOMSTR="$(openssl rand -hex 16)"
     CONTAINER_NAME="${RANDOMSTR}"
@@ -89,24 +96,35 @@ user_prompt() {
             read USERNAME
         done
         
-        printf "Enter your Team Name (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "${TEAM_NAME_DEFAULT}"
-        read TEAM_NAME && TEAM_NAME="${TEAM_NAME:-$TEAM_NAME_DEFAULT}"
-        #read -e -i $TEAM_NAME_DEFAULT TEAM_NAME < /dev/tty
+        while [ -z "${TEAM_NAME:-""}" ]; do
+            printf "Enter your Team Name (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "${TEAM_NAME_DEFAULT}"
+            read TEAM_NAME && TEAM_NAME="${TEAM_NAME:-$TEAM_NAME_DEFAULT}"
+        done
+        
         while [ -z "${GIT_CONFIG_FULL_NAME:-""}" ]; do
             printf "Enter your Full Name: "
             read GIT_CONFIG_FULL_NAME
         done
-        GIT_CONFIG_EMAIL_EXPECTED="$(echo ${GIT_CONFIG_FULL_NAME} | awk '{ print tolower($1"."$2) }')""@${CONSUMER_DOMAIN}"
-        printf "Enter your Email (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "${GIT_CONFIG_EMAIL_EXPECTED}"
-        read GIT_CONFIG_EMAIL && GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-$GIT_CONFIG_EMAIL_EXPECTED}"
-        #read -e -i $GIT_CONFIG_EMAIL_EXPECTED GIT_CONFIG_EMAIL < /dev/tty
-        if [ "${FILE_EDITOR_DEFAULT:-""}" = "vim" ]; then 
-            FILE_EDITOR_ALT_1="nano"
-        else
-            FILE_EDITOR_DEFAULT="nano"
-            FILE_EDITOR_ALT_1="vim"
-        fi
+        
+        while [ -z "${AWS_VAULT_USER_REGION:-""}" ]; do
+            AWS_VAULT_USER_REGION_DEFAULT="${AWS_VAULT_USER_REGION:-""}"
+            printf "Enter AWS Account ID (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "$([ -n "${AWS_VAULT_USER_REGION_DEFAULT}" ] && echo ${AWS_VAULT_USER_REGION_DEFAULT} || echo empty)"
+            read AWS_VAULT_USER_REGION && AWS_VAULT_USER_REGION="${AWS_VAULT_USER_REGION:-$AWS_VAULT_USER_REGION_DEFAULT}"
+        done
+
+        while [ -z "${GIT_CONFIG_EMAIL:-""}" ]; do
+            GIT_CONFIG_EMAIL_EXPECTED="$(echo ${GIT_CONFIG_FULL_NAME} | awk '{ print tolower($1"."$2) }')""@${CONSUMER_DOMAIN}"
+            printf "Enter your Email (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "${GIT_CONFIG_EMAIL_EXPECTED}"
+            read GIT_CONFIG_EMAIL && GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-$GIT_CONFIG_EMAIL_EXPECTED}"
+        done
+
         while  [ -z "${FILE_EDITOR:-""}" ]; do
+            if [ "${FILE_EDITOR_DEFAULT:-""}" = "vim" ]; then 
+                FILE_EDITOR_ALT_1="nano"
+            else
+                FILE_EDITOR_DEFAULT="nano"
+                FILE_EDITOR_ALT_1="vim"
+            fi
             printf "Choose your desired editor (\033[32;3mdefault: \033[32;3;1m%s\033[0m | \033[32;3m%s\033[0m): " "${FILE_EDITOR_DEFAULT}" "${FILE_EDITOR_ALT_1}"
             read FILE_EDITOR && FILE_EDITOR="${FILE_EDITOR:-$FILE_EDITOR_DEFAULT}"
             if [ "$FILE_EDITOR" != "${FILE_EDITOR_DEFAULT}" ]; then
@@ -125,6 +143,7 @@ user_prompt() {
             -m "'${GIT_CONFIG_EMAIL}'"
             -n "'${GIT_CONFIG_FULL_NAME}'"
             -p "${PLATFORM}"
+            -r "${AWS_VAULT_USER_REGION}"
             -t "${TEAM_NAME}"
             -u "${USERNAME}"
         )
@@ -152,6 +171,11 @@ user_prompt() {
                 -p|--platform)
                     [ -n "$1" ] || { usage >&2; exit 1; }
                     PLATFORM="$1"
+                    shift
+                    ;;
+                -r|--aws-default-region)
+                    [ -n "$1" ] || { usage >&2; exit 1; }
+                    AWS_VAULT_USER_REGION="$1"
                     shift
                     ;;
                 -t|--team)
@@ -255,6 +279,7 @@ run_new() {
         -e "KEEP_ALIVE=${KEEP_ALIVE}"
         -e "USERNAME=${USERNAME}"
         -e "TEAM_NAME=${TEAM_NAME}"
+        -e "AWS_VAULT_USER_REGION=${AWS_VAULT_USER_REGION}"
         -e "GIT_CONFIG_EMAIL=\"${GIT_CONFIG_EMAIL}\""
         -e "GIT_CONFIG_FULL_NAME=\"${GIT_CONFIG_FULL_NAME}\""
         -e "EDITOR=${FILE_EDITOR}"
