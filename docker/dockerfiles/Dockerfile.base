@@ -78,10 +78,14 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
         add-apt-repository -y ppa:deadsnakes/ppa && \
         apt-get update -y && \
         DEBIAN_FRONTEND=noninteractive apt-get install -y "python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" "python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}-distutils" && \
-        apt-get clean -y && \
         update-alternatives --install /usr/bin/python3 python3 "/usr/bin/python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" 1 && \
         update-alternatives --install /usr/bin/python3 python3 "/usr/bin/python${PYTHON_DEFAULT_VERSION}" 2 && \
-        update-alternatives --set python3 $(update-alternatives --list python3 | grep "python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}")
+        update-alternatives --set python3 $(update-alternatives --list python3 | grep "python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}") && \
+        DEBIAN_FRONTEND=noninteractive apt-get install -y python-is-python3 && \
+        apt-get clean -y
+
+RUN curl -sSL https://install.python-poetry.org | python3 - 
+RUN pip3 install pre-commit pytest
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -164,9 +168,6 @@ RUN [ "${MINIKUBE_VERSION:-latest}" = "latest" ] && \
     [ "$CHECKSUM_VERIFY_STATUS" = "minikube-linux-amd64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     install minikube-linux-amd64 /usr/local/bin/minikube && \
     printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
-
-RUN curl -sSL https://install.python-poetry.org | python3 - 
-RUN pip install pre-commit
 
 RUN echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi"  >> "${HOME}/.bashrc"
 
