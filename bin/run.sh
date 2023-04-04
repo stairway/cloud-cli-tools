@@ -254,8 +254,8 @@ run_new() {
         -v "${PWD}/mount/data:/data"
         -v /var/run/docker.sock:/var/run/docker.sock
     )
-    [ $(count $(ls -1 ${PWD}/mount/addons)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/addons:/tmp/addons")
-    [ $(count $(ls -1 ${PWD}/mount/home/${DOCKER_USER}/.profile.d)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/home/${DOCKER_USER}/.profile.d:${docker_user_home}/.local/profile.d")
+    [ -d "${PWD}/mount/addons" -a $(count $(ls -1 ${PWD}/mount/addons)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/addons:/tmp/addons")
+    # [ -d "${PWD}/mount/home/${DOCKER_USER}/.profile.d" -a $(count $(ls -1 ${PWD}/mount/home/${DOCKER_USER}/.profile.d)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/home/${DOCKER_USER}/.profile.d:${docker_user_home}/.local/profile.d")
 
     local run_mode=()
     if [ "${script}" = "true" ]; then
