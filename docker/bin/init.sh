@@ -66,20 +66,19 @@ EOF
             dpctl_stuff
         fi
 
-        # GNU sed -- Replace first match only
-        # sed '0,/pattern/s/pattern/replacement/' filename
-        # https://www.linuxtopia.org/online_books/linux_tool_guides/the_sed_faq/sedfaq4_004.html
-        sed -Ei '0,/^credential_process.+user$/s/(^credential_process.+user$)/#\1/' .aws/config
-
-        local aws_vault_version=0
-        local aws_vault_major_version=0
-        aws-vault --version 1>/tmp/.aws-vault-version 2>&1 && \
-            aws_vault_version=$(aws-vault --version 2>&1 | sed 's/^v//g') && \
-            aws_vault_major_version=$(echo "${aws_vault_version}" | awk -F'.' '{print $1}') && \
-            rm -f /tmp/.aws-vault-version && \
-            [ $aws_vault_major_version -ge 7 ] && \
-                aws configure set credential_process "aws-vault exec --json --prompt=pass user" --profile user || \
-                aws configure set credential_process "aws-vault exec --no-session --json --prompt=pass user" --profile user
+        # Check for 'credential_process' line in user profile, originally added by dpctl
+        grep -q -E -i '(^credential_process.+)\s+(--json user$)' .aws/config >/dev/null && \
+            {
+                # GNU sed -- Replace first match only
+                # sed '0,/pattern/s/pattern/replacement/' filename
+                # https://www.linuxtopia.org/online_books/linux_tool_guides/the_sed_faq/sedfaq4_004.html
+                sed -E -i '0,/^credential_process.+--json\s+user$/s/(^credential_process.+)\s+(--json user$)/#\1 \2/' .aws/config && \
+                local aws_vault_version=$(aws-vault --version 2>&1 | sed 's/^v//g') && \
+                    local aws_vault_major_version=$(echo "${aws_vault_version}" | awk -F'.' '{print $1}') && \
+                    [ $aws_vault_major_version -ge 7 ] && \
+                        aws configure set credential_process "aws-vault exec --json --prompt=pass user" --profile user || \
+                        aws configure set credential_process "aws-vault exec --no-session --json --prompt=pass user" --profile user
+            }
         
         iam_verify "${TEAM_NAME}" "nonprod" \
             && date -u +%Y%m%dT%H%M%SZ > /.initialized \
