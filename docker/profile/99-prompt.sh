@@ -13,4 +13,4 @@ cloud_prompt() {
     fi
 }
 
-PS1="${PS1}${C_LIGHTYELLOW_BOLD}[\$(cloud_prompt)]${C_GREEN}\$(parse_git_branch)${NC} \$ "
+PS1="${PS1}${C_LIGHTYELLOW_BOLD}[\$(cloud_prompt)]${C_GREEN}\$(parse_git_branch)${C_NC} \$ "
