@@ -28,6 +28,7 @@ COPY opt/* /opt/bin/
 COPY bin/* /usr/local/bin/
 
 COPY profile/* $HOME/.local/profile.d/
+COPY conf $HOME/.conf
 
 ADD addons/**/*.tgz /tmp/addons/
 

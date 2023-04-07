@@ -17,7 +17,7 @@ git_config() {
     git config --global core.pager "less -S"
     git config --global core.editor "${EDITOR}"
     git config --global color.diff auto
-    
+
     git config --global init.defaultBranch "$GIT_DEFAULT_BRANCH"
     git config --global pull.rebase true
 }
@@ -109,6 +109,13 @@ do_init() {
     versions
     init_git && check_crypto
     ln -s /data ${HOME}/data
+    if [ ${VSCODE_DEBUGPY_PORT:-0} -gt 999 ]; then
+        if [ ! -d /data/.vscode ]; then
+            [ -d ~/.conf/vscode ] && \
+                cp -r ~/.conf/vscode /data/.vscode && \
+                sed -i -r "s/(\"port\"):\s*(\"\\$\{VSCODE_DEBUGPY_PORT\}\")$/\1: ${VSCODE_DEBUGPY_PORT}/g" /data/.vscode/launch.json
+        fi
+    fi
 }
 
 trap die INT

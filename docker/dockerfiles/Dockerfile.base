@@ -85,7 +85,7 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
         apt-get clean -y
 
 RUN curl -sSL https://install.python-poetry.org | python3 - 
-RUN pip3 install pre-commit pytest
+RUN pip3 install pre-commit pytest debugpy
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en

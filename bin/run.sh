@@ -55,6 +55,11 @@ AWS_VAULT_USER_REGION="${AWS_VAULT_USER_REGION:-""}"
 GIT_CONFIG_FULL_NAME="${GIT_CONFIG_FULL_NAME:-""}"
 GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-""}"
 FILE_EDITOR="${FILE_EDITOR:-""}"
+VSCODE_DEBUGPY="${VSCODE_DEBUGPY:-""}"
+VSCODE_DEBUGPY_PORT="${VSCODE_DEBUGPY_PORT:-5678}"
+
+YES_VALUE="${YES_VALUE:-yes}"
+NO_VALUE="${NO_VALUE:-no}"
 
 init_mountcache() {
     [ -n "$(which uuidgen)" ] && RANDOMSTR=$(uuidgen) || RANDOMSTR="$(openssl rand -hex 16)"
@@ -91,34 +96,34 @@ exec_container() {
 user_prompt() {
     if [ $# -eq 0 ]; then
         echo
-        while [ -z "${USERNAME:-""}" ]; do
+        while [ -z "${USERNAME}" ]; do
             printf "Enter your User Name (e.g. racfid): "
             read USERNAME
         done
         
-        while [ -z "${TEAM_NAME:-""}" ]; do
+        while [ -z "${TEAM_NAME}" ]; do
             printf "Enter your Team Name (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "${TEAM_NAME_DEFAULT}"
             read TEAM_NAME && TEAM_NAME="${TEAM_NAME:-$TEAM_NAME_DEFAULT}"
         done
         
-        while [ -z "${GIT_CONFIG_FULL_NAME:-""}" ]; do
+        while [ -z "${GIT_CONFIG_FULL_NAME}" ]; do
             printf "Enter your Full Name: "
             read GIT_CONFIG_FULL_NAME
         done
         
-        while [ -z "${AWS_VAULT_USER_REGION:-""}" ]; do
+        while [ -z "${AWS_VAULT_USER_REGION}" ]; do
             AWS_VAULT_USER_REGION_DEFAULT="${AWS_VAULT_USER_REGION:-""}"
             printf "Enter AWS Account ID (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "$([ -n "${AWS_VAULT_USER_REGION_DEFAULT}" ] && echo ${AWS_VAULT_USER_REGION_DEFAULT} || echo empty)"
             read AWS_VAULT_USER_REGION && AWS_VAULT_USER_REGION="${AWS_VAULT_USER_REGION:-$AWS_VAULT_USER_REGION_DEFAULT}"
         done
 
-        while [ -z "${GIT_CONFIG_EMAIL:-""}" ]; do
+        while [ -z "${GIT_CONFIG_EMAIL}" ]; do
             GIT_CONFIG_EMAIL_EXPECTED="$(echo ${GIT_CONFIG_FULL_NAME} | awk '{ print tolower($1"."$2) }')""@${CONSUMER_DOMAIN}"
             printf "Enter your Email (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "${GIT_CONFIG_EMAIL_EXPECTED}"
             read GIT_CONFIG_EMAIL && GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-$GIT_CONFIG_EMAIL_EXPECTED}"
         done
 
-        while  [ -z "${FILE_EDITOR:-""}" ]; do
+        while  [ -z "${FILE_EDITOR}" ]; do
             if [ "${FILE_EDITOR_DEFAULT:-""}" = "vim" ]; then 
                 FILE_EDITOR_ALT_1="nano"
             else
@@ -133,6 +138,18 @@ user_prompt() {
                 fi
             fi
         done
+
+        while [ "${VSCODE_DEBUGPY}" != "${YES_VALUE}" -a "${VSCODE_DEBUGPY}" != "${NO_VALUE}" ]; do
+            if [ "${VSCODE_DEBUGPY_DEFAULT:-""}" = "${YES_VALUE}" ]; then 
+                VSCODE_DEBUGPY_ALT="${NO_VALUE}"
+            else
+                VSCODE_DEBUGPY_DEFAULT="${NO_VALUE}"
+                VSCODE_DEBUGPY_ALT="${YES_VALUE}"
+            fi
+            printf "Attach Visual Studio Code for python debugging (debugpy) (\033[32;3mdefault: \033[32;3;1m%s\033[0m | \033[32;3m%s\033[0m): " "$VSCODE_DEBUGPY_DEFAULT" "$VSCODE_DEBUGPY_ALT"
+            read VSCODE_DEBUGPY && VSCODE_DEBUGPY="${VSCODE_DEBUGPY:-$VSCODE_DEBUGPY_DEFAULT}"
+        done
+
         echo
 
         command_msg=()
@@ -147,6 +164,8 @@ user_prompt() {
             -t "${TEAM_NAME}"
             -u "${USERNAME}"
         )
+        [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && command_msg+=(--vscode-debugpy "${VSCODE_DEBUGPY_PORT}")
+
         printf "\033[96m>\033[0m Advanced Command: \033[1m%s\033[0m\n" "$(echo ${command_msg[@]})"
     else
         while [ $# -gt 0 ]; do
@@ -156,6 +175,11 @@ user_prompt() {
                 -e|--editor)
                     [ -n "$1" ] || { usage >&2; exit 1; }
                     FILE_EDITOR="$1"
+                    shift
+                    ;;
+                --vscode-debugpy)
+                    [ -n "$1" ] || { usage >&2; exit 1; }
+                    VSCODE_DEBUGPY_PORT="$1"
                     shift
                     ;;
                 -m|--email)
@@ -257,7 +281,9 @@ run_new() {
     [ -d "${PWD}/mount/addons" -a $(count $(ls -1 ${PWD}/mount/addons)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/addons:/tmp/addons")
     # [ -d "${PWD}/mount/home/${DOCKER_USER}/.profile.d" -a $(count $(ls -1 ${PWD}/mount/home/${DOCKER_USER}/.profile.d)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/home/${DOCKER_USER}/.profile.d:${docker_user_home}/.local/profile.d")
 
-    local run_mode=()
+    local run_mode=("")
+    [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && run_mode+=("-p ${VSCODE_DEBUGPY_PORT}:${VSCODE_DEBUGPY_PORT}")
+
     if [ "${script}" = "true" ]; then
         run_mode+=(
             -d
@@ -285,6 +311,7 @@ run_new() {
         -e "EDITOR=${FILE_EDITOR}"
         # -e "TRUE=\"${TRUE}\""
     )
+    [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && environment_vars+=(-e "VSCODE_DEBUGPY_PORT=${VSCODE_DEBUGPY_PORT}")
     [ -n "${AWS_ACCESS_KEY_ID:-""}" -a -n "${AWS_SECRET_ACCESS_KEY:-""}" ] && \
         environment_vars+=(
             -e "AWS_ACCESS_KEY_ID=\"${AWS_ACCESS_KEY_ID}\""
@@ -295,7 +322,7 @@ run_new() {
     [ -n "$PLATFORM" ] && run_command+=(--platform "linux/${PLATFORM}")
     run_command+=(
         --name "$CONTAINER_NAME"
-        --network=host
+        # --network=host
         ${environment_vars[@]}
         ${mount_volumes[@]}
         ${run_mode[@]}
