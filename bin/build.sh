@@ -9,11 +9,14 @@
 ### https://docs.docker.com/engine/reference/commandline/buildx_build/#platform
 ### docker buildx inspect --bootstrap
 ###
+### Script usage:
+### REGISTRY_USERNAME="$DOCKER_HUB_USER" REGISTRY_PASSWORD="$DOCKER_HUB_PAT" bin/build.sh [OPTIONS]
+###
 ### Prune danglers
 ### `alias docker_clean='echo y | docker buildx prune && echo y | docker image prune'`
 ###
-### usage:
-### REGISTRY_USERNAME="$DOCKER_HUB_USER" REGISTRY_PASSWORD="$DOCKER_HUB_PAT" bin/build.sh [OPTIONS]
+### Example:
+### docker_clean && REGISTRY_USERNAME="$DOCKER_HUB_USER" REGISTRY_PASSWORD="$DOCKER_HUB_PAT" bin/build.sh
 ####################
 
 set -euf
