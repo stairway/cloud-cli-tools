@@ -178,11 +178,6 @@ user_prompt() {
                     FILE_EDITOR="$1"
                     shift
                     ;;
-                --vscode-debugpy)
-                    [ -n "$1" ] || { usage >&2; exit 1; }
-                    VSCODE_DEBUGPY_PORT="$1"
-                    shift
-                    ;;
                 -m|--email)
                     [ -n "$1" ] || { usage >&2; exit 1; }
                     GIT_CONFIG_EMAIL="$1"
@@ -211,6 +206,11 @@ user_prompt() {
                 -u|--user)
                     [ -n "$1" ] || { usage >&2; exit 1; }
                     USERNAME="$1"
+                    shift
+                    ;;
+                --vscode-debugpy)
+                    [ -n "$1" ] || { usage >&2; exit 1; }
+                    VSCODE_DEBUGPY_PORT="$1"
                     shift
                     ;;
                 *)
