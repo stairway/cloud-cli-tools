@@ -28,6 +28,7 @@ printf "\033[92;1m>>>\033[94;1m %s: %s\033[92;1m <<<\033[0m\n" "cloud-cli-tools"
 
 cd "${SCRIPT_DIR}/../"
 
+[ -f conf/.env ] && source conf/.env
 source conf/project.env
 source conf/defaults.env
 source conf/versions.env

@@ -47,6 +47,7 @@ convert_zip() {
     done
 }
 
+[ -f conf/.env ] && source conf/.env
 source conf/project.env
 source conf/defaults.env
 source conf/versions.env
