@@ -175,6 +175,7 @@ usage:  run.sh -u <user> -t <team_name> -n <full_name> -m <email> -e <editor>
 +-- conf/
 |   |-- defaults.env
 |   |-- docker.env
+|   |-- env.sample
 |   |-- project.env
 |   `-- versions.env
 +-- docker/
@@ -186,7 +187,11 @@ usage:  run.sh -u <user> -t <team_name> -n <full_name> -m <email> -e <editor>
 |   +-- bin/
 |   |   |-- docker-entrypoint.sh
 |   |   |-- init.sh
+|   |   |-- mytf.sh
 |   |   `-- wtf
+|   +-- conf/
+|   |   +-- vscode/
+|   |       `-- launch.json
 |   +-- dockerfiles/
 |   |   |-- Dockerfile.base
 |   |   `-- Dockerfile.main
@@ -198,9 +203,9 @@ usage:  run.sh -u <user> -t <team_name> -n <full_name> -m <email> -e <editor>
 |   |   |-- 10-colors.sh
 |   |   |-- 20-aws-prompt.sh
 |   |   |-- 20-kube-prompt.sh
-|   |   |-- 40-misc-aliases.sh
-|   |   |-- 70-platform-functions.sh
-|   |   |-- 80-platform-aliases.sh
+|   |   |-- 41-misc-aliases.sh
+|   |   |-- 80-platform-functions.sh
+|   |   |-- 81-platform-aliases.sh
 |   |   `-- 99-prompt.sh
 +-- mount/ # Only created after first run
 |   +-- addons/

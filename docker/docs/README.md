@@ -12,12 +12,14 @@ docker run \
     --platform linux/amd64 \
     --network=host \
     --name {instance-name} \
+    -e AWS_VAULT_USER_REGION={aws-region} \
     -e KEEP_ALIVE={true|false} \
     -e USERNAME={user} \
     -e TEAM_NAME={team-name} \
-    -e GIT_CONFIG_EMAIL="{email}" \
     -e GIT_CONFIG_FULL_NAME="{First-Name Last-Name}" \
+    -e GIT_CONFIG_EMAIL="{email}" \
     -e EDITOR={nano|vim} \
+    -e VSCODE_DEBUGPY={yes|no} \
     -v /var/lib/docker/volumes/{instance-name}/_data/.awsvault:/root/.awsvault \
     -v /var/lib/docker/volumes/{instance-name}/_data/.gnupg:/root/.gnupg \
     -v /var/lib/docker/volumes/{instance-name}/_data/.password-store:/root/.password-store \
@@ -40,12 +42,14 @@ docker run \
     --platform linux/amd64 \
     --network=host \
     --name {instance-name} \
+    -e AWS_VAULT_USER_REGION={aws-region} \
     -e KEEP_ALIVE={true|false} \
     -e USERNAME={user} \
     -e TEAM_NAME={team-name} \
-    -e GIT_CONFIG_EMAIL="{email}" \
     -e GIT_CONFIG_FULL_NAME="{First-Name Last-Name}" \
+    -e GIT_CONFIG_EMAIL="{email}" \
     -e EDITOR={nano|vim} \
+    -e VSCODE_DEBUGPY={yes|no} \
     -v /var/lib/docker/volumes/{instance-name}/_data/.awsvault:/root/.awsvault \
     -v /var/lib/docker/volumes/{instance-name}/_data/.gnupg:/root/.gnupg \
     -v /var/lib/docker/volumes/{instance-name}/_data/.password-store:/root/.password-store \
