@@ -2,6 +2,29 @@
 
 count() { echo $#; }
 
+DEFAULT_VAULT_USER="${DEFAULT_VAULT_USER:-user}"
+
+aws_vault_version=$(aws-vault --version 2>&1 | sed 's/^v//g')
+aws_vault_major_version=$(echo "${aws_vault_version}" | awk -F'.' '{print $1}')
+
+configure_aws_vault_7x_mfa() {
+    aws configure set mfa_serial "arn:aws:iam::${1:-""}:mfa/${USERNAME}" --profile "${DEFAULT_VAULT_USER}"
+    aws configure set mfa_process "pass otp my_aws_mfa"
+}
+
+configure_aws_vault_6x_mfa() {
+    aws configure set mfa_serial "arn:aws:iam::${1:-""}:mfa/${USERNAME}" --profile "${DEFAULT_VAULT_USER}"
+}
+
+# TODO: doesn't work with k9s
+adjust_for_reduced_mfa_prompt() {
+    printf ""
+    # sed -E -i "s/(^credential_process)\s*=\s*(.* -.+json $DEFAULT_VAULT_USER$)/#\1=\2/g" ~/.aws/config && \
+    # sed -E -i "s/(^mfa_serial)\s*=\s*(.*\/$USERNAME$)/#\1=\2/" ~/.aws/config && \
+    # sed -E -i "s/(^source_profile)\s*=\s*($DEFAULT_VAULT_USER$)/include_profile=\2/g" ~/.aws/config
+    # aws configure set source_profile "$DEFAULT_VAULT_USER" --profile "$DEFAULT_VAULT_USER"
+}
+
 iam_verify() {
     local team="${1}"
     local cluster="${2:-nonprod}"
@@ -14,10 +37,12 @@ iam_verify() {
     local aws_user_account_arn=$(echo "${aws_user_account}" | jq -r .Arn)
     echo $aws_user_account | jq .
 
-    aws configure set mfa_serial "arn:aws:iam::${aws_user_account_id}:mfa/${USERNAME}" --profile "${DEFAULT_VAULT_USER}"
-    # sed -Ei "0,/(^mfa_serial.+${USERNAME})/s/(^mfa_serial.+${USERNAME})/#\1/" .aws/config
+    [ $aws_vault_major_version -ge 7 ] && \
+        configure_aws_vault_7x_mfa "$aws_user_account_id" || \
+        configure_aws_vault_6x_mfa "$aws_user_account_id"
+
     echo "mfa_serial=${aws_user_account_arn}" >> ~/.aws/config_restore
-    
+
     sleep 1
     printf "\033[93m>\033[0m Testing IAM with '%s' ...\n" "${team}-${cluster}"
     printf "\033[96;1m%s\033[0m\n" "aws-vault exec ${team}-${cluster} -- aws sts get-caller-identity"
@@ -37,8 +62,6 @@ dpctl_stuff() {
 }
 
 waiting() { printf "${1:-.}"; sleep 1; }
-
-DEFAULT_VAULT_USER="${DEFAULT_VAULT_USER:-user}"
 
 init_aws() {
     local last_err=0
@@ -67,19 +90,18 @@ EOF
         fi
 
         # Check for 'credential_process' line in user profile, originally added by dpctl
-        grep -q -E -i '(^credential_process.+)\s+(--json user$)' .aws/config >/dev/null && \
+        grep -q -E -i "(^credential_process)\s*=\s*(.* -.+json $DEFAULT_VAULT_USER$)" ~/.aws/config >/dev/null && \
             {
-                # GNU sed -- Replace first match only
+                # GNU sed Example -- Replace first match only
                 # sed '0,/pattern/s/pattern/replacement/' filename
                 # https://www.linuxtopia.org/online_books/linux_tool_guides/the_sed_faq/sedfaq4_004.html
-                sed -E -i '0,/^credential_process.+--json\s+user$/s/(^credential_process.+)\s+(--json user$)/#\1 \2/' .aws/config && \
-                local aws_vault_version=$(aws-vault --version 2>&1 | sed 's/^v//g') && \
-                    local aws_vault_major_version=$(echo "${aws_vault_version}" | awk -F'.' '{print $1}') && \
-                    [ $aws_vault_major_version -ge 7 ] && \
-                        aws configure set credential_process "aws-vault exec --json --prompt=pass user" --profile user || \
-                        aws configure set credential_process "aws-vault exec --no-session --json --prompt=pass user" --profile user
+                sed -E -i "0,/^credential_process.+-.+json\s+$DEFAULT_VAULT_USER$/s/(^credential_process.+)\s+(-.+json $DEFAULT_VAULT_USER$)/#\1 \2/" .aws/config && \
+                adjust_for_reduced_mfa_prompt && \
+                [ $aws_vault_major_version -ge 7 ] && \
+                    aws configure set credential_process "aws-vault exec --format=json $DEFAULT_VAULT_USER" --profile "$DEFAULT_VAULT_USER" || \
+                    aws configure set credential_process "aws-vault exec --no-session --json --prompt=pass $DEFAULT_VAULT_USER" --profile "$DEFAULT_VAULT_USER"
             }
-        
+
         iam_verify "${TEAM_NAME}" "nonprod" \
             && date -u +%Y%m%dT%H%M%SZ > /.initialized \
             || last_err=$?
