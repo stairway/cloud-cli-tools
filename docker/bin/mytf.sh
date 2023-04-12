@@ -35,14 +35,21 @@ export TF_CLI_ARGS_plan='-input=false'
 export TF_CLI_ARGS_apply='-auto-approve=true -input=false'
 export TF_CLI_ARGS_destroy='-auto-approve=true -input=false'
 
-init() {
+# If TF_IMPLICIT_INIT is not set, we set it to `true`.
+# If set to `true` it will call `terraform init` prior
+# to calling the wrapper `terraform` commands.
+TF_IMPLICIT_INIT=${TF_IMPLICIT_INIT:-true}
+
+terraform_init() {
+  # If TF_INIT_NO_RECONFIGURE is not set to 'true',
+  # a `-reconfigure` flag is added to the `terraform init` command.
+  if [ "${TF_INIT_NO_RECONFIGURE:-false}" != 'true' ]; then
+    tf_init_reconfigure_flag='-reconfigure'
+  fi
+
   # We want to allow word splitting here for TF_INIT_FLAGS
   # shellcheck disable=SC2086
-  if [ -n "${TF_INIT_FLAGS}" ]; then
-    terraform "${TF_CHDIR_OPT}" init "${@}" -reconfigure ${TF_INIT_FLAGS}
-  else
-    terraform "${TF_CHDIR_OPT}" init "${@}" -reconfigure
-  fi
+  terraform "${TF_CHDIR_OPT}" init "${@}" ${tf_init_reconfigure_flag} ${TF_INIT_FLAGS}
 }
 
 for arg do
@@ -61,11 +68,11 @@ done
 
 case "${1}" in
   "apply")
-    init
+    $TF_IMPLICIT_INIT && terraform_init
     terraform "${TF_CHDIR_OPT}" "${@}" "${TF_PLAN_CACHE}"
   ;;
   "destroy")
-    init
+    $TF_IMPLICIT_INIT && terraform_init
     terraform "${TF_CHDIR_OPT}" "${@}"
   ;;
   "fmt")
@@ -75,17 +82,21 @@ case "${1}" in
   "init")
     # shift argument list "one to the left" to not call 'terraform init init'
     shift
-    init "${@}"
+    terraform_init "${@}"
   ;;
   "plan")
-    init
+    $TF_IMPLICIT_INIT && terraform_init
     terraform "${TF_CHDIR_OPT}" "${@}" -out="${TF_PLAN_CACHE}"
   ;;
   "plan-json")
     terraform "${TF_CHDIR_OPT}" show -json "${TF_PLAN_CACHE}" | jq -r "${JQ_PLAN}" > "${TF_PLAN_JSON}"
   ;;
   "validate")
-    init -backend=false
+    $TF_IMPLICIT_INIT && terraform_init -backend=false
+    terraform "${TF_CHDIR_OPT}" "${@}"
+  ;;
+  --)
+    shift
     terraform "${TF_CHDIR_OPT}" "${@}"
   ;;
   *)
