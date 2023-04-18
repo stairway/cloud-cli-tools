@@ -3,7 +3,7 @@
 # `GH_PAT=<pat> RELEASE_VERSION=<tag> DOWNLOAD_TAG=true eval "$(<cct)"`
 
 # package:
-# `zip cct.zip cct dpctl-admin-latest.zip dpctl-latest.zip README.md`
+# `zip cct.zip cct/cct cct/dpctl-admin-latest.zip cct/dpctl-latest.zip cct/README.md`
 
 printf "\033[92;1m>>>\033[97;1m %s\033[92;1m <<<\033[0m\n" "And away we go"'!'
 export GH_PAT="${GH_PAT:-""}"
