@@ -9,9 +9,10 @@ docker run {image}:{tag} describe
 ```bash
 docker run \
     --rm \
-    --platform linux/amd64 \
-    --network=host \
+    --platform {linux/amd64|linux/arm64|linux/arm/v7} \
     --name {instance-name} \
+    -p 5678:5678 \
+    -e VSCODE_DEBUGPY_PORT=5678 \
     -e AWS_VAULT_USER_REGION={aws-region} \
     -e KEEP_ALIVE={true|false} \
     -e USERNAME={user} \
@@ -19,7 +20,6 @@ docker run \
     -e GIT_CONFIG_FULL_NAME="{First-Name Last-Name}" \
     -e GIT_CONFIG_EMAIL="{email}" \
     -e EDITOR={nano|vim} \
-    -e VSCODE_DEBUGPY={yes|no} \
     -v /var/lib/docker/volumes/{instance-name}/_data/.awsvault:/root/.awsvault \
     -v /var/lib/docker/volumes/{instance-name}/_data/.gnupg:/root/.gnupg \
     -v /var/lib/docker/volumes/{instance-name}/_data/.password-store:/root/.password-store \
@@ -29,7 +29,6 @@ docker run \
     -v ${PWD}/mount/home/root/.ssh:/root/.ssh \
     -v ${PWD}/mount/data:/data \
     -v ${PWD}/mount/addons:/tmp/addons \
-    -v ${PWD}/cloud-cli-tools/mount/data:/data \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -it \
     {image}:{tag}
@@ -39,9 +38,10 @@ docker run \
 ```bash
 docker run \
     --rm \
-    --platform linux/amd64 \
-    --network=host \
+    --platform {linux/amd64|linux/arm64|linux/arm/v7} \
     --name {instance-name} \
+    -p 5678:5678 \
+    -e VSCODE_DEBUGPY_PORT=5678 \
     -e AWS_VAULT_USER_REGION={aws-region} \
     -e KEEP_ALIVE={true|false} \
     -e USERNAME={user} \
@@ -49,7 +49,7 @@ docker run \
     -e GIT_CONFIG_FULL_NAME="{First-Name Last-Name}" \
     -e GIT_CONFIG_EMAIL="{email}" \
     -e EDITOR={nano|vim} \
-    -e VSCODE_DEBUGPY={yes|no} \
+    -e VSCODE_DEBUGPY_PORT={yes|no} \
     -v /var/lib/docker/volumes/{instance-name}/_data/.awsvault:/root/.awsvault \
     -v /var/lib/docker/volumes/{instance-name}/_data/.gnupg:/root/.gnupg \
     -v /var/lib/docker/volumes/{instance-name}/_data/.password-store:/root/.password-store \
@@ -59,7 +59,6 @@ docker run \
     -v ${PWD}/mount/home/root/.ssh:/root/.ssh \
     -v ${PWD}/mount/data:/data \
     -v ${PWD}/mount/addons:/tmp/addons \
-    -v ${PWD}/cloud-cli-tools/mount/data:/data \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -d \
     {image}:{tag}
