@@ -7,15 +7,15 @@ SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 PACKAGE_DIR="$(dirname $SCRIPT_DIR)"
 PACKAGE_NAME="$(basename $PACKAGE_DIR)"
 PACKAGE_PARENT_DIR="$(dirname ${PACKAGE_DIR})"
-ARCHIVE_NAME="${PACKAGE_NAME}/dist/${PACKAGE_NAME}"
+ARCHIVE_NAME="${PACKAGE_NAME}/dist/cct"
 
 cd "${PACKAGE_PARENT_DIR}"
 
-[ -d "${SCRIPT_DIR}/../dist" ] || mkdir "${SCRIPT_DIR}/../dist"
+[ -d "${PACKAGE_DIR}/dist" ] || mkdir "${PACKAGE_DIR}/dist"
 
 create_tar() {
     printf "\033[93m>\033[0m Creating '%s' ...\n" "${ARCHIVE_NAME}.tgz"
-
+    
     local exclude=("")
     for e in ${EXCLUDES[@]}; do
         exclude+=("--exclude=$e")
@@ -56,23 +56,13 @@ create_zip() {
 
 package() {
     unset INCLUDES
-    INCLUDES=("")
+    INCLUDES=$(find ${PACKAGE_NAME}/docker/addons -mindepth 1 -name '*.zip' -print)
     unset EXCLUDES
     EXCLUDES=("")
 
     INCLUDES+=(
-        "${PACKAGE_NAME}/bin/*"
-        "${PACKAGE_NAME}/conf/*"
-        "${PACKAGE_NAME}/docker/*"
         "${PACKAGE_NAME}/cct"
-        "${PACKAGE_NAME}/docker-login"
-        "${PACKAGE_NAME}/install-cct"
         "${PACKAGE_NAME}/README.md"
-    )
-
-    EXCLUDES+=(
-        ".DS_Store"
-        "'${PACKAGE_NAME}/docker/addons/_*'"
     )
 
     case "${1}" in

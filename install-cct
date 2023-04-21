@@ -25,7 +25,7 @@ TARGET_OS="${TARGET_OS:="$(uname -s | tr '[:upper:]' '[:lower:]')"}"
 REQUIRED_BINARIES=${REQUIRED_BINARIES:='tar curl docker jq'}
 SKIP_DOWNLOAD=${SKIP_DOWNLOAD:-false}
 DOWNLOAD_DIR="${TARGET_DIR}/${PROJECT_NAME}"
-CCT_ADDON_SOURCE_DIR="${CCT_ADDON_SOURCE_DIR:-.}"
+CCT_ADDON_SOURCE_DIR="${CCT_ADDON_SOURCE_DIR:-docker/addons}"
 CCT_ADDON_TARGET_DIR="${CCT_ADDON_TARGET_DIR:-${PROJECT_NAME}/docker/addons}"
 DOWNLOAD_TAG="${DOWNLOAD_TAG:-false}"
 if [ "$DOWNLOAD_TAG" = "true" ]; then
@@ -91,11 +91,19 @@ download_version() {
     fi
 }
 
+copy_addons() {
+    d="$(basename $1)"
+    for f in $(find "${1}" -type f -name '*.zip' -mindepth 1 -print); do
+        printf "Copying '%s' -> '%s/docker/addons/%s/%s'\n" "$f" "${PROJECT_NAME}" "${d}" "$(basename $f)"
+        cp -R "$f" "${PROJECT_NAME}/docker/addons/"
+    done
+}
+
 check_binaries
 
 printf "\033[92;1m>>>\033[94;1m %s: %s\033[92;1m <<<\033[0m\n" "${PROJECT_NAME}" "Installation Script"
 
-printf "\033[93m>\033[0m Determinig system type ...\n"
+printf "\033[93m>\033[0m Determining system type ...\n"
 while getopts "hd:a:o:n" OPTION
 do
     case $OPTION in
@@ -127,6 +135,11 @@ if [ ! -d "${CCT_ADDON_TARGET_DIR}" ]; then
 fi
 
 printf "\033[93m>\033[0m Copying addons to '%s' ...\n" "${CCT_ADDON_TARGET_DIR}/"
-for f in $(find "${CCT_ADDON_SOURCE_DIR}" -type f -name '*.zip' -mindepth 1 -print); do
-    cp "$f" "${CCT_ADDON_TARGET_DIR}/"
-done
+if [ "$CCT_ADDON_SOURCE_DIR" != "." ]; then
+    for d in $(find "${CCT_ADDON_SOURCE_DIR}" -mindepth 1 -name '*.zip' | xargs dirname | sort -u | xargs basename); do
+        cp -R "docker/addons/${d}" "${PROJECT_NAME}/docker/addons/"
+    done
+else
+    copy_addons "${CCT_ADDON_SOURCE_DIR}"
+fi
+

@@ -72,6 +72,14 @@ download_version() {
     download_asset "${download_url}"
 }
 
+copy_addons() {
+    d="$(basename $1)"
+    for f in $(find "${1}" -type f -name '*.zip' -mindepth 1 -print); do
+        printf "Copying '%s' -> '%s/docker/addons/%s/%s'\n" "$f" "${PROJECT_NAME}" "${d}" "$(basename $f)"
+        cp -R "$f" "${PROJECT_NAME}/docker/addons/"
+    done
+}
+
 check_binaries
 
 printf "\033[92;1m>>>\033[94;1m %s: %s\033[92;1m <<<\033[0m\n" "${PROJECT_NAME}" "Installation Script"
@@ -90,8 +98,8 @@ do
 done
 printf "\033[93m>\033[0m Detected: %s (%s)\n" "${TARGET_ARCH}" "${TARGET_OS}"
 
-printf "\033[93m>\033[0m Downloading %s (%s) ...\n" "${PROJECT_NAME}" "${RELEASE_BRANCH}"
-download_version "${RELEASE_BRANCH}" || fail "There was a problem."
+printf "\033[93m>\033[0m Downloading %s %s ...\n" "${PROJECT_NAME}" "${release}"
+download_version "${release}" || fail "There was a problem."
 
 printf "\033[93m>\033[0;1m\033[92;1m Done! %s was downloaded to '\033[3m%s\033[0m'\n" "${PROJECT_NAME}" "${DOWNLOAD_DIR}"
 
@@ -101,6 +109,10 @@ if [ ! -d "${CCT_ADDON_TARGET_DIR}" ]; then
 fi
 
 printf "\033[93m>\033[0m Copying addons to '%s' ...\n" "${CCT_ADDON_TARGET_DIR}/"
-for f in $(find "${CCT_ADDON_SOURCE_DIR}" -type f -name '*.zip' -mindepth 1 -print); do
-    cp "$f" "${CCT_ADDON_TARGET_DIR}/"
-done
+if [ "$CCT_ADDON_SOURCE_DIR" != "." ]; then
+    for d in $(find "${CCT_ADDON_SOURCE_DIR}" -mindepth 1 -name '*.zip' | xargs dirname | sort -u | xargs basename); do
+        copy_addons "docker/addons/${d}"
+    done
+else
+    copy_addons "${CCT_ADDON_SOURCE_DIR}"
+fi
