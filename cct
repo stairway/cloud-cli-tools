@@ -24,7 +24,7 @@ if [ $? -eq 0 ]; then
     printf "\033[93m>\033[0m Changing directory to '%s' ...\n" "${PROJECT_NAME}"
     cd "${PROJECT_NAME}"
 
-    sh -c "$(cat bin/run.sh)"
+    sh bin/run.sh
 else
     printf "\033[91;1mThere was an error. Abort and cleanup ...\033[0m\n" >&2
     [ -d "${PROJECT_NAME}" ] && rm -rf "${PROJECT_NAME}"
