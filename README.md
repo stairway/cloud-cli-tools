@@ -23,6 +23,7 @@ git clone --single-branch --branch multi git@github.com:stairway/cloud-cli-tools
 1. [Command Overview](#command-overview)
    1. [Reset](#reset)
    1. [Build](#build)
+      1. [buildx](#buildx)
    1. [Run](#run)
 1. [Detailed Overview](#project-overview)
    1. [Project Structure](#project-structure)
@@ -45,6 +46,7 @@ Password data is encrypted and persisted in an obfuscated directory.
 ### Required dependencies
 * [docker](https://docs.docker.com/get-docker/)
 * [jq](https://stedolan.github.io/jq/download/)
+* [buildx](https://www.docker.com/blog/how-to-rapidly-build-multi-architecture-images-with-buildx/)
 
 **\*NOTE\***
 
@@ -94,9 +96,11 @@ bin/reset.sh [OPTIONS]
 
 **`No Flags` -- `bin/reset.sh`**: _**Quick** mode. Destroys container. All other persisted files will remain untouched._
 
+**`-F | --full`**: _**Full** mode. Destroys container and persisted dotfiles. Preserves aws creds. (~/.ssh folder will remain untouched)_
+
 **`-D | --deep`**: _**Deep** mode. Performs a full reset, deletes aws creds, deletes volume. (~/.ssh folder will remain untouched)_
 
-**`-F | --full`**: _**Full** mode. Destroys container and persisted dotfiles. Preserves aws creds. (~/.ssh folder will remain untouched)_
+_**Complete** mode. Performs a complete reset. Deletes it all. Perform a `--deep` (`-D`) reset, and then remove the project (`cloud-cli-tools`) directory. Reinstall from scratch using the `cct` script_
 
 #### **Examples**
 
@@ -105,6 +109,10 @@ bin/reset.sh [OPTIONS]
 $ bin/reset.sh
 # Example 2
 $ bin/reset.sh -F
+# Example 3
+$ bin/reset.sh -D
+# Example 4
+$ bin/reset.sh -D && cd .. && rm -rf cloud-cli-tools
 ```
 
 ### **Build**
@@ -115,6 +123,30 @@ _Usage:_
 bin/build.sh
 bin/build.sh [OPTIONS] [ADDITIONAL_ARGS]
 ```
+
+#### **buildx**
+The build script uses buildx to create a _multi-arch_ image.
+
+_**IMPORTANT** - Buildx **must** be setup._
+
+**Some additional steps are required:**
+1. Create builder instance
+
+   ```bash
+   docker buildx create --name mybuilder --use --bootstrap
+   docker buildx inspect --bootstrap
+1. Setup Prune Danglers
+
+   ```bash
+   alias docker_clean='echo y | docker buildx prune && echo y | docker image prune'
+1. Run build script
+
+   ```bash
+   REGISTRY_USERNAME="$DOCKER_HUB_USER" REGISTRY_PASSWORD="$DOCKER_HUB_PAT" bin/build.sh [OPTIONS]
+1. Cleanup
+   ```bash
+   docker_clean
+<br>
 
 #### **Options**
 
@@ -169,6 +201,7 @@ usage:  run.sh -u <user> -t <team_name> -n <full_name> -m <email> -e <editor>
 +-- bin/
 |   |-- build.sh
 |   |-- package.sh
+|   |-- package-cct.sh
 |   |-- reset.sh
 |   |-- run.sh
 |   `-- zip2tgz.sh
@@ -178,6 +211,7 @@ usage:  run.sh -u <user> -t <team_name> -n <full_name> -m <email> -e <editor>
 |   |-- env.sample
 |   |-- project.env
 |   `-- versions.env
++-- dist/ # Only created if package script is run
 +-- docker/
 |   +-- addons/
 |   |   +-- blank/
