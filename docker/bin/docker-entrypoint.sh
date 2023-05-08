@@ -2,15 +2,24 @@
 
 set -eo pipefail
 
+USERNAME="${USERNAME:-""}"
+GIT_CONFIG_FULL_NAME="${GIT_CONFIG_FULL_NAME:-""}"
+GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-""}"
+EDITOR="${EDITOR:-""}"
+GIT_DEFAULT_BRANCH="${GIT_DEFAULT_BRANCH:-main}"
+
 git_config() {
     git config --global user.name "${GIT_CONFIG_FULL_NAME}"
-    GIT_CONFIG_EMAIL_DEFAULT="$(echo ${GIT_CONFIG_FULL_NAME} | awk '{ print tolower($1"."$2"@grainger.com") }')"
+    GIT_CONFIG_EMAIL_DEFAULT="$(echo ${GIT_CONFIG_FULL_NAME} | awk -v domain_var="$CONSUMER_DOMAIN" '{ print tolower($1"."$2"@"domain_var) }')"
     git config --global user.email "${GIT_CONFIG_EMAIL:-$GIT_CONFIG_EMAIL_DEFAULT}"
-    git config --global user.username "${RACFID}"
+    git config --global user.username "${USERNAME}"
 
     git config --global core.pager "less -S"
     git config --global core.editor "${EDITOR}"
     git config --global color.diff auto
+
+    git config --global init.defaultBranch "$GIT_DEFAULT_BRANCH"
+    git config --global pull.rebase true
 }
 
 init_ssh() {
@@ -20,15 +29,15 @@ init_ssh() {
     local key_count=0
     key_count=$(ls -1 $HOME/.ssh | grep --color=never -o id_ed25519.fingerprint | wc -l)
     if [ ${key_count} -lt 1 ]; then
-        printf "\033[93m>\033[0m Generating ssh ed25519 keypair with empty password ...\n\033[96;1m%s\033[0m\n" "ssh-keygen -t ed25519 -C '${RACFID}' -f '${HOME}/.ssh/id_ed25519' -N ''"
-        ssh-keygen -t ed25519 -C "${RACFID}" -f "${HOME}/.ssh/id_ed25519" -N "" > "${HOME}/.ssh/${gen_date}.id_ed25519.fingerprint" \
+        printf "\033[93m>\033[0m Generating ssh ed25519 keypair with empty password ...\n\033[96;1m%s\033[0m\n" "ssh-keygen -t ed25519 -C '${USERNAME}' -f '${HOME}/.ssh/id_ed25519' -N ''"
+        ssh-keygen -t ed25519 -C "${USERNAME}" -f "${HOME}/.ssh/id_ed25519" -N "" > "${HOME}/.ssh/${gen_date}.id_ed25519.fingerprint" \
             && cat "${HOME}/.ssh/id_ed25519.pub"
     fi
     key_count=0
     key_count=$(ls -1 $HOME/.ssh | grep --color=never -o id_rsa.fingerprint | wc -l)
     if [ ${key_count} -lt 1 ]; then
-        printf "\033[93m>\033[0m Generating ssh rsa keypair with empty password ...\n\033[96;1m%s\033[0m\n" "ssh-keygen -t rsa -b 4096 -C '${RACFID}' -f '${HOME}/.ssh/id_rsa' -N ''"
-        ssh-keygen -t rsa -b 4096 -C "${RACFID}" -f "${HOME}/.ssh/id_rsa" -N "" > "${HOME}/.ssh/${gen_date}.id_rsa.fingerprint" \
+        printf "\033[93m>\033[0m Generating ssh rsa keypair with empty password ...\n\033[96;1m%s\033[0m\n" "ssh-keygen -t rsa -b 4096 -C '${USERNAME}' -f '${HOME}/.ssh/id_rsa' -N ''"
+        ssh-keygen -t rsa -b 4096 -C "${USERNAME}" -f "${HOME}/.ssh/id_rsa" -N "" > "${HOME}/.ssh/${gen_date}.id_rsa.fingerprint" \
             && cat "${HOME}/.ssh/id_rsa.pub"
     fi
 }
@@ -58,6 +67,7 @@ init_pass() {
 }
 
 versions() {
+    uname -a
     cat /.versions || { printf "Versions file '%s' not found. Exiting ...\n" "/.versions" >&2; return 1; }
 }
 
@@ -95,7 +105,18 @@ die() {
     printf "\033[0m\n"
 }
 
-versions
+do_init() {
+    versions
+    init_git && check_crypto
+    ln -s /data ${HOME}/data
+    if [ ${VSCODE_DEBUGPY_PORT:-0} -gt 999 ]; then
+        if [ ! -d /data/.vscode ]; then
+            [ -d ~/.conf/vscode ] && \
+                cp -r ~/.conf/vscode /data/.vscode && \
+                sed -i -r "s/(\"port\"):\s*(\"\\$\{VSCODE_DEBUGPY_PORT\}\")$/\1: ${VSCODE_DEBUGPY_PORT}/g" /data/.vscode/launch.json
+        fi
+    fi
+}
 
 trap die INT
 
@@ -107,12 +128,17 @@ case "$1" in
         describe
         ;;
     *)
-        init_git && check_crypto
-        ln -s /data ${HOME}/data
-        [ $# -gt 0 -a "${1}x" != "x" ] && bash -c "$@"
+        if [ $# -gt 0 -a "${1}x" != "x" ]; then
+            [ "$(basename $1)" = "$(basename $SHELL)" ] && do_init
+            eval "bash -c '$@'"
+            bash -l -s "$@"
+        else
+            do_init
+            bash -l
+        fi
         exit_code=$?
         ;;
 esac
 
-[ "${DEBUG:-false}" = "true" ] && bash
+[ "${DEBUG:-false}" = "true" ] && bash -l
 [ "${KEEP_ALIVE:-false}" = "true" ] && tail -f /dev/null

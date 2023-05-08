@@ -9,51 +9,58 @@ docker run {image}:{tag} describe
 ```bash
 docker run \
     --rm \
-    --platform linux/amd64 \
-    --network=host \
+    --platform {linux/amd64|linux/arm64|linux/arm/v7} \
     --name {instance-name} \
+    -p 5678:5678 \
+    -e VSCODE_DEBUGPY_PORT=5678 \
+    -e AWS_VAULT_USER_REGION={aws-region} \
     -e KEEP_ALIVE={true|false} \
-    -e RACFID={racfid} \
+    -e USERNAME={user} \
     -e TEAM_NAME={team-name} \
-    -e GIT_CONFIG_EMAIL="{email}" \
     -e GIT_CONFIG_FULL_NAME="{First-Name Last-Name}" \
+    -e GIT_CONFIG_EMAIL="{email}" \
     -e EDITOR={nano|vim} \
     -v /var/lib/docker/volumes/{instance-name}/_data/.awsvault:/root/.awsvault \
     -v /var/lib/docker/volumes/{instance-name}/_data/.gnupg:/root/.gnupg \
     -v /var/lib/docker/volumes/{instance-name}/_data/.password-store:/root/.password-store \
-    -v ${PWD}/mount/dotfiles/root/.aws:/root/.aws \
-    -v ${PWD}/mount/dotfiles/root/.kube:/root/.kube \
-    -v ${PWD}/mount/dotfiles/root/.dpctl:/root/.dpctl \
-    -v ${PWD}/mount/dotfiles/root/.ssh:/root/.ssh \
-    -v ${PWD}/cloud-cli-tools/mount/data:/data \
+    -v ${PWD}/mount/home/root/.aws:/root/.aws \
+    -v ${PWD}/mount/home/root/.kube:/root/.kube \
+    -v ${PWD}/mount/home/root/.dpctl:/root/.dpctl \
+    -v ${PWD}/mount/home/root/.ssh:/root/.ssh \
+    -v ${PWD}/mount/data:/data \
+    -v ${PWD}/mount/addons:/tmp/addons \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -it \
-    {image}:{tag} \
-    init.sh
+    {image}:{tag}
 ```
 
 ## Daeomonized
 ```bash
 docker run \
     --rm \
-    --platform linux/amd64 \
-    --network=host \
+    --platform {linux/amd64|linux/arm64|linux/arm/v7} \
     --name {instance-name} \
+    -p 5678:5678 \
+    -e VSCODE_DEBUGPY_PORT=5678 \
+    -e AWS_VAULT_USER_REGION={aws-region} \
     -e KEEP_ALIVE={true|false} \
-    -e RACFID={racfid} \
+    -e USERNAME={user} \
     -e TEAM_NAME={team-name} \
-    -e GIT_CONFIG_EMAIL="{email}" \
     -e GIT_CONFIG_FULL_NAME="{First-Name Last-Name}" \
+    -e GIT_CONFIG_EMAIL="{email}" \
     -e EDITOR={nano|vim} \
+    -e VSCODE_DEBUGPY_PORT={yes|no} \
     -v /var/lib/docker/volumes/{instance-name}/_data/.awsvault:/root/.awsvault \
     -v /var/lib/docker/volumes/{instance-name}/_data/.gnupg:/root/.gnupg \
     -v /var/lib/docker/volumes/{instance-name}/_data/.password-store:/root/.password-store \
-    -v ${PWD}/mount/dotfiles/root/.aws:/root/.aws \
-    -v ${PWD}/mount/dotfiles/root/.kube:/root/.kube \
-    -v ${PWD}/mount/dotfiles/root/.dpctl:/root/.dpctl \
-    -v ${PWD}/mount/dotfiles/root/.ssh:/root/.ssh \
-    -v ${PWD}/cloud-cli-tools/mount/data:/data \
+    -v ${PWD}/mount/home/root/.aws:/root/.aws \
+    -v ${PWD}/mount/home/root/.kube:/root/.kube \
+    -v ${PWD}/mount/home/root/.dpctl:/root/.dpctl \
+    -v ${PWD}/mount/home/root/.ssh:/root/.ssh \
+    -v ${PWD}/mount/data:/data \
+    -v ${PWD}/mount/addons:/tmp/addons \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -d \
     {image}:{tag}
+    bash -c "init.sh"
 ```

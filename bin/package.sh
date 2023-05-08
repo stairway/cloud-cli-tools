@@ -8,7 +8,6 @@ PACKAGE_DIR="$(dirname $SCRIPT_DIR)"
 PACKAGE_NAME="$(basename $PACKAGE_DIR)"
 PACKAGE_PARENT_DIR="$(dirname ${PACKAGE_DIR})"
 ARCHIVE_NAME="${PACKAGE_NAME}/dist/${PACKAGE_NAME}"
-ARCHIVE_SOURCE="${PACKAGE_NAME}"
 
 cd "${PACKAGE_PARENT_DIR}"
 
@@ -17,6 +16,7 @@ cd "${PACKAGE_PARENT_DIR}"
 create_tar() {
     printf "\033[93m>\033[0m Creating '%s' ...\n" "${ARCHIVE_NAME}.tgz"
 
+    local exclude=("")
     for e in ${EXCLUDES[@]}; do
         exclude+=("--exclude=$e")
     done
@@ -30,13 +30,13 @@ create_tar() {
     )
 
     printf "\033[96;1m%s\033[0m\n" "$(echo ${tar_command[@]})"
-    eval "${tar_command[@]}"
+    eval "$(echo ${tar_command[@]})"
 }
 
 create_zip() {
     printf "\033[93m>\033[0m Creating '%s' ...\n" "${ARCHIVE_NAME}.zip"
     
-    local exclude=()
+    local exclude=("")
     for e in ${EXCLUDES[@]}; do
         exclude+=("-x ${e}")
     done
@@ -51,14 +51,14 @@ create_zip() {
     )
 
     printf "\033[96;1m%s\033[0m\n" "$(echo ${zip_command[@]})"
-    eval "${zip_command[@]}"
+    eval "$(echo ${zip_command[@]})"
 }
 
 package() {
     unset INCLUDES
-    INCLUDES=()
+    INCLUDES=("")
     unset EXCLUDES
-    EXCLUDES=()
+    EXCLUDES=("")
 
     INCLUDES+=(
         "${PACKAGE_NAME}/bin/*"

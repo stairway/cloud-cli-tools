@@ -3,8 +3,9 @@ ARG VERSION=latest
 FROM --platform=linux/amd64 ubuntu:$VERSION
 LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@grainger.com>"
 
-ARG AWS_VAULT_VERSION=latest
+ARG AWS_VAULT_VERSION=v6.6.2
 ARG MINIKUBE_VERSION=latest
+ARG AWS_PYTHON_LAMBDA_RUNTIME_VERSION=3.9
 
 # default values
 ARG USER=root
@@ -38,6 +39,7 @@ ARG INSTALL_PKGS="\
     jq \
     zip \
     locales \
+    tzdata \
     pass \
     gpg \
     lsb-release \
@@ -53,8 +55,12 @@ RUN [ "${USER:-root}" = "root" ] || { \
         echo "${USER}:${USER}" | chpasswd && \
         echo 'root:root' | chpasswd; }
 
-# Install all packages (except docker)
+# Install packages
 RUN apt-get update -y && \
+    export TZ_COUNTRY=$(echo "$TZ" | awk -F'/' '{print $1}') && \
+    export TZ_CITY=$(echo "$TZ" | awk -F'/' '{print $2}') && \
+    echo "tzdata tzdata/Areas select $TZ_COUNTRY" | debconf-set-selections && \
+    echo "tzdata tzdata/Zones/$TZ_COUNTRY select $TZ_CITY" | debconf-set-selections && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y $INSTALL_PKGS && \
     apt-get clean -y && \
     pip3 install --upgrade pip && \
@@ -63,6 +69,23 @@ RUN apt-get update -y && \
     locale-gen && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
+
+# Install additional python versions
+RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -F'.' '{print $1"."$2}') && \
+    [ "${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" != "${PYTHON_DEFAULT_VERSION}" ] && \
+        apt-get update -y && \
+        DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common && \
+        add-apt-repository -y ppa:deadsnakes/ppa && \
+        apt-get update -y && \
+        DEBIAN_FRONTEND=noninteractive apt-get install -y "python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" "python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}-distutils" && \
+        update-alternatives --install /usr/bin/python3 python3 "/usr/bin/python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" 1 && \
+        update-alternatives --install /usr/bin/python3 python3 "/usr/bin/python${PYTHON_DEFAULT_VERSION}" 2 && \
+        update-alternatives --set python3 $(update-alternatives --list python3 | grep "python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}") && \
+        DEBIAN_FRONTEND=noninteractive apt-get install -y python-is-python3 && \
+        apt-get clean -y
+
+RUN curl -sSL https://install.python-poetry.org | python3 - 
+RUN pip3 install pre-commit pytest debugpy
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -79,13 +102,15 @@ ARG DOCKER_PKGS="\
 
 WORKDIR /tmp/downloads
 
+# TODO
+# https://github.com/moby/buildkit/blob/dockerfile/1.4.0/frontend/dockerfile/docs/syntax.md#here-documents
 RUN touch gh-get-latest-release.sh && \
     chmod +x gh-get-latest-release.sh && \
-    echo  "#!/bin/sh -x\n\
+    echo "#!/bin/sh -euf\n\
 gh_latest_release() {\n\
-  curl --silent \"https://api.github.com/repos/\$1/releases/latest\" | # Get latest release from GitHub api\n\
-    grep '\"tag_name\":' |                                            # Get tag line\n\
-    sed -E 's/.*\"([^\"]+)\".*/\\\1/'                                    # Pluck JSON value\n\
+    curl --silent \"https://api.github.com/repos/\$1/releases/latest\" | # Get latest release from GitHub api\n\
+    grep '\"tag_name\":' |                                              # Get tag line\n\
+    sed -E 's/.*\"([^\"]+)\".*/\\\1/'                                      # Pluck JSON value\n\
 }\n\
 gh_latest_release \"\$@\"\n\
 "> gh-get-latest-release.sh
@@ -133,17 +158,6 @@ RUN [ "${AWS_VAULT_VERSION:-latest}" = "latest" ] && \
     install aws-vault-linux-amd64 /usr/local/bin/aws-vault && \
     printf "aws-vault: %s\n" "$(aws-vault --version 2>&1)" >> /.versions
 
-RUN wget -O- https://apt.releases.hashicorp.com/gpg \
-    | gpg --dearmor \
-    | tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null && \
-    echo \
-        "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com \
-        $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list > /dev/null && \
-    apt update -y && \
-    DEBIAN_FRONTEND=noninteractive apt install -y vault && \
-    apt-get clean -y && \
-    printf "Hashicorp %s\n" "$(vault --version | awk '{print $1" "$2}')" >> /.versions
-
 RUN [ "${MINIKUBE_VERSION:-latest}" = "latest" ] && \
         MINIKUBE_VERSION=$(./gh-get-latest-release.sh "kubernetes/minikube") || \
         MINIKUBE_VERSION="v$(echo ${MINIKUBE_VERSION} | sed s/^v//g)" && \
@@ -162,7 +176,6 @@ USER $USER
 WORKDIR $HOME
 
 # Additional Metadata
-
 ARG VERSION=latest
 ARG IMAGE_NAME="stairway/cloud-cli-tools"
 ARG IMAGE_VERSION=base-latest

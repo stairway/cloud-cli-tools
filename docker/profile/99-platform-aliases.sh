@@ -1,7 +1,0 @@
-alias eks-preview-services='aws-vault exec di-preview.tf -- aws eks update-kubeconfig --alias preview-services-cluster --name di-preview-services-cluster $@ && export AWS_DEFAULT_PROFILE=di-preview.tf'
-alias eks-preview='aws-vault exec di-preview.tf -- aws eks update-kubeconfig --alias preview-cluster --name di-preview-cluster $@ && export AWS_DEFAULT_PROFILE=di-preview.tf'
-alias eks-qa='aws-vault exec di-preview.tf -- aws eks update-kubeconfig --alias qa-cluster --name di-qa-cluster $@ && export AWS_DEFAULT_PROFILE=di-preview.tf'
-alias eks-services='aws-vault exec di-prod -- aws eks update-kubeconfig --alias services-cluster --name di-services-cluster $@ && export AWS_DEFAULT_PROFILE=di-prod'
-alias eks-sandbox='aws-vault exec di-sandbox.tf -- aws eks update-kubeconfig --alias sandbox-cluster --name di-sandbox-cluster $@ && export AWS_DEFAULT_PROFILE=di-sandbox.tf'
-alias eks-nonprod='aws-vault exec di-nonprod.tf -- aws eks update-kubeconfig --alias nonprod-cluster --name di-nonprod-cluster $@ && export AWS_DEFAULT_PROFILE=di-nonprod.tf'
-alias eks-prod='aws-vault exec di-prod -- aws eks update-kubeconfig --alias prod-cluster --name di-prod-cluster $@ && export AWS_DEFAULT_PROFILE=di-prod'

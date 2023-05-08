@@ -6,6 +6,7 @@ LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@grainger.co
 
 ARG KUBE_VERSION=latest
 ARG ISTIO_VERSION=latest
+ARG HASHICORP_VAULT_VERSION=latest
 ARG TERRAFORM_VERSION=latest
 ARG TERRAGRUNT_VERSION=latest
 ARG HELM_VERSION=latest
@@ -25,7 +26,9 @@ WORKDIR /tmp/downloads
 COPY docs/* /docs/
 COPY opt/* /opt/bin/
 COPY bin/* /usr/local/bin/
-COPY profile/* /etc/profile.d/
+
+COPY profile/* $HOME/.local/profile.d/
+COPY conf $HOME/.conf
 
 ADD addons/**/*.tgz /tmp/addons/
 
@@ -78,7 +81,7 @@ RUN [ "${KIND_VERSION:-latest}" = "latest" ] && \
     kind --version >> /.versions
 
 # https://github.com/doitintl/kube-no-trouble
-RUN sh -c "$(curl -sSL https://git.io/install-kubent)"
+RUN curl -sSL https://git.io/install-kubent | sh -
 
 # Install kubectx and kubens
 # https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
@@ -112,8 +115,20 @@ RUN [ "${ISTIO_VERSION:-latest}" = "latest" ] && \
     [ "$CHECKSUM_VERIFY_STATUS" = "istio-${ISTIO_VERSION}-linux-amd64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     tar -xvzf istio-${ISTIO_VERSION}-linux-amd64.tar.gz && \
     install istio-${ISTIO_VERSION}/bin/istioctl /usr/local/bin/istioctl && \
-    cp istio-${ISTIO_VERSION}/tools/istioctl.bash $HOME/istioctl.bash && \
+    cp istio-${ISTIO_VERSION}/tools/istioctl.bash $HOME/.istioctl.bash && \
     printf "istio: %s\n" "$(istioctl version --remote=false --short)" >> /.versions
+
+RUN [ "${HASHICORP_VAULT_VERSION:-latest}" = "latest" ] && \
+        HASHICORP_VAULT_VERSION=$(./gh-get-latest-release.sh "hashicorp/vault") || echo >/dev/null && \
+        HASHICORP_VAULT_VERSION="$(echo ${HASHICORP_VAULT_VERSION} | sed s/^v//g)" && \
+    curl -LO "https://releases.hashicorp.com/vault/${HASHICORP_VAULT_VERSION}/vault_${HASHICORP_VAULT_VERSION}_linux_amd64.zip" && \
+    curl -LO "https://releases.hashicorp.com/vault/${HASHICORP_VAULT_VERSION}/vault_${HASHICORP_VAULT_VERSION}_SHA256SUMS" && \
+    CHECKSUM_VERIFY_STATUS=$(cat vault_${HASHICORP_VAULT_VERSION}_SHA256SUMS | grep --color=never vault_${HASHICORP_VAULT_VERSION}_linux_amd64.zip | sha256sum -c -) && \
+    LAST_ERR=$? && \
+    [ "$CHECKSUM_VERIFY_STATUS" = "vault_${HASHICORP_VAULT_VERSION}_linux_amd64.zip: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+    unzip "vault_${HASHICORP_VAULT_VERSION}_linux_amd64.zip" && \
+    install vault /usr/local/bin/vault && \
+    printf "Hashicorp %s\n" "$(vault --version | awk '{print $1" "$2}')" >> /.versions
 
 RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
         TERRAFORM_VERSION=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') || \
@@ -125,7 +140,7 @@ RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
     [ "$CHECKSUM_VERIFY_STATUS" = "terraform_${TERRAFORM_VERSION}_linux_amd64.zip: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
     unzip "terraform_${TERRAFORM_VERSION}_linux_amd64.zip" && \
     install terraform /usr/local/bin/terraform && \
-    echo "$(echo $(terraform version))" | awk '{print $1" "$2}' >> /.versions && \
+    printf "Hashicorp %s\n" "$(echo $(terraform version) | awk '{print $1" "$2}')" >> /.versions && \
     terraform -install-autocomplete
 
 RUN [ "${TERRAGRUNT_VERSION:-latest}" = "latest" ] && \
@@ -152,21 +167,37 @@ RUN [ "${K9S_VERSION:-latest}" = "latest" ] && \
     k9s version
 
 RUN rm -rf /tmp/downloads && \
-    echo "EDITOR=\${EDITOR}" >> "${HOME}/.profile" && \
-    echo "VISUAL=\${EDITOR}" >> "${HOME}/.profile" && \
-    echo "GIT_EDITOR=\${EDITOR}" >> "${HOME}/.profile" && \
-    echo "KUBE_EDITOR=\${EDITOR}" >> "${HOME}/.profile" && \
+    ln -s /usr/share/bash-completion/completions/git ~/.git-completion.bash && \
     echo "complete -C /usr/local/bin/aws_completer aws" >> "${HOME}/.bashrc" && \
-    echo "source <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
-    echo "[ -f ~/istioctl.bash ] && . ~/istioctl.bash" >> "${HOME}/.bashrc" && \
-    echo "init.sh" >> "${HOME}/.bashrc"
+    echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
+    echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> "${HOME}/.bashrc" && \
+    echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> "${HOME}/.bashrc" && \
+    echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > $HOME/.local/init.sh && \
+    cat >> "${HOME}/.bashrc" <<EOF
+
+export PATH="${HOME}/.local/bin:\${PATH}"
+export EDITOR="${EDITOR}"
+export VISUAL="${EDITOR}"
+export GIT_EDITOR="${EDITOR}"
+export KUBE_EDITOR="${EDITOR}"
+export CLUSTER_PREFIX="${CLUSTER_PREFIX:-di}"
+
+if [ -d $HOME/.local/profile.d ]; then
+    for f in \$(find $HOME/.local/profile.d -mindepth 1 -type f -name '*.sh' | sort -u); do
+        . "\${f}"
+    done
+fi
+
+. $HOME/.local/init.sh
+
+EOF
 
 USER $USER
 WORKDIR $HOME
 
 VOLUME [ "/data", "$HOME/.ssh", "$HOME/.gnupg", "$HOME/.password-store", "$HOME/.awsvault" ]
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+SHELL [ "/bin/bash", "-o", "pipefail", "-c" ]
 ENTRYPOINT [ "/usr/local/bin/docker-entrypoint.sh" ]
 
 # Additional Metadata

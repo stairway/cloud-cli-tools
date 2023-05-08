@@ -1,12 +1,22 @@
+# Project - All Occurrences
+.env
+*.tgz
+*.zip
+
+# Project - Root relative occurrences
 /.*
-/*.tgz
-/dist
+/dist/*
 /mount
 /*.env
 /*.env.*
 /**/_*
-.DS_Store
+
+# System
 *.bak
 *.orig
-
+.DS_Store
 .idea
+
+# Except for ...
+# !dist/cct*.zip
+# !dist/cct*.tgz
