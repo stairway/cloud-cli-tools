@@ -18,5 +18,6 @@
 .idea
 
 # Except for ...
+!/bin/_*
 # !dist/cct*.zip
 # !dist/cct*.tgz
