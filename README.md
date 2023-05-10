@@ -1,13 +1,5 @@
 # Cloud CLI Tools
 
-## **TLDR;**
-**Clone/Build/Run**
-
-```bash
-git clone --single-branch --branch multi git@github.com:stairway/cloud-cli-tools.git && \
-   cd cloud-cli-tools && sh -c "$(cat bin/run.sh)"
-```
-
 ## **Table of Contents**
 
 1. [Summary](#summary)
@@ -21,7 +13,9 @@ git clone --single-branch --branch multi git@github.com:stairway/cloud-cli-tools
    1. [Run Instructions](#run-instructions)
       1. [Step 3 - Run](#step-3-run)
 1. [Command Overview](#command-overview)
+   1. [Reboot](#reboot)
    1. [Reset](#reset)
+   1. [Resetter Wrapper](#resetter-wrapper)
    1. [Build](#build)
       1. [buildx](#buildx)
    1. [Run](#run)
@@ -46,34 +40,11 @@ Password data is encrypted and persisted in an obfuscated directory.
 ### Required dependencies
 * [docker](https://docs.docker.com/get-docker/)
 * [jq](https://stedolan.github.io/jq/download/)
-* [buildx](https://www.docker.com/blog/how-to-rapidly-build-multi-architecture-images-with-buildx/)
+* [buildx](https://www.docker.com/blog/how-to-rapidly-build-multi-architecture-images-with-buildx/) (only required for building)
 
 **\*NOTE\***
 
 If you're having trouble building, check if you have Experimental Features enabled in the Settings for Docker Desktop. If it's enabled, then disable it.
-
-## **Setup Instructions**
-3 easy steps: extract, build, run
-
-### **Run Only**
-**(recommended)**
-
-*see [Run Instructions](#run-instructions) (below)*
-
-### **Build & Run**
-
-#### **Step 1: Extract**
-
-```bash
-$ tar -xzf cloud-cli-tools.tgz
-$ cd cloud-cli-tools
-```
-
-#### **Step 2: First Build**
-
-```bash
-$ bin/build.sh -F
-```
 
 ### **Run Instructions**
 
@@ -83,8 +54,24 @@ $ bin/run.sh
 
 ## **Command Overview**
 
+### **Reboot**
+(`bin/reboot.sh`)
+
+Same as a `quick` reset: `bin/_resetter.sh`
+
+(See [Resetter Wrapper](#resetter-wrapper) below, for more info)
+
+_Usage:_
+```
+bin/reboot.sh
+```
+
 ### **Reset**
-2 types of reset: **_quick_** and **_full_**
+(`bin/reset.sh`)
+
+Same as a `full` reset: `bin/_resetter.sh -F`
+
+(See [Resetter Wrapper](#resetter-wrapper) below, for more info)
 
 _Usage:_
 ```
@@ -92,9 +79,22 @@ bin/reset.sh
 bin/reset.sh [OPTIONS]
 ```
 
+### **Resetter Wrapper**
+(`bin/_resetter.sh`)
+
+2 types of reset: **_quick_** and **_full_**
+
+The `quick` reset is like a reboot, and the `full` reset is like a system reset.
+
+_Usage:_
+```
+bin/_resetter.sh
+bin/_resetter.sh [OPTIONS]
+```
+
 #### **Options**
 
-**`No Flags` -- `bin/reset.sh`**: _**Quick** mode. Destroys container. All other persisted files will remain untouched._
+**`No Flags` -- `bin/_resetter.sh`**: _**Quick** mode. Destroys container. All other persisted files will remain untouched._
 
 **`-F | --full`**: _**Full** mode. Destroys container and persisted dotfiles. Preserves aws creds. (~/.ssh folder will remain untouched)_
 
@@ -106,20 +106,22 @@ _**Complete** mode. Performs a complete reset. Deletes it all. Perform a `--deep
 
 ```bash
 # Example 1
-$ bin/reset.sh
+$ bin/_resetter.sh
 # Example 2
-$ bin/reset.sh -F
+$ bin/_resetter.sh -F
 # Example 3
-$ bin/reset.sh -D
+$ bin/_resetter.sh -D
 # Example 4
-$ bin/reset.sh -D && cd .. && rm -rf cloud-cli-tools
+$ bin/_resetter.sh -D && cd .. && rm -rf cloud-cli-tools
 ```
 
 ### **Build**
+(`bin/build.sh`)
+
 2 types of build: **_quick_** and **_full_**
 
 _Usage:_
-```
+```bash
 bin/build.sh
 bin/build.sh [OPTIONS] [ADDITIONAL_ARGS]
 ```
@@ -144,6 +146,7 @@ _**IMPORTANT** - Buildx **must** be setup._
    ```bash
    REGISTRY_USERNAME="$DOCKER_HUB_USER" REGISTRY_PASSWORD="$DOCKER_HUB_PAT" bin/build.sh [OPTIONS]
 1. Cleanup
+
    ```bash
    docker_clean
 <br>
@@ -169,7 +172,6 @@ $ bin/build.sh -N
 # Example 3
 $ bin/build.sh -F -N
 ```
-
 
 ### **Run**
 Run a new project, or rerun an existing. Initial handling of aws init happens at shell (_~/.bashrc_).
@@ -199,9 +201,11 @@ usage:  run.sh -u <user> -t <team_name> -n <full_name> -m <email> -e <editor>
 ```
 .
 +-- bin/
+|   |-- _resetter.sh
 |   |-- build.sh
 |   |-- package.sh
 |   |-- package-cct.sh
+|   |-- reboot.sh
 |   |-- reset.sh
 |   |-- run.sh
 |   `-- zip2tgz.sh
