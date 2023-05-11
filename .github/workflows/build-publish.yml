@@ -17,6 +17,10 @@ env:
   BUILD_BASE: false
 
 jobs:
+  debug:
+    if: ${{ env.DEBUG == 'true' }}
+    runs-on: ubuntu-latest
+    run: echo "${{ tojson(github.event) }}"
   docker:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
@@ -36,32 +40,12 @@ jobs:
       #     username: ${{ secrets.DOCKERHUB_USERNAME }}
       #     password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push Base
-        if: ${{ env.BUILD_BASE == 'true' }}
-        uses: ./.github/actions/build-push-script-action
-        with:
-          build-parent: true
-          debug: ${{ env.DEBUG }}
-          registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
-          registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Build and Push Main
         uses: ./.github/actions/build-push-script-action
         with:
           debug: ${{ env.DEBUG }}
           registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
           registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      # TODO
-      # - name: Base - Build and Push
-      #   if: ${{ env.BUILD_BASE == 'true' }}
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     context: docker
-      #     platforms: linux/amd64
-      #     file: docker/dockerfiles/Dockerfile.base
-      #     push: true
-      #     tags: user/app:latest
 
       # TODO
       # - name: Main - Build and Push
