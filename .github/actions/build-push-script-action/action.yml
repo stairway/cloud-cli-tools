@@ -3,7 +3,7 @@ name: Build and Push Docker images
 description: Build and push Docker images with Buildx
 
 inputs:
-  build-base:
+  build-parent:
     description: "Whether to build parent image first"
     required: false
     default: 'false'
@@ -22,11 +22,11 @@ runs:
   using: composite
   steps:
     - name: Build Base
-      if: ${{ inputs.build-base == 'true' }}
+      if: ${{ inputs.build-parent == 'true' }}
       shell: bash
       run: REGISTRY_USERNAME="${{ inputs.registry-username }}" REGISTRY_PASSWORD="${{ inputs.registry-password }}" DEBUG="${{ inputs.debug }}" bin/build.sh -F
 
     - name: Build Main
-      if: ${{ inputs.build-base != 'true' }}
+      if: ${{ inputs.build-parent != 'true' }}
       shell: bash
       run: REGISTRY_USERNAME="${{ inputs.registry-username }}" REGISTRY_PASSWORD="${{ inputs.registry-password }}" DEBUG="${{ inputs.debug }}" bin/build.sh
