@@ -24,6 +24,12 @@ jobs:
     outputs:
       debugVar: ${{ steps.init.outputs.debugVar }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Get changes
+        run: git diff --name-only ${{ github.event.before }} ${{ github.event.after }}
       - name: Environment variables to output
         id: init
         run: |
@@ -37,7 +43,7 @@ jobs:
         run: echo "${{ tojson(github.event.workflow_run) }}"
   docker:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success'
+    # if: github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
