@@ -19,5 +19,6 @@
 
 # Except for ...
 !/bin/_*
+!/.github
 # !dist/cct*.zip
 # !dist/cct*.tgz

@@ -38,7 +38,7 @@ cd "${SCRIPT_DIR}/../"
 convert_zip() {
     base_dir="${1:-docker/addons}"
     for d in $(find ${base_dir} -mindepth 1 -type d | grep --color=never -v /_); do
-        for f in $(ls -1 ${d}/ | grep --color=never -v '^_'); do 
+        for f in $(ls -1 ${d}/ | grep --color=never -v '^_'); do
             _fname="$(basename ${f} .zip)"
             _ext=$(echo $f | awk -F"$_fname" '{print $2}')
             _command="bin/zip2tgz.sh ${d}/${f} ${d}/${_fname}"
@@ -65,7 +65,7 @@ DOCKER_BUILD_LATEST="${DOCKER_BUILD_LATEST:-false}"
 build_base() {
     local build_opts=("")
     [ "${DOCKER_BUILD_NO_CACHE}" = "true" ] && build_opts+=(--no-cache)
-    
+
     local created_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
     local build_args=(
         --build-arg BUILD_DATE="${created_date}"
@@ -99,7 +99,7 @@ build_base() {
     # docker pull --platform linux/amd64 "ubuntu:${UBUNTU_VERSION}"
 
     printf "\033[96;1m%s\n\033[0m" "$(echo ${build_command[@]})"
-    
+
     eval ${build_command[@]}
 }
 

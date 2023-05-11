@@ -1,0 +1,22 @@
+# https://help.github.com/en/articles/metadata-syntax-for-github-actions
+name: Build and Push Docker images
+description: Build and push Docker images with Buildx
+
+inputs:
+  build-base:
+    description: "Whether to build parent image first"
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Build Base
+      if: ${{ inputs.build-base == 'true' }}
+      shell: bash
+      run: bin/build.sh -F
+
+    - name: Build Main
+      if: ${{ inputs.build-base != 'true' }}
+      shell: bash
+      run: bin/build.sh
