@@ -1,20 +1,14 @@
-name: Build and Publish
+name: Build and Publish Base
 
 on:
-  workflow_run:
-    workflows: [Build and Publish Base]
-    types: [completed]
-
   push:
     branches:
       - main
-    # paths:
-    #   - 'conf/**'
-    #   - 'docker/**'
+    paths:
+      - 'docker/dockerfiles/Dockerfile.base'
 
 env:
   DEBUG: true
-  BUILD_BASE: false
 
 jobs:
   docker:
@@ -36,7 +30,6 @@ jobs:
       #     password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and Push Base
-        if: ${{ env.BUILD_BASE == 'true' }}
         uses: ./.github/actions/build-push-script-action
         with:
           build-parent: true
@@ -44,30 +37,12 @@ jobs:
           registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
           registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push Main
-        uses: ./.github/actions/build-push-script-action
-        with:
-          debug: ${{ env.DEBUG }}
-          registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
-          registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       # TODO
       # - name: Base - Build and Push
-      #   if: ${{ env.BUILD_BASE == 'true' }}
       #   uses: docker/build-push-action@v4
       #   with:
       #     context: docker
       #     platforms: linux/amd64
       #     file: docker/dockerfiles/Dockerfile.base
-      #     push: true
-      #     tags: user/app:latest
-
-      # TODO
-      # - name: Main - Build and Push
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     context: docker
-      #     platforms: linux/amd64,linux/arm64,linux/arm/v7
-      #     file: docker/dockerfiles/Dockerfile.main
       #     push: true
       #     tags: user/app:latest

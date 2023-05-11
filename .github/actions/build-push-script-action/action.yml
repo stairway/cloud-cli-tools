@@ -7,6 +7,16 @@ inputs:
     description: "Whether to build parent image first"
     required: false
     default: 'false'
+  registry-username:
+    description: "The Image Registry Username"
+    required: false
+  registry-password:
+    description: "The Image Registry Password or Token"
+    required: false
+  debug:
+    description: "Debug Build"
+    required: false
+    default: 'false'
 
 runs:
   using: composite
@@ -14,9 +24,9 @@ runs:
     - name: Build Base
       if: ${{ inputs.build-base == 'true' }}
       shell: bash
-      run: bin/build.sh -F
+      run: REGISTRY_USERNAME="${{ inputs.registry-username }}" REGISTRY_PASSWORD="${{ inputs.registry-password }}" DEBUG="${{ inputs.debug }}" bin/build.sh -F
 
     - name: Build Main
       if: ${{ inputs.build-base != 'true' }}
       shell: bash
-      run: bin/build.sh
+      run: REGISTRY_USERNAME="${{ inputs.registry-username }}" REGISTRY_PASSWORD="${{ inputs.registry-password }}" DEBUG="${{ inputs.debug }}" bin/build.sh
