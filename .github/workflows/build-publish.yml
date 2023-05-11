@@ -24,6 +24,7 @@ jobs:
     outputs:
       debugVar: ${{ steps.debugvar.outputs.debugVar }}
       buildBaseVar: ${{ steps.buildbase.outputs.buildBaseVar }}
+      changedFilesVar: ${{ steps.buildbase.outputs.changedFilesVar }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -32,14 +33,12 @@ jobs:
       - name: Set Build Base Var
         id: buildbase
         run: |
+          echo "buildBaseVar=${{ env.BUILD_BASE }}" >> $GITHUB_OUTPUT
+          echo "changedFilesVar=$(echo $(git diff --name-only ${{ github.event.before }} ${{ github.event.after }}))" >> $GITHUB_OUTPUT
           for f in $(echo "/Dockerfile.base /base/"); do
             if [ "$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep ${f})" ]; then
               echo "buildBaseVar=true" >> $GITHUB_OUTPUT
-              if [ "${{ env.DEBUG }}" = "true" ]; then
-                echo "file: ${f}"
-              else
-                break
-              fi
+              break
             fi
           done
       - name: Set Debug Var
