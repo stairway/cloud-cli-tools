@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'conf/*-base.env'
+      - 'conf/base/*.env'
       - 'docker/dockerfiles/Dockerfile.base'
 
 env:

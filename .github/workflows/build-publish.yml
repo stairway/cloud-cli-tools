@@ -11,8 +11,8 @@ on:
     paths:
       - 'conf/**'
       - 'docker/**'
-      - '!conf/*-base.env'
-      - '!docker/dockerfiles/Dockerfile.base'
+      - '!conf/base/*'
+      - '!docker/dockerfiles/*.base'
 
 env:
   DEBUG: true
@@ -32,7 +32,7 @@ jobs:
       - name: Set Build Base Var
         id: buildbase
         run: |
-          for f in $(echo "Dockerfile.base -base.env"); do
+          for f in $(echo "/Dockerfile.base /base/"); do
             if [ "$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep ${f})" ]; then
               echo "buildBaseVar=true" >> $GITHUB_OUTPUT
               break

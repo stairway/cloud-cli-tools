@@ -29,13 +29,13 @@ printf "\033[92;1m>>>\033[94;1m %s: %s\033[92;1m <<<\033[0m\n" "cloud-cli-tools"
 cd "${SCRIPT_DIR}/../"
 
 [ -f conf/.env ] && source conf/.env
-source conf/project.env
-source conf/defaults.env
-source conf/docker-shared.env
-source conf/versions-base.env
-source conf/docker-base.env
-source conf/versions.env
-source conf/docker.env
+source conf/shared/project.env
+source conf/main/defaults.env
+source conf/shared/docker-shared.env
+source conf/base/versions-base.env
+source conf/base/docker-base.env
+source conf/main/versions.env
+source conf/main/docker.env
 
 count() { echo $#; }
 check_lockfile() { echo "$(cat ${1})"; }
