@@ -47,9 +47,11 @@ convert_zip() {
     done
 }
 
-[ -f conf/.env ] && source conf/.env
 source conf/project.env
 source conf/defaults.env
+source conf/docker-shared.env
+source conf/versions-base.env
+source conf/docker-base.env
 source conf/versions.env
 source conf/docker.env
 
@@ -61,6 +63,12 @@ DOCKER_IMAGE_PARENT_VERSION="${DOCKER_IMAGE_PARENT_VERSION:-""}"
 DOCKER_IMAGE="${DOCKER_IMAGE:-""}"
 DOCKER_IMAGE_VERSION="${DOCKER_IMAGE_VERSION:-""}"
 DOCKER_BUILD_LATEST="${DOCKER_BUILD_LATEST:-false}"
+
+if [ "${DEBUG:-false}" = "true" ]; then
+    DOCKER_IMAGE_PARENT_VERSION="${DOCKER_IMAGE_PARENT_VERSION}-${DEBUG_SUFFIX}"
+    DOCKER_IMAGE_VERSION="${DOCKER_IMAGE_VERSION}-${DEBUG_SUFFIX}"
+    DOCKER_BUILD_LATEST=false
+fi
 
 build_base() {
     local build_opts=("")

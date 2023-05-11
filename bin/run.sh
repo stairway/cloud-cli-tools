@@ -31,6 +31,9 @@ cd "${SCRIPT_DIR}/../"
 [ -f conf/.env ] && source conf/.env
 source conf/project.env
 source conf/defaults.env
+source conf/docker-shared.env
+source conf/versions-base.env
+source conf/docker-base.env
 source conf/versions.env
 source conf/docker.env
 
@@ -101,17 +104,17 @@ user_prompt() {
             printf "Enter your User Name (e.g. racfid): "
             read USERNAME
         done
-        
+
         while [ -z "${TEAM_NAME}" ]; do
             printf "Enter your Team Name (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "${TEAM_NAME_DEFAULT}"
             read TEAM_NAME && TEAM_NAME="${TEAM_NAME:-$TEAM_NAME_DEFAULT}"
         done
-        
+
         while [ -z "${GIT_CONFIG_FULL_NAME}" ]; do
             printf "Enter your Full Name: "
             read GIT_CONFIG_FULL_NAME
         done
-        
+
         while [ -z "${AWS_VAULT_USER_REGION}" ]; do
             AWS_VAULT_USER_REGION_DEFAULT="${AWS_VAULT_USER_REGION:-""}"
             printf "Enter AWS Account ID (\033[32;3mdefault: \033[32;3;1m%s\033[0m): " "$([ -n "${AWS_VAULT_USER_REGION_DEFAULT}" ] && echo ${AWS_VAULT_USER_REGION_DEFAULT} || echo empty)"
@@ -125,7 +128,7 @@ user_prompt() {
         done
 
         while  [ -z "${FILE_EDITOR}" ]; do
-            if [ "${FILE_EDITOR_DEFAULT:-""}" = "vim" ]; then 
+            if [ "${FILE_EDITOR_DEFAULT:-""}" = "vim" ]; then
                 FILE_EDITOR_ALT_1="nano"
             else
                 FILE_EDITOR_DEFAULT="nano"
@@ -141,7 +144,7 @@ user_prompt() {
         done
 
         while [ "${VSCODE_DEBUGPY}" != "${YES_VALUE}" -a "${VSCODE_DEBUGPY}" != "${NO_VALUE}" ]; do
-            if [ "${VSCODE_DEBUGPY_DEFAULT:-""}" = "${YES_VALUE}" ]; then 
+            if [ "${VSCODE_DEBUGPY_DEFAULT:-""}" = "${YES_VALUE}" ]; then
                 VSCODE_DEBUGPY_ALT="${NO_VALUE}"
             else
                 VSCODE_DEBUGPY_DEFAULT="${NO_VALUE}"
@@ -256,7 +259,7 @@ run_new() {
 
     copy_addons
     # copy_profile "docker/profile" "mount/home/${DOCKER_USER}/.profile.d"
-    
+
     user_prompt "$@"
 
     local docker_image="${DOCKER_IMAGE}:${1:-$DOCKER_IMAGE_VERSION}"
@@ -318,7 +321,7 @@ run_new() {
             -e "AWS_ACCESS_KEY_ID=\"${AWS_ACCESS_KEY_ID}\""
             -e "AWS_SECRET_ACCESS_KEY=\"${AWS_SECRET_ACCESS_KEY}\""
         )
-    
+
     local run_command=(docker run)
     [ -n "$PLATFORM" ] && run_command+=(--platform "linux/${PLATFORM}")
     run_command+=(
@@ -333,7 +336,7 @@ run_new() {
 
     printf "\033[93m>\033[0m Locking container name: %s\n" "${CONTAINER_NAME}"
     echo "CONTAINER_NAME=${CONTAINER_NAME}" > "${_CONTAINER_CACHE_FILE}"
-    
+
     eval ${run_command[@]} && CONTAINER_ID="$(docker ps -q --no-trunc --filter name=${CONTAINER_NAME})"
 
     [ -n "${CONTAINER_ID}" ] && echo "CONTAINER_ID=${CONTAINER_ID}" >> "${_CONTAINER_CACHE_FILE}"

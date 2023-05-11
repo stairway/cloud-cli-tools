@@ -4,8 +4,9 @@ on:
   push:
     branches:
       - main
-    # paths:
-    #   - 'docker/dockerfiles/Dockerfile.base'
+    paths:
+      - 'conf/*-base.env'
+      - 'docker/dockerfiles/Dockerfile.base'
 
 env:
   DEBUG: true
