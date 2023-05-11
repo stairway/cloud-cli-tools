@@ -31,8 +31,8 @@ jobs:
     if: needs.setup.outputs.debugVar == 'true'
     needs: setup
     steps:
-      - name: Output github.event
-        run: echo "${{ tojson(github.event) }}"
+      - name: Output github.event.workflow_run
+        run: echo "${{ tojson(github.event.workflow_run) }}"
   docker:
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
