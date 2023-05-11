@@ -20,7 +20,9 @@ jobs:
   debug:
     if: ${{ env.DEBUG == 'true' }}
     runs-on: ubuntu-latest
-    run: echo "${{ tojson(github.event) }}"
+    steps:
+      - name: Output github.event
+        run: echo "${{ tojson(github.event) }}"
   docker:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
