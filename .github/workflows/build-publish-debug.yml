@@ -45,8 +45,6 @@ jobs:
         run: echo '${{ toJson(github.event) }}'
       - name: Workflow Run
         run: echo '${{ tojson(github.event.workflow_run) }}'
-      - name: Show Changed Matches
-        run: echo '${{ needs.setup.outputs.all_changed_files }}'
       - name: Show Outputs
         run: echo '${{ toJson(needs.setup.outputs) }}'
       name: Show Refs
