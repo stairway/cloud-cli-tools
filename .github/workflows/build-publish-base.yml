@@ -30,7 +30,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and Push Base
-        uses: ./.github/actions/build-push-script-action
+        uses: ./.github/actions/build-script-action
         with:
           build-parent: true
           docker-login: false

@@ -79,7 +79,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and Push Main
-        uses: ./.github/actions/build-push-script-action
+        uses: ./.github/actions/build-script-action
         with:
           docker-login: false
 
