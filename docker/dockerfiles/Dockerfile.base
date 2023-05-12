@@ -190,3 +190,4 @@ LABEL org.opencontainers.image.documentation="https://github.com/${IMAGE_NAME}/t
 LABEL org.opencontainers.image.url="https://github.com/${IMAGE_NAME}"
 LABEL org.opencontainers.image.source="https://github.com/${IMAGE_NAME}/blob/main/docker/dockerfiles/Dockerfile.base"
 LABEL org.opencontainers.image.revision="${GIT_COMMIT}"
+
