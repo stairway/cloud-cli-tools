@@ -36,9 +36,10 @@ jobs:
 
       - name: Set Build Base Var
         id: buildbase
+        needs: get-changed
         run: |
           for f in $(echo "/Dockerfile.base /base/"); do
-            if [ "$(echo ${{ steps.get-changed.outputs.changedFiles.value }} | grep ${f})" ]; then
+            if [ "$(echo ${{ needs.get-changed.outputs.changedFiles.value }} | grep ${f})" ]; then
               echo "buildBaseVar=true" >> $GITHUB_OUTPUT
               break
             fi
