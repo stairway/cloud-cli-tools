@@ -23,7 +23,6 @@ jobs:
       debugVar: ${{ steps.debugvar.outputs.debugVar }}
       buildBaseVar: ${{ steps.buildbase.outputs.buildBaseVar }}
       changedFilesVar: ${{ steps.get-changed.outputs.changed-files }}
-      changedFilesVarJson: ${{ steps.get-changed.outputs.changed-files-json }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -54,8 +53,6 @@ jobs:
         run: echo '${{ tojson(github.event.workflow_run) }}'
       - name: Show Outputs
         run: echo '${{ toJson(needs.setup.outputs) }}'
-      - name: Show Changed Files JSON
-        run: echo '${{ toJson(fromJson(needs.setup.outputs.changedFilesVarJson)) }}'
   docker:
     runs-on: ubuntu-latest
     needs: setup
