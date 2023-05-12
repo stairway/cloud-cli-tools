@@ -34,9 +34,10 @@ jobs:
         id: buildbase
         run: |
           echo "buildBaseVar=${{ env.BUILD_BASE }}" >> $GITHUB_OUTPUT
-          echo "changedFilesVar=$(echo $(git diff --name-only ${{ github.event.before }} ${{ github.event.after }}))" >> $GITHUB_OUTPUT
+          changedFiles=$(echo $(git diff --name-only ${{ github.event.before }} ${{ github.event.after }}))
+          echo "changedFilesVar=${changedFiles}" >> $GITHUB_OUTPUT
           for f in $(echo "/Dockerfile.base /base/"); do
-            if [ "$(echo ${changedFilesVar} | grep ${f})" ]; then
+            if [ "$(echo ${changedFiles} | grep ${f})" ]; then
               echo "buildBaseVar=true" >> $GITHUB_OUTPUT
               break
             fi
