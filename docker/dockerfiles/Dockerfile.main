@@ -217,4 +217,3 @@ LABEL org.opencontainers.image.url="https://github.com/${IMAGE_NAME}"
 LABEL org.opencontainers.image.source="https://github.com/${IMAGE_NAME}/blob/main/docker/dockerfiles/Dockerfile.main"
 LABEL org.opencontainers.image.version="${IMAGE_VERSION}"
 LABEL org.opencontainers.image.revision="${GIT_COMMIT}"
-
