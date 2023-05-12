@@ -46,14 +46,13 @@ jobs:
       - name: Workflow Run
         run: echo '${{ tojson(github.event.workflow_run) }}'
       - name: Show Changed Matches
-        run: |
-          echo "${{ toJson(needs.setup.outputs.all_changed_files) }}"
+        run: echo '${{ needs.setup.outputs.all_changed_files }}'
       - name: Show Outputs
         run: echo '${{ toJson(needs.setup.outputs) }}'
-      name: Show Refs
-      run: |
-        echo "github.head_ref: ${{ github.head_ref }}"
-        echo "github.ref: ${{ github.ref }}"
+      - name: Show Refs
+        run: |
+          echo "github.head_ref: ${{ github.head_ref }}"
+          echo "github.ref: ${{ github.ref }}"
 
   docker:
     runs-on: ubuntu-latest
