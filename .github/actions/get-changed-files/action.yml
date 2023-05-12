@@ -3,15 +3,15 @@ name: Get Changed Files
 description: Get a list of the changed files
 
 outputs:
-  changedFiles:
+  changed-files:
     description: "Whether to build parent image first"
-    value: ${{ steps.buildbase.outputs.changedFilesVar }}
+    value: ${{ steps.get-changed.outputs.changedFilesVar }}
 
 runs:
   using: composite
   steps:
     - name: Get Changed Files
-      id: buildbase
+      id: get-changed
       shell: bash
       run: |
         changedFiles=$(echo $(git diff --name-only ${{ github.event.before }} ${{ github.event.after }}))
