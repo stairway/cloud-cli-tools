@@ -6,6 +6,9 @@ outputs:
   changed-files:
     description: "Whether to build parent image first"
     value: ${{ steps.get-changed.outputs.changedFilesVar }}
+  changed-files-json:
+    description: "Whether to build parent image first JSON"
+    value: ${{ fromJson(steps.get-changed.outputs.changedFilesVar) }}
 
 runs:
   using: composite
