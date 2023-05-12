@@ -55,6 +55,8 @@ jobs:
           echo "github.ref: ${{ github.ref }}"
           echo "github.ref_name: ${{ github.ref_name }}"
           echo "github.event.workflow_run.head_branch: ${{ github.event.workflow_run.head_branch }}"
+      - name: Concurrency Group
+        run: echo '${{ github.event.workflow_run.head_branch || github.ref_name || github.head_ref || github.ref }}'
 
   docker:
     runs-on: ubuntu-latest
