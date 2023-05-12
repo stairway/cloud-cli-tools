@@ -14,7 +14,7 @@ on:
       - '!conf/base/*'
       - '!docker/dockerfiles/*.base'
 
-concurrency: ${{ github.head_ref || github.ref }}
+concurrency: ${{ github.event.workflow_run.head_branch || github.ref_name || github.head_ref || github.ref }}
 
 jobs:
   setup:

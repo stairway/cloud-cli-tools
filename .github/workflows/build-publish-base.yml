@@ -8,7 +8,7 @@ on:
       - 'conf/base/*.env'
       - 'docker/dockerfiles/Dockerfile.base'
 
-concurrency: ${{ github.head_ref || github.ref }}
+concurrency: ${{ github.event.workflow_run.head_branch || github.ref_name || github.head_ref || github.ref }}
 
 jobs:
   docker:
