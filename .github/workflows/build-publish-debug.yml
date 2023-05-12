@@ -14,9 +14,6 @@ on:
       - '!conf/base/*'
       - '!docker/dockerfiles/*.base'
 
-env:
-  DEBUG: true
-
 concurrency: ${{ github.head_ref || github.ref }}
 
 jobs:
@@ -45,10 +42,7 @@ jobs:
               break
             fi
           done
-      - name: Set Debug Var
-        id: debugvar
-        run: |
-          echo "debugVar=${{ env.DEBUG }}" >> $GITHUB_OUTPUT
+
   debug:
     runs-on: ubuntu-latest
     if: needs.setup.outputs.debugVar == 'true'
@@ -83,16 +77,5 @@ jobs:
       - name: Build and Push Main
         uses: ./.github/actions/build-push-script-action
         with:
-          debug: ${{ env.DEBUG }}
+          debug: true
           docker-login: false
-
-      # TODO
-      # - name: Main - Build and Push
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     context: docker
-      #     platforms: linux/amd64,linux/arm64,linux/arm/v7
-      #     file: docker/dockerfiles/Dockerfile.main
-      #     push: true
-      #     tags: user/app:latest
-
