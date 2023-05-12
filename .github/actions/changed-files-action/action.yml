@@ -94,10 +94,6 @@ inputs:
     description: "Use the last commit on the remote branch as the `base_sha`. Defaults to the last non merge commit on the target branch for pull request events and the previous remote commit of the current branch for push events."
     required: false
     default: "false"
-  write_output_files:
-    description: "Write outputs to files in the `.github/outputs` folder by default."
-    required: false
-    default: "false"
   output_dir:
     description: "Directory to store output files."
     required: false
@@ -207,7 +203,7 @@ runs:
         INPUT_FETCH_DEPTH: ${{ inputs.fetch_depth }}
         INPUT_SINCE_LAST_REMOTE_COMMIT: ${{ inputs.since_last_remote_commit }}
     - name: Glob match
-      uses: tj-actions/glob@v17.2.5
+      uses: ./.github/actions/glob-action
       id: glob
       with:
         files: ${{ inputs.files }}
@@ -253,33 +249,3 @@ runs:
         INPUT_JSON: ${{ inputs.json }}
         INPUT_HAS_CUSTOM_PATTERNS: ${{ steps.glob.outputs.has-custom-patterns }}
         INPUT_JSON_RAW_FORMAT: ${{ inputs.json_raw_format }}
-    - name: Generate output files
-      uses: tj-actions/json2file@v1.4.2
-      if: inputs.write_output_files == 'true'
-      with:
-        outputs: ${{ toJSON(steps.changed-files.outputs) }}
-        directory: ${{ inputs.output_dir }}
-        skip_missing_keys: true
-        keys: |
-          added_files
-          copied_files
-          deleted_files
-          modified_files
-          renamed_files
-          all_old_new_renamed_files
-          type_changed_files
-          unmerged_files
-          unknown_files
-          all_changed_and_modified_files
-          all_changed_files
-          any_changed
-          only_changed
-          other_changed_files
-          all_modified_files
-          any_modified
-          only_modified
-          other_modified_files
-          any_deleted
-          only_deleted
-          other_deleted_files
-        extension: ${{ steps.changed-files.outputs.outputs_extension }}

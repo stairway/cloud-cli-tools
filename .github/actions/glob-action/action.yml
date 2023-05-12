@@ -1,0 +1,98 @@
+name: Glob match
+description: Search for files matching glob patterns.
+
+inputs:
+  files:
+    description: 'File patterns'
+    required: false
+  files-separator:
+    description: 'Separator used to split the `files` input'
+    default: "\n"
+    required: false
+  excluded-files:
+    description: 'Excluded file patterns (optionally include `!` before the file pattern or it would be prepended)'
+    required: false
+    default: ""
+  excluded-files-separator:
+    description: 'Separator used to split the `excluded-files` input'
+    default: "\n"
+    required: false
+  files-from-source-file:
+    description: 'Source file to populate the `files` input'
+    required: false
+    default: ""
+  files-from-source-file-separator:
+    description: 'Separator used to split the `files-from-source-file` input'
+    default: "\n"
+    required: false
+  excluded-files-from-source-file:
+    description: 'Source file to populate the `excluded-files` input'
+    required: false
+    default: ""
+  excluded-files-from-source-file-separator:
+    description: 'Separator used to split the `excluded-files-from-source-file` input'
+    default: "\n"
+    required: false
+  follow-symbolic-links:
+    description: 'Indicates whether to follow symbolic links'
+    default: "true"
+    required: true
+  match-directories:
+    description: 'Indicates whether to include match directories'
+    default: "true"
+    required: true
+  match-gitignore-files:
+    description: 'Indicates whether to match files in `.gitignore`'
+    default: "false"
+    required: true
+  separator:
+    description: 'Separator used for the paths output.'
+    required: true
+    default: " "
+  escape-paths:
+    description: 'Escape special characters of filenames used in the `paths` output'
+    required: false
+    default: "false"
+  strip-top-level-dir:
+    description: 'Strip the `$GITHUB_WORKSPACE` from the `paths` output'
+    required: false
+    default: "true"
+  include-deleted-files:
+    description: 'Include all matching deleted files'
+    required: false
+    default: "false"
+  base-ref:
+    description: 'Specify a base ref used for comparing changes, when `include-deleted-files` is set to `true`'
+    required: false
+    default: ${{ github.event.pull_request.base.ref }}
+  head-repo-fork:
+    description: 'Specify a boolean indicating a PR from a fork is used for comparing changes, when `include-deleted-files` is set to `true`'
+    required: false
+    default: ${{ github.event.pull_request.head.repo.fork }}
+  sha:
+    description: 'Specify a current commit SHA used for comparing changes, when `include-deleted-files` is set to `true`'
+    required: true
+    default: ${{ github.sha }}
+  base-sha:
+    description: 'Specify a base commit SHA used for comparing changes, when `include-deleted-files` is set to `true`'
+    required: false
+  working-directory:
+    description: 'Provide a path that is relative to `$GITHUB_WORKSPACE` for identifying the repository.'
+    required: true
+    default: '.'
+  diff:
+    description: 'Specify a diff string `..` or `...` used for comparing changes, when `include-deleted-files` is set to `true`'
+    required: false
+
+outputs:
+  paths:
+    description: "List of filtered paths using the specified patterns and separator"
+  paths-output-file:
+    description: "List of filtered paths using the specified patterns and separator stored in a temporary file"
+  has-custom-patterns:
+    description: "Indicates whether at least one pattern was provided"
+
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
+  post: 'dist/cleanup/index.js'
