@@ -1,0 +1,18 @@
+# https://help.github.com/en/articles/metadata-syntax-for-github-actions
+name: Get Changed Files
+description: Get a list of the changed files
+
+outputs:
+  changedFiles:
+    description: "Whether to build parent image first"
+    value: ${{ steps.buildbase.outputs.changedFilesVar }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get Changed Files
+      id: buildbase
+      shell: bash
+      run: |
+        changedFiles=$(echo $(git diff --name-only ${{ github.event.before }} ${{ github.event.after }}))
+        echo "changedFilesVar=${changedFiles}" >> $GITHUB_OUTPUT
