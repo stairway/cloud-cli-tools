@@ -2,14 +2,19 @@ name: Build and Publish Base
 
 on:
   push:
-    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+    branches:
+      - main
     paths:
       - 'conf/base/*.env'
       - 'docker/dockerfiles/Dockerfile.base'
 
 concurrency: ${{ github.head_ref || github.ref }}
 
+env:
+  DEBUG: true
+
 jobs:
+  if: ${{ env.DEBUG == 'true' }}
   docker:
     runs-on: ubuntu-latest
     steps:

@@ -6,16 +6,21 @@ on:
     types: [completed]
 
   push:
-    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+    branches:
+      - main
     paths:
       - 'conf/**'
       - 'docker/**'
       - '!conf/base/*'
       - '!docker/dockerfiles/*.base'
 
+env:
+  DEBUG: true
+
 concurrency: ${{ github.head_ref || github.ref }}
 
 jobs:
+  if: ${{ env.DEBUG == 'true' }}
   setup:
     runs-on: ubuntu-latest
     outputs:
