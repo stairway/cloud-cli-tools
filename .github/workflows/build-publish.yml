@@ -17,18 +17,19 @@ on:
 concurrency: ${{ github.head_ref || github.ref }}
 
 jobs:
-  setup:
+  init:
     runs-on: ubuntu-latest
     outputs:
-      buildBaseVar: ${{ steps.buildbase.outputs.buildBaseVar }}
-      changedFilesVar: ${{ steps.changed-files.outputs.all_changed_files }}
+      build_base: ${{ steps.changed-files.outputs.any_changed }}
+      any_changed: ${{ steps.changed-files.outputs.any_changed }}
+      all_changed_files: ${{ steps.changed-files.outputs.all_changed_files }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Get changed files in the docs folder
+      - name: Get changed files matching filter
         id: changed-files
         uses: tj-actions/changed-files@v35
         with:
@@ -36,31 +37,27 @@ jobs:
             conf/base/*.env
             docker/dockerfiles/*.base
 
-      - name: Set Build Base Var
-        id: buildbase
-        if: steps.changed-files.outputs.any_changed == 'true'
-        run: |
-          echo "Changed file match: ${{ steps.changed-files.outputs.all_changed_files }}"
-          echo "buildBaseVar=true" >> $GITHUB_OUTPUT
-
   show:
     runs-on: ubuntu-latest
     needs: setup
     steps:
-      - name: Output workflow_run
-        run: |
-          echo '${{ tojson(github.event.workflow_run) }}'
-      - name: Show Changed
-        run: |
-          echo "Changed files match: ${{ needs.setup.outputs.changedFilesVar }}"
+      - name: Github Event
+        run: echo '${{ toJson(github.event) }}'
+      - name: Workflow Run
+        run: echo '${{ tojson(github.event.workflow_run) }}'
+      - name: Show Changed Matches
+        run: echo '${{ needs.setup.outputs.all_changed_files }}'
       - name: Show Outputs
-        run: |
-          echo '${{ toJson(needs.setup.outputs) }}'
+        run: echo '${{ toJson(needs.setup.outputs) }}'
+      name: Show Refs
+      run: |
+        echo "github.head_ref: ${{ github.head_ref }}"
+        echo "github.ref: ${{ github.ref }}"
 
   docker:
     runs-on: ubuntu-latest
     needs: setup
-    if: github.event.workflow_run.conclusion == 'success' || !needs.setup.outputs.buildBaseVar
+    if: github.event.workflow_run.conclusion == 'success' || !needs.setup.outputs.build_base
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -80,7 +77,6 @@ jobs:
       - name: Build and Push Main
         uses: ./.github/actions/build-push-script-action
         with:
-          debug: ${{ env.DEBUG }}
           docker-login: false
 
       # TODO
