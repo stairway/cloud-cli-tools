@@ -1,8 +1,8 @@
-name: Build and Publish
+name: Build and Publish - Debug
 
 on:
   workflow_run:
-    workflows: [Build and Publish Base]
+    workflows: [Build and Publish Base - Debug]
     types: [completed]
 
   push:

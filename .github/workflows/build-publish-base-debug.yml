@@ -1,4 +1,4 @@
-name: Build and Publish Base
+name: Build and Publish Base - Debug
 
 on:
   push:
