@@ -50,7 +50,7 @@ jobs:
     if: needs.setup.outputs.debugVar == 'true'
     needs: setup
     steps:
-      - name: Output github.event.workflow_run
+      - name: Output workflow_run
         run: echo '${{ tojson(github.event.workflow_run) }}'
       - name: Show Outputs
         run: echo '${{ toJson(needs.setup.outputs) }}'
