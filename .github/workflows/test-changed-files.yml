@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     tags:
-      - 'test-*'
+      - 'v*'
 
 # -------------------------------------------------------------------------------------------------------------------------
 # Event `push`: Compare the preceeding commit -> to the current commit of the main branch.
