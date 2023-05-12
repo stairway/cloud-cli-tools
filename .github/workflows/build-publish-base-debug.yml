@@ -14,7 +14,6 @@ env:
   DEBUG: true
 
 jobs:
-  if: ${{ env.DEBUG == 'true' }}
   docker:
     runs-on: ubuntu-latest
     steps:

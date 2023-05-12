@@ -20,7 +20,6 @@ env:
 concurrency: ${{ github.head_ref || github.ref }}
 
 jobs:
-  if: ${{ env.DEBUG == 'true' }}
   setup:
     runs-on: ubuntu-latest
     outputs:
