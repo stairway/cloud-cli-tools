@@ -1,6 +1,6 @@
 # https://help.github.com/en/articles/metadata-syntax-for-github-actions
-name: Build and Push Docker images
-description: Build and push Docker images with Buildx
+name: Build and Push Docker Images
+description: Build and push docker images with buildx, using the build script
 
 inputs:
   build-parent:
