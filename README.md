@@ -210,11 +210,17 @@ usage:  run.sh -u <user> -t <team_name> -n <full_name> -m <email> -e <editor>
 |   |-- run.sh
 |   `-- zip2tgz.sh
 +-- conf/
-|   |-- defaults.env
-|   |-- docker.env
-|   |-- env.sample
-|   |-- project.env
-|   `-- versions.env
+|   |   +-- base/
+|   |       |-- docker-base.env
+|   |       `-- versions-base.env
+|   |   +-- main/
+|   |       |-- defaults.env
+|   |       |-- docker.env
+|   |       `-- versions.env
+|   |   +-- shared/
+|   |       |-- docker-shared.env
+|   |       `-- project.env
+|   `-- env.sample
 +-- dist/ # Only created if package script is run
 +-- docker/
 |   +-- addons/
