@@ -48,7 +48,6 @@ jobs:
           echo "debugVar=${{ env.DEBUG }}" >> $GITHUB_OUTPUT
   debug:
     runs-on: ubuntu-latest
-    if: needs.setup.outputs.debugVar == 'true'
     needs: setup
     steps:
       - name: Output workflow_run
