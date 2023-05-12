@@ -18,6 +18,8 @@ env:
   DEBUG: true
   BUILD_BASE: false
 
+concurrency: ${{ github.head_ref || github.ref }}
+
 jobs:
   setup:
     runs-on: ubuntu-latest

@@ -11,6 +11,8 @@ on:
 env:
   DEBUG: true
 
+concurrency: ${{ github.head_ref || github.ref }}
+
 jobs:
   docker:
     runs-on: ubuntu-latest
