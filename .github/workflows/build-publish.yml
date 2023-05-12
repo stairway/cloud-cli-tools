@@ -18,7 +18,7 @@ env:
   DEBUG: true
   BUILD_BASE: false
 
-concurrency: ${{ github.head_ref || github.ref }}
+concurrency: build-publish-main
 
 jobs:
   setup:
