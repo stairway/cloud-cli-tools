@@ -25,7 +25,7 @@ jobs:
       debugVar: ${{ steps.debugvar.outputs.debugVar }}
       buildBaseVar: ${{ steps.buildbase.outputs.buildBaseVar }}
       changedFilesVar: ${{ steps.get-changed.outputs.changed-files }}
-      changedFilesVarJson: ${{ steps.get-changed.outputs.changed-files-json }}
+      changedFilesVarJson: ${{ fromJson(steps.get-changed.outputs.changed-files-json) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -58,7 +58,7 @@ jobs:
       - name: Show Outputs
         run: echo '${{ toJson(needs.setup.outputs) }}'
       - name: Changed Files JSON
-        run: echo '${{ fromJson(needs.setup.outputs.changedFilesVarJson) }}'
+        run: echo '${{ toJson(needs.setup.outputs.changedFilesVarJson) }}'
   docker:
     runs-on: ubuntu-latest
     needs: setup
