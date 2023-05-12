@@ -81,7 +81,7 @@ RUN [ "${KIND_VERSION:-latest}" = "latest" ] && \
     kind --version >> /.versions
 
 # https://github.com/doitintl/kube-no-trouble
-# RUN curl -sSL https://git.io/install-kubent | sh -
+RUN curl -sSL https://git.io/install-kubent | sh -
 
 # Install kubectx and kubens
 # https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
