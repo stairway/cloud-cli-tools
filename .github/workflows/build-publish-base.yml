@@ -33,7 +33,6 @@ jobs:
         uses: ./.github/actions/build-push-script-action
         with:
           build-parent: true
-          debug: ${{ env.DEBUG }}
           docker-login: false
 
       # TODO
