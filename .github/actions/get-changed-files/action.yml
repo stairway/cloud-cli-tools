@@ -8,7 +8,7 @@ outputs:
     value: ${{ steps.get-changed.outputs.changedFilesVar }}
   changed-files-json:
     description: "Whether to build parent image first JSON"
-    value: ${{ steps.get-changed.outputs.changedFilesJsonVar }}
+    value: ${{ toJson(steps.get-changed.outputs.changedFilesJsonVar) }}
 
 runs:
   using: composite
@@ -17,7 +17,7 @@ runs:
       id: get-changed
       shell: bash
       run: |
-        changedFiles=$(echo $(git diff --name-only ${{ github.event.before }} ${{ github.event.after }}))
+        changedFiles=$(echo $(git diff --name-only ${{ github.event.before }} ${{ github.event.head }}))
         echo "changedFilesVar=${changedFiles}" >> $GITHUB_OUTPUT
         for f in $(git diff --name-only ${{ github.event.before }} ${{ github.event.after }}); do
           changedFilesJson=",\"${f}\""
