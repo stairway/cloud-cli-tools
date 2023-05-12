@@ -22,7 +22,7 @@ jobs:
     outputs:
       debugVar: ${{ steps.debugvar.outputs.debugVar }}
       buildBaseVar: ${{ steps.buildbase.outputs.buildBaseVar }}
-      changedFilesVar: ${{ steps.get-changed.outputs.changed-files }}
+      changedFilesVar: ${{ steps.changed-files.outputs.all_changed_files }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -41,12 +41,14 @@ jobs:
         id: buildbase
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
-          echo "Changed file match: ${{ steps.changed-files-specific.outputs.all_changed_files }}"
+          echo "Changed file match: ${{ steps.changed-files.outputs.all_changed_files }}"
           echo "buildBaseVar=true" >> $GITHUB_OUTPUT
+
       - name: Set Debug Var
         id: debugvar
         run: |
           echo "debugVar=${{ env.DEBUG }}" >> $GITHUB_OUTPUT
+
   debug:
     runs-on: ubuntu-latest
     needs: setup
@@ -56,7 +58,7 @@ jobs:
           echo '${{ tojson(github.event.workflow_run) }}'
       - name: Show Changed
         run: |
-          echo "Changed files match: ${{ steps.changed-files-specific.outputs.all_changed_files }}"
+          echo "Changed files match: ${{ needs.setup.outputs.changedFilesVar }}"
       - name: Show Outputs
         run: |
           echo '${{ toJson(needs.setup.outputs) }}'
