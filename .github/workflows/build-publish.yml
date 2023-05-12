@@ -24,7 +24,7 @@ jobs:
     outputs:
       debugVar: ${{ steps.debugvar.outputs.debugVar }}
       buildBaseVar: ${{ steps.buildbase.outputs.buildBaseVar }}
-      changedFilesVar: ${{ steps.get-changed.outputs.changed-files }}
+      changedFilesVar: ${{ steps.get-changed.outputs.changed-files.value }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -38,7 +38,7 @@ jobs:
         id: buildbase
         run: |
           for f in $(echo "/Dockerfile.base /base/"); do
-            if [ "$(echo ${{ steps.get-changed.outputs.changed-files }} | grep ${f})" ]; then
+            if [ "$(echo ${{ steps.get-changed.outputs.changed-files.value }} | grep ${f})" ]; then
               echo "buildBaseVar=true" >> $GITHUB_OUTPUT
               break
             fi
