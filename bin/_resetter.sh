@@ -10,10 +10,11 @@ NOTHING_MSG="Nothing to remove."
 
 cd "${SCRIPT_DIR}/../"
 
-source conf/project.env
-source conf/defaults.env
-source conf/versions.env
-source conf/docker.env
+source conf/shared/project.env
+source conf/main/defaults.env
+source conf/shared/docker-shared.env
+source conf/main/versions.env
+source conf/main/docker.env
 
 [ -f "${PWD}/.container" ] && source ${PWD}/.container
 WORKING_DIRECTORY=
@@ -25,7 +26,7 @@ get_container_by_name() { docker ps -aq --filter name="$1"; }
 
 cleanup_dotfiles() {
     [ -d "${WORKING_DIRECTORY}" ] || { printf "\033[91m[ERROR] Not a valid directory. Received '%s'. Exiting ...\033[0m\n" "${WORKING_DIRECTORY}" >&2; exit 1; }
-    
+
     printf "\033[93m>\033[0m Checking sub-directories: %s\n" "${WORKING_DIRECTORY}"
 
     local targeted=()
