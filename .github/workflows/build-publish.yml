@@ -20,7 +20,6 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      debugVar: ${{ steps.debugvar.outputs.debugVar }}
       buildBaseVar: ${{ steps.buildbase.outputs.buildBaseVar }}
       changedFilesVar: ${{ steps.changed-files.outputs.all_changed_files }}
     steps:
@@ -44,12 +43,7 @@ jobs:
           echo "Changed file match: ${{ steps.changed-files.outputs.all_changed_files }}"
           echo "buildBaseVar=true" >> $GITHUB_OUTPUT
 
-      - name: Set Debug Var
-        id: debugvar
-        run: |
-          echo "debugVar=${{ env.DEBUG }}" >> $GITHUB_OUTPUT
-
-  debug:
+  show:
     runs-on: ubuntu-latest
     needs: setup
     steps:
