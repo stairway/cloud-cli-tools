@@ -24,7 +24,7 @@ jobs:
     outputs:
       debugVar: ${{ steps.debugvar.outputs.debugVar }}
       buildBaseVar: ${{ steps.buildbase.outputs.buildBaseVar }}
-      changedFilesVar: ${{ steps.get-changed.outputs.changedFiles.value }}
+      changedFilesVar: ${{ steps.get-changed.outputs.changed-files }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
