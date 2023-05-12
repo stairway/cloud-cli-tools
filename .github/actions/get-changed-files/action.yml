@@ -21,6 +21,7 @@ runs:
         echo "changedFilesVar=${changedFiles}" >> $GITHUB_OUTPUT
         changedFilesJson='['
         for f in $(git diff --name-only ${{ github.event.before }} ${{ github.event.after }}); do
-          changedFilesJson=$changedFilesJson'\"'$f'\",'
+          changedFilesJson="$changedFilesJson"'\"'$f'\",'
         done
+        changedFilesJson="$(echo $changedFilesJson | sed 's/,$//')"']'
         echo "changedFilesJsonVar=${changedFilesJson}" >> $GITHUB_OUTPUT
