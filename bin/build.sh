@@ -173,6 +173,9 @@ while [ $# -gt 0 ]; do
     option="$1"
     shift
     case "${option}" in
+        -B|--base)
+            BUILD_MODE="base"
+            ;;
         -F|--full)
             BUILD_MODE="full"
             ;;
@@ -198,12 +201,17 @@ fi
 
 printf "\033[92mBuild Mode: \033[92;1m%s\033[0m\n" "${BUILD_MODE}"
 
-sh -c "$(cat ./docker-login)"
+if [ "${DOCKER_LOGIN:-false}" = "true" ]; then
+    sh -c "$(cat ./docker-login)"
+fi
 
 if [ "$BUILD_MODE" = "full" ]; then
     build_base ${ADDITIONAL_BUILD_OPTS[@]+"${ADDITIONAL_BUILD_OPTS[@]}"}
     docker push "${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}"
     build_new
+elif [ "$BUILD_MODE" = "base" ]; then
+    build_base ${ADDITIONAL_BUILD_OPTS[@]+"${ADDITIONAL_BUILD_OPTS[@]}"}
+    docker push "${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}"
 else
     build_new ${ADDITIONAL_BUILD_OPTS[@]+"${ADDITIONAL_BUILD_OPTS[@]}"}
 fi
