@@ -31,7 +31,7 @@ jobs:
 
       - name: Get changed files in the docs folder
         id: changed-files
-        uses: ./.github/actions/changed-files
+        uses: ./.github/actions/changed-files-action
         with:
           files: |
             conf/base/*.env

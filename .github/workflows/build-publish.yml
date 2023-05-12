@@ -31,7 +31,7 @@ jobs:
 
       - name: Get changed files matching filter
         id: changed-files
-        uses: ./.github/actions/changed-files
+        uses: ./.github/actions/changed-files-action
         with:
           files: |
             conf/base/*.env
