@@ -34,7 +34,7 @@ jobs:
         id: get-changed
         uses: ./.github/actions/get-changed-files
 
-      - nmae: Set Build Base Var
+      - name: Set Build Base Var
         id: buildbase
         run: |
           for f in $(echo "/Dockerfile.base /base/"); do
