@@ -6,7 +6,8 @@ on:
     types: [completed]
 
   push:
-    tags: ['v*']
+    tags:
+      - '*'
     branches:
       - main
     paths:

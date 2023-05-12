@@ -2,7 +2,8 @@ name: Build and Publish Base
 
 on:
   push:
-    tags: ['v*']
+    tags:
+      - '*'
     branches:
       - main
     paths:
