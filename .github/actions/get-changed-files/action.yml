@@ -20,7 +20,7 @@ runs:
         changedFiles=$(echo $(git diff --name-only ${{ github.event.before }} ${{ github.event.after }}))
         echo "changedFilesVar=${changedFiles}" >> $GITHUB_OUTPUT
         for f in $(git diff --name-only ${{ github.event.before }} ${{ github.event.after }}); do
-          changedFilesJson=",\\\"${f}\\\""
+          changedFilesJson=",'${f}'"
         done
         changedFilesJson="$(echo $changedFilesJson | sed 's/^,//')"
         echo "changedFilesJsonVar=${changedFilesJson}" >> $GITHUB_OUTPUT
