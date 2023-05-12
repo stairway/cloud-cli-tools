@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+      - 'latest'
     paths:
       - 'conf/base/*.env'
       - 'docker/dockerfiles/Dockerfile.base'
