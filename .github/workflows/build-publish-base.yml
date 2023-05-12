@@ -11,7 +11,7 @@ on:
 env:
   DEBUG: true
 
-concurrency: build-publish-base
+concurrency: ${{ github.head_ref || github.ref }}
 
 jobs:
   docker:
