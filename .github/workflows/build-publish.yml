@@ -17,7 +17,6 @@ on:
 concurrency: ${{ github.head_ref || github.ref }}
 
 jobs:
-  if: ${{ github.event.before != '0000000000000000000000000000000000000000' }}
   setup:
     runs-on: ubuntu-latest
     outputs:
