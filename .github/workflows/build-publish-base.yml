@@ -2,10 +2,9 @@ name: Build and Publish Base
 
 on:
   push:
-    tags:
-      - '*'
-    branches:
-      - main
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+    # branches:
+    #   - main
     paths:
       - 'conf/base/*.env'
       - 'docker/dockerfiles/Dockerfile.base'
