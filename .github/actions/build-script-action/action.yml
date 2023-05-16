@@ -33,7 +33,7 @@ runs:
         REGISTRY_PASSWORD: "${{ inputs.registry-password }}"
         DOCKER_LOGIN: "${{ inputs.docker-login }}"
         DEBUG: "${{ inputs.debug }}"
-      run: bin/build.sh -B
+      run: bin/build.sh -B -N
 
     - name: Build Main
       if: ${{ inputs.build-parent != 'true' }}
@@ -43,4 +43,4 @@ runs:
         REGISTRY_PASSWORD: "${{ inputs.registry-password }}"
         DOCKER_LOGIN: "${{ inputs.docker-login }}"
         DEBUG: "${{ inputs.debug }}"
-      run: bin/build.sh
+      run: bin/build.sh -N
