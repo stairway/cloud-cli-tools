@@ -97,7 +97,7 @@ check_crypto() {
 
 exit_code=0
 waiting() { printf "${1:-.}"; sleep 1; }
-die() { 
+die() {
     local color=$exit_code
     [ $exit_code -eq 0 ] && color=92 || color=91
     printf "\n\033[%d;1mExiting with code %d " $color $exit_code
@@ -120,6 +120,8 @@ do_init() {
 
 trap die INT
 
+[ "${1#ba}" != "sh" ] || input_shell="$1" && input_shell="${input_shell:-$SHELL}"
+
 case "$1" in
     describe)
         describe
@@ -128,17 +130,33 @@ case "$1" in
         describe
         ;;
     *)
-        if [ $# -gt 0 -a "${1}x" != "x" ]; then
-            [ "$(basename $1)" = "$(basename $SHELL)" ] && do_init
-            eval "bash -c '$@'"
-            bash -l -s "$@"
+        printf "Default Shell: ${SHELL}\n"
+        printf "Input Shell: ${input_shell}\n"
+        if [ "${DEBUG:-false}" = "true" ]; then
+            for arg in $@; do
+                printf "arg: ${arg}\n"
+            done
+        fi
+        if [ "${2#-}" != "$2" ]; then
+            # second arg is `-f`, `--some-option`, or `--`
+            # (first arg is bash)
+            if [ "${2}" = "--" ]; then
+                do_init
+                [ "${1}" = "${input_shell}" ] && shift
+                shift
+                echo -e "\033[93;1mExecuting Additional Command ...\033[0m"
+                echo -e "\033[93m\`${@}\033[0m\`"
+                eval "$@"
+                ${input_shell} -l
+            fi
         else
             do_init
-            bash -l
+            eval "${input_shell} -c '$@'"
+            ${input_shell} -l
         fi
-        exit_code=$?
+        [ $exit_code -eq 0 ] || exit_code=$?
         ;;
 esac
 
-[ "${DEBUG:-false}" = "true" ] && bash -l
+[ $exit_code -eq 0 ] || die
 [ "${KEEP_ALIVE:-false}" = "true" ] && tail -f /dev/null

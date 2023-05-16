@@ -52,12 +52,12 @@ iam_verify() {
     echo $aws_team_account | jq .
 }
 
-dpctl_stuff() {
+init_dpctl() {
     dpctl configure --team-name=${TEAM_NAME}
     dpctl workstation awsconfig ${TEAM_NAME} --user-name=${USERNAME}
 
     if [ -f ~/.aws/config_new ]; then
-        mv ~/.aws/config_new ~/.aws/config
+        mv ~/.aws/config_new ~/.aws/config >/dev/null 2>&1
     fi
 }
 
@@ -86,7 +86,7 @@ region=${AWS_VAULT_USER_REGION}
 EOF
 
         if [ ! -d "${HOME}/.dpctl" -o ! -f "${HOME}/.dpctl/config.yaml" ]; then
-            dpctl_stuff
+            init_dpctl
         fi
 
         # Check for 'credential_process' line in user profile, originally added by dpctl
@@ -115,7 +115,7 @@ if [ -d /tmp/addons ]; then
     if [ $(count ${tarballs[@]}) -gt 0 ]; then
         [ -d /tmp/addons/archive ] || mkdir /tmp/addons/archive
         pushd /tmp/addons
-        for f in ${tarballs[@]}; do tar -xzvf "${f}"; done
+        for f in ${tarballs[@]}; do tar -xzvf "${f}" 2>/dev/null; done
         popd
         mv ${tarballs[@]} /tmp/addons/archive/ 2>/dev/null || true
     fi
@@ -124,7 +124,7 @@ if [ -d /tmp/addons ]; then
     if [ $(count ${zips[@]}) -gt 0 ]; then
         [ -d /tmp/addons/archive ] || mkdir /tmp/addons/archive
         pushd /tmp/addons
-        for f in ${zips[@]}; do unzip -o "${f}"; done
+        for f in ${zips[@]}; do unzip -o "${f}" 2>/dev/null; done
         popd
         mv ${zips[@]} /tmp/addons/archive/ 2>/dev/null || true
     fi

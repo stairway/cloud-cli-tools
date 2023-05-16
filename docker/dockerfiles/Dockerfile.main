@@ -14,7 +14,9 @@ ARG HELM_VERSION=latest
 ENV KEEP_ALIVE=false
 
 # https://yaml.org/type/bool.html
-ENV TRUE='y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1'
+ENV TRUE='y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1'
+ENV FALSE='n|N|no|No|NO|false|False|FALSE|off|Off|OFF|0'
+ENV BOOL="${TRUE}|${FALSE}"
 
 ENV USER="${USER:-root}"
 ENV HOME="${HOME:-/root}"
@@ -167,6 +169,7 @@ RUN [ "${K9S_VERSION:-latest}" = "latest" ] && \
     k9s version
 
 RUN rm -rf /tmp/downloads && \
+    echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
     ln -s /usr/share/bash-completion/completions/git ~/.git-completion.bash && \
     echo "complete -C /usr/local/bin/aws_completer aws" >> "${HOME}/.bashrc" && \
     echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \

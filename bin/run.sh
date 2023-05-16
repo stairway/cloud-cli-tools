@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 set -euf
 LC_CTYPE=C
@@ -98,8 +98,9 @@ exec_container() {
 }
 
 user_prompt() {
-    if [ $# -eq 0 ]; then
+    if [ $# -eq 0 -o -n "${dash_args:-""}" ]; then
         echo
+
         while [ -z "${USERNAME}" ]; do
             printf "Enter your User Name (e.g. racfid): "
             read USERNAME
@@ -251,6 +252,22 @@ copy_profile() {
     fi
 }
 
+arr_to_str() {
+    arr="$@"
+    str=""
+    if [ $# -gt 0 ]; then
+        argc=$#
+        while [ $# -gt 0 ]; do
+            if [ $# -eq $argc ]; then
+                part="$1" && shift && str="${part}" || continue
+            else
+                part="$1" && shift && str="${str} ${part}" || continue
+            fi
+        done
+    fi
+    echo "${str}"
+}
+
 run_new() {
     local docker_user_home=/root
     [ "${DOCKER_USER:-root}" = "root" ] || docker_user_home="/home/${DOCKER_USER}"
@@ -293,6 +310,12 @@ run_new() {
             -d
             "${docker_image}"
             bash
+            --
+            'echo \"HOSTNAME: \$HOSTNAME\"\; \
+            echo \"USERNAME: \$USERNAME\"\; \
+            echo \"TEAM_NAME: \$TEAM_NAME\"\; \
+            echo \"GIT_CONFIG_FULL_NAME: \$GIT_CONFIG_FULL_NAME\"\; \
+            echo \"GIT_CONFIG_EMAIL: \$GIT_CONFIG_EMAIL\"\;'
         )
         KEEP_ALIVE=true
     else
@@ -300,7 +323,7 @@ run_new() {
             --rm
             -it
             "${docker_image}"
-            bash -c "init.sh"
+            bash -c \'init.sh\'
         )
         KEEP_ALIVE=false
     fi
@@ -310,16 +333,15 @@ run_new() {
         -e "USERNAME=${USERNAME}"
         -e "TEAM_NAME=${TEAM_NAME}"
         -e "AWS_VAULT_USER_REGION=${AWS_VAULT_USER_REGION}"
-        -e "GIT_CONFIG_EMAIL=\"${GIT_CONFIG_EMAIL}\""
-        -e "GIT_CONFIG_FULL_NAME=\"${GIT_CONFIG_FULL_NAME}\""
+        -e "'GIT_CONFIG_EMAIL=${GIT_CONFIG_EMAIL}'"
+        -e "'GIT_CONFIG_FULL_NAME=${GIT_CONFIG_FULL_NAME}'"
         -e "EDITOR=${FILE_EDITOR}"
-        # -e "TRUE=\"${TRUE}\""
     )
     [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && environment_vars+=(-e "VSCODE_DEBUGPY_PORT=${VSCODE_DEBUGPY_PORT}")
     [ -n "${AWS_ACCESS_KEY_ID:-""}" -a -n "${AWS_SECRET_ACCESS_KEY:-""}" ] && \
         environment_vars+=(
-            -e "AWS_ACCESS_KEY_ID=\"${AWS_ACCESS_KEY_ID}\""
-            -e "AWS_SECRET_ACCESS_KEY=\"${AWS_SECRET_ACCESS_KEY}\""
+            -e "'AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}'"
+            -e "'AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}'"
         )
 
     local run_command=(docker run)
@@ -337,7 +359,7 @@ run_new() {
     printf "\033[93m>\033[0m Locking container name: %s\n" "${CONTAINER_NAME}"
     echo "CONTAINER_NAME=${CONTAINER_NAME}" > "${_CONTAINER_CACHE_FILE}"
 
-    eval ${run_command[@]} && CONTAINER_ID="$(docker ps -q --no-trunc --filter name=${CONTAINER_NAME})"
+    eval "$(echo ${run_command[@]})" && CONTAINER_ID="$(docker ps -q --no-trunc --filter name=${CONTAINER_NAME})"
 
     [ -n "${CONTAINER_ID}" ] && echo "CONTAINER_ID=${CONTAINER_ID}" >> "${_CONTAINER_CACHE_FILE}"
 }

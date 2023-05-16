@@ -71,21 +71,21 @@ build_base() {
 
     local created_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
     local build_args=(
-        --build-arg BUILD_DATE="${created_date}"
-        --build-arg GIT_COMMIT="$(git rev-parse --short HEAD)"
-        --build-arg IMAGE_NAME="${DOCKER_IMAGE_PARENT}"
-        --build-arg IMAGE_VERSION="${DOCKER_IMAGE_PARENT_VERSION}"
+        --build-arg "'BUILD_DATE=${created_date}'"
+        --build-arg "'GIT_COMMIT=$(git rev-parse --short HEAD)'"
+        --build-arg "'IMAGE_NAME=${DOCKER_IMAGE_PARENT}'"
+        --build-arg "'IMAGE_VERSION=${DOCKER_IMAGE_PARENT_VERSION}'"
     )
-    [ "${UBUNTU_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg VERSION="${UBUNTU_VERSION}")
-    [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg USER="${DOCKER_USER}")
-    [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg HOME="/home/${DOCKER_USER}")
-    [ "${UBUNTU_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg VERSION="${UBUNTU_VERSION}")
-    [ "${AWS_VAULT_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg AWS_VAULT_VERSION="${AWS_VAULT_VERSION}")
-    [ "${MINIKUBE_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg MINIKUBE_VERSION="${MINIKUBE_VERSION}")
+    [ "${UBUNTU_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "VERSION=${UBUNTU_VERSION}")
+    [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg "USER=${DOCKER_USER}")
+    [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg "HOME=/home/${DOCKER_USER}")
+    [ "${UBUNTU_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "VERSION=${UBUNTU_VERSION}")
+    [ "${AWS_VAULT_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "AWS_VAULT_VERSION=${AWS_VAULT_VERSION}")
+    [ "${MINIKUBE_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "MINIKUBE_VERSION=${MINIKUBE_VERSION}")
 
     local build_labels=(
-        --label "org.opencontainers.image.vendor=\"${VENDOR_ORGANIZATION}\""
-        --label "com.${CONSUMER_ORG_LOWER}.image.name=${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}"
+        --label "'org.opencontainers.image.vendor=${VENDOR_ORGANIZATION}'"
+        --label "'com.${CONSUMER_ORG_LOWER}.image.name=${DOCKER_IMAGE_PARENT}:${DOCKER_IMAGE_PARENT_VERSION}'"
     )
 
     local build_command=(docker build)
@@ -117,22 +117,22 @@ build_new() {
 
     local created_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
     local build_args=(
-        --build-arg IMAGE_BASE_NAME="${DOCKER_IMAGE_PARENT}"
-        --build-arg VERSION="${DOCKER_IMAGE_PARENT_VERSION}"
-        --build-arg BUILD_DATE="${created_date}"
-        --build-arg GIT_COMMIT="$(git rev-parse --short HEAD)"
-        --build-arg IMAGE_NAME="${DOCKER_IMAGE}"
-        --build-arg IMAGE_VERSION="${DOCKER_IMAGE_VERSION}"
+        --build-arg "'IMAGE_BASE_NAME=${DOCKER_IMAGE_PARENT}'"
+        --build-arg "'VERSION=${DOCKER_IMAGE_PARENT_VERSION}'"
+        --build-arg "'BUILD_DATE=${created_date}'"
+        --build-arg "'GIT_COMMIT=$(git rev-parse --short HEAD)'"
+        --build-arg "'IMAGE_NAME=${DOCKER_IMAGE}'"
+        --build-arg "'IMAGE_VERSION=${DOCKER_IMAGE_VERSION}'"
     )
-    [ "${KUBE_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg KUBE_VERSION="${KUBE_VERSION}")
-    [ "${ISTIO_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg ISTIO_VERSION="${ISTIO_VERSION}")
-    [ "${TERRAFORM_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg TERRAFORM_VERSION="${TERRAFORM_VERSION}")
-    [ "${TERRAGRUNT_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg TERRAGRUNT_VERSION="${TERRAGRUNT_VERSION}")
-    [ "${HELM_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg HELM_VERSION="${HELM_VERSION}")
+    [ "${KUBE_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg "'KUBE_VERSION=${KUBE_VERSION}'")
+    [ "${ISTIO_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg "'ISTIO_VERSION=${ISTIO_VERSION}'")
+    [ "${TERRAFORM_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg "'TERRAFORM_VERSION=${TERRAFORM_VERSION}'")
+    [ "${TERRAGRUNT_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg "'TERRAGRUNT_VERSION=${TERRAGRUNT_VERSION}'")
+    [ "${HELM_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg "'HELM_VERSION=${HELM_VERSION}'")
 
     local build_labels=(
-        --label "org.opencontainers.image.vendor=\"${VENDOR_ORGANIZATION}\""
-        --label "com.${CONSUMER_ORG_LOWER}.image.name=${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}"
+        --label "'org.opencontainers.image.vendor=${VENDOR_ORGANIZATION}'"
+        --label "'com.${CONSUMER_ORG_LOWER}.image.name=${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}'"
     )
 
     local build_tags=(-t "${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}")
