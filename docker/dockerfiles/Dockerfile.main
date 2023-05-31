@@ -237,18 +237,17 @@ ENTRYPOINT [ "/usr/local/bin/docker-entrypoint.sh" ]
 
 # Additional Metadata
 ARG VERSION=base-latest
-ARG IMAGE_BASE_NAME="stairway/cloud-cli-tools"
-ARG IMAGE_NAME="stairway/cloud-cli-tools"
+ARG IMAGE_BASE_NAME="stairwaytowonderland/cloud-cli-tools"
+ARG IMAGE_NAME="stairwaytowonderland/cloud-cli-tools"
 ARG IMAGE_VERSION=latest
 ARG GIT_COMMIT=
 ARG BUILD_DATE=
 LABEL org.opencontainers.image.base.name="${IMAGE_BASE_NAME}:${VERSION}"
 LABEL org.opencontainers.image.description="docker run <image>:<tag> describe"
-LABEL org.opencontainers.image.vendor="stairwaytowonderland"
 LABEL org.opencontainers.image.title="Cloud CLI Tools"
 LABEL org.opencontainers.image.created-date="${BUILD_DATE}"
-LABEL org.opencontainers.image.documentation="https://github.com/${IMAGE_NAME}/tree/main/docker#readme"
-LABEL org.opencontainers.image.url="https://github.com/${IMAGE_NAME}"
-LABEL org.opencontainers.image.source="https://github.com/${IMAGE_NAME}/blob/main/docker/dockerfiles/Dockerfile.main"
+LABEL org.opencontainers.image.documentation="https://github.com/${GITHUB_REPO}/tree/main/docker#readme"
+LABEL org.opencontainers.image.url="https://github.com/${GITHUB_REPO}"
+LABEL org.opencontainers.image.source="https://github.com/${GITHUB_REPO}/blob/main/docker/dockerfiles/Dockerfile.main"
 LABEL org.opencontainers.image.version="${IMAGE_VERSION}"
 LABEL org.opencontainers.image.revision="${GIT_COMMIT}"

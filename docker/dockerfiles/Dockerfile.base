@@ -7,6 +7,9 @@ ARG AWS_VAULT_VERSION=v6.6.2
 ARG MINIKUBE_VERSION=latest
 ARG AWS_PYTHON_LAMBDA_RUNTIME_VERSION=3.9
 
+ARG TZ=America/Chicago
+ARG EDITOR=nano
+
 # default values
 ARG USER=root
 ARG HOME=/root
@@ -17,9 +20,9 @@ ARG UID=1001
 ENV USER=${USER}
 ENV HOME=${HOME}
 
-ENV TZ=America/Chicago
+ENV TZ=${TZ}
 ENV TERM=xterm-color
-ENV EDITOR=nano
+ENV EDITOR=${EDITOR}
 ENV AWS_VAULT_BACKEND=pass
 
 RUN apt-get update -y && \
@@ -237,16 +240,15 @@ WORKDIR $HOME
 
 # Additional Metadata
 ARG VERSION=latest
-ARG IMAGE_NAME="stairway/cloud-cli-tools"
+ARG IMAGE_NAME="stairwaytowonderland/cloud-cli-tools"
 ARG IMAGE_VERSION=base-latest
 ARG GIT_COMMIT=
 ARG BUILD_DATE=
 LABEL org.opencontainers.image.base.name="ubuntu:$VERSION"
 LABEL org.opencontainers.image.description="${IMAGE_NAME}:${IMAGE_VERSION}"
-LABEL org.opencontainers.image.vendor="stairwaytowonderland"
 LABEL org.opencontainers.image.title="Cloud CLI Tools - Base Image"
 LABEL org.opencontainers.image.created-date="${BUILD_DATE}"
-LABEL org.opencontainers.image.documentation="https://github.com/${IMAGE_NAME}/tree/main/docker#readme"
-LABEL org.opencontainers.image.url="https://github.com/${IMAGE_NAME}"
-LABEL org.opencontainers.image.source="https://github.com/${IMAGE_NAME}/blob/main/docker/dockerfiles/Dockerfile.base"
+LABEL org.opencontainers.image.documentation="https://github.com/${GITHUB_REPO}/tree/main/docker#readme"
+LABEL org.opencontainers.image.url="https://github.com/${GITHUB_REPO}"
+LABEL org.opencontainers.image.source="https://github.com/${GITHUB_REPO}/blob/main/docker/dockerfiles/Dockerfile.base"
 LABEL org.opencontainers.image.revision="${GIT_COMMIT}"
