@@ -1,8 +1,8 @@
-run-name: Build and Publish - Branch
+name: Build and Publish - Branch
 
 on:
   workflow_run:
-    workflows: [Build and Publish Base - Debug]
+    workflows: [Build and Publish Base - Branch]
     types: [completed]
 
   # pull_request:

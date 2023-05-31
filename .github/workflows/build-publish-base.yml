@@ -1,4 +1,4 @@
-run-name: Build and Publish Base
+name: Build and Publish Base
 
 on:
   push:
