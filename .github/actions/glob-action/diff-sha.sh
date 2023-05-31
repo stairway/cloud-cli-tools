@@ -304,20 +304,12 @@ if [[ "$PREVIOUS_SHA" == "$CURRENT_SHA" && "$INITIAL_COMMIT" == "false" ]]; then
   exit 1
 fi
 
-if [[ -z "$GITHUB_OUTPUT" ]]; then
-  echo "::set-output name=target_branch::$TARGET_BRANCH"
-  echo "::set-output name=current_branch::$CURRENT_BRANCH"
-  echo "::set-output name=previous_sha::$PREVIOUS_SHA"
-  echo "::set-output name=current_sha::$CURRENT_SHA"
-  echo "::set-output name=diff::$DIFF"
-else
-  cat <<EOF >> "$GITHUB_OUTPUT"
+cat <<EOF >> "$GITHUB_OUTPUT"
 target_branch=$TARGET_BRANCH
 current_branch=$CURRENT_BRANCH
 previous_sha=$PREVIOUS_SHA
 current_sha=$CURRENT_SHA
 diff=$DIFF
 EOF
-fi
 
 echo "::endgroup::"
