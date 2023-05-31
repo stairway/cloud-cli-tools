@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
 
-count() { echo $#; }
-
 DEFAULT_VAULT_USER="${DEFAULT_VAULT_USER:-user}"
 
 aws_vault_version=$(aws-vault --version 2>&1 | sed 's/^v//g')
 aws_vault_major_version=$(echo "${aws_vault_version}" | awk -F'.' '{print $1}')
 
-configure_aws_vault_7x_mfa() {
+count() { echo $#; }
+
+_configure_aws_vault_7x_mfa() {
     aws configure set mfa_serial "arn:aws:iam::${1:-""}:mfa/${USERNAME}" --profile "${DEFAULT_VAULT_USER}"
     aws configure set mfa_process "pass otp my_aws_mfa"
 }
 
-configure_aws_vault_6x_mfa() {
+_configure_aws_vault_6x_mfa() {
     aws configure set mfa_serial "arn:aws:iam::${1:-""}:mfa/${USERNAME}" --profile "${DEFAULT_VAULT_USER}"
 }
 
 # TODO: doesn't work with k9s
-adjust_for_reduced_mfa_prompt() {
+_adjust_for_reduced_mfa_prompt() {
     printf ""
     # sed -E -i "s/(^credential_process)\s*=\s*(.* -.+json $DEFAULT_VAULT_USER$)/#\1=\2/g" ~/.aws/config && \
     # sed -E -i "s/(^mfa_serial)\s*=\s*(.*\/$USERNAME$)/#\1=\2/" ~/.aws/config && \
@@ -26,7 +26,7 @@ adjust_for_reduced_mfa_prompt() {
 }
 
 iam_verify() {
-    local team="${1}"
+    local team="${1:-$TEAM_NAME}"
     local cluster="${2:-nonprod}"
 
     sleep 1
@@ -38,8 +38,8 @@ iam_verify() {
     echo $aws_user_account | jq .
 
     [ $aws_vault_major_version -ge 7 ] && \
-        configure_aws_vault_7x_mfa "$aws_user_account_id" || \
-        configure_aws_vault_6x_mfa "$aws_user_account_id"
+        _configure_aws_vault_7x_mfa "$aws_user_account_id" || \
+        _configure_aws_vault_6x_mfa "$aws_user_account_id"
 
     echo "mfa_serial=${aws_user_account_arn}" >> ~/.aws/config_restore
 
@@ -61,7 +61,7 @@ init_dpctl() {
     fi
 }
 
-waiting() { printf "${1:-.}"; sleep 1; }
+_waiting() { printf "${1:-.}"; sleep 1; }
 
 init_aws() {
     local last_err=0
@@ -96,7 +96,7 @@ EOF
                 # sed '0,/pattern/s/pattern/replacement/' filename
                 # https://www.linuxtopia.org/online_books/linux_tool_guides/the_sed_faq/sedfaq4_004.html
                 sed -E -i "0,/^credential_process.+-.+json\s+$DEFAULT_VAULT_USER$/s/(^credential_process.+)\s+(-.+json $DEFAULT_VAULT_USER$)/#\1 \2/" .aws/config && \
-                adjust_for_reduced_mfa_prompt && \
+                _adjust_for_reduced_mfa_prompt && \
                 [ $aws_vault_major_version -ge 7 ] && \
                     aws configure set credential_process "aws-vault exec --format=json $DEFAULT_VAULT_USER" --profile "$DEFAULT_VAULT_USER" || \
                     aws configure set credential_process "aws-vault exec --no-session --json --prompt=pass $DEFAULT_VAULT_USER" --profile "$DEFAULT_VAULT_USER"
@@ -145,4 +145,4 @@ fi
 
 [ -z "$(which dpctl)" ] || init_aws
 
-export -f count
+# [ -f $(which kube-ps1.sh) ] && . $(which kube-ps1.sh)

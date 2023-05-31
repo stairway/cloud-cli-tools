@@ -7,6 +7,7 @@ GIT_CONFIG_FULL_NAME="${GIT_CONFIG_FULL_NAME:-""}"
 GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-""}"
 EDITOR="${EDITOR:-""}"
 GIT_DEFAULT_BRANCH="${GIT_DEFAULT_BRANCH:-main}"
+INPUT_SHELL=""
 
 git_config() {
     git config --global user.name "${GIT_CONFIG_FULL_NAME}"
@@ -118,9 +119,44 @@ do_init() {
     fi
 }
 
+print_args() {
+    for arg in $@; do
+        printf "arg: ${arg}\n"
+    done
+}
+
 trap die INT
 
-[ "${1#ba}" != "sh" ] || input_shell="$1" && input_shell="${input_shell:-$SHELL}"
+_set_input_cmd() {
+    [ "${1#ba}" != "sh" ] || INPUT_SHELL="$1" && INPUT_SHELL="${INPUT_SHELL:-$SHELL}"
+    [ "${DEBUG:-false}" = "true" ] && printf "Set INPUT_SHELL to '%s'" "$INPUT_SHELL"
+}
+
+_print_shells() {
+    printf "Default Shell: ${SHELL}\n"
+    printf "Input Shell: ${INPUT_SHELL}\n"
+}
+
+_login_exec() {
+    ${1:-$INPUT_SHELL} -l
+}
+
+_initialize() {
+    _set_input_cmd "$@"
+    [ "${DEBUG:-false}" = "true" ] && _print_shells
+    [ "${DEBUG:-false}" = "true" ] && print_args "$@"
+    [ "$(basename ${INPUT_SHELL})" = "$(basename ${SHELL})" ] && do_init || return 1
+}
+
+# _double_dash() {
+#     # first arg is `-f`, `--some-option`, or `--`
+#     if [ "${1#-}" != "$1" ]; then
+#         if [ "${1}" = "--" ]; then
+#             return 0
+#         fi
+#     fi
+#     return 1
+# }
 
 case "$1" in
     describe)
@@ -129,31 +165,16 @@ case "$1" in
     help)
         describe
         ;;
+    sh|bash)
+        _initialize "$@"
+        eval "$@"
+        ${INPUT_SHELL} -l
+        [ $exit_code -eq 0 ] || exit_code=$?
+        ;;
     *)
-        printf "Default Shell: ${SHELL}\n"
-        printf "Input Shell: ${input_shell}\n"
-        if [ "${DEBUG:-false}" = "true" ]; then
-            for arg in $@; do
-                printf "arg: ${arg}\n"
-            done
-        fi
-        if [ "${2#-}" != "$2" ]; then
-            # second arg is `-f`, `--some-option`, or `--`
-            # (first arg is bash)
-            if [ "${2}" = "--" ]; then
-                do_init
-                [ "${1}" = "${input_shell}" ] && shift
-                shift
-                echo -e "\033[93;1mExecuting Additional Command ...\033[0m"
-                echo -e "\033[93m\`${@}\033[0m\`"
-                eval "$@"
-                ${input_shell} -l
-            fi
-        else
-            do_init
-            eval "${input_shell} -c '$@'"
-            ${input_shell} -l
-        fi
+        _initialize "$@"
+        eval "${INPUT_SHELL} -c 'exec $@'"
+        ${INPUT_SHELL} -l
         [ $exit_code -eq 0 ] || exit_code=$?
         ;;
 esac

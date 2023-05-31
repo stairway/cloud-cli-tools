@@ -10,11 +10,11 @@ NOTHING_MSG="Nothing to remove."
 
 cd "${SCRIPT_DIR}/../"
 
-source conf/shared/project.env
-source conf/main/defaults.env
-source conf/shared/docker-shared.env
-source conf/main/versions.env
-source conf/main/docker.env
+. conf/shared/project.env
+. conf/main/defaults.env
+. conf/shared/docker-shared.env
+. conf/main/versions.env
+. conf/main/docker.env
 
 [ -f "${PWD}/.container" ] && source ${PWD}/.container
 WORKING_DIRECTORY=

@@ -11,6 +11,8 @@ ARG TERRAFORM_VERSION=latest
 ARG TERRAGRUNT_VERSION=latest
 ARG HELM_VERSION=latest
 
+ARG KUBE_PS1_VERSION=v0.8.0
+
 ENV KEEP_ALIVE=false
 
 # https://yaml.org/type/bool.html
@@ -36,21 +38,23 @@ ADD addons/**/*.tgz /tmp/addons/
 
 RUN for f in $(ls -1 /tmp/addons); do install "/tmp/addons/${f}" "/usr/local/bin/${f}"; done && \
     rm -rf /tmp/addons && \
-    chmod +x /opt/bin/describe
+    chmod +x /opt/bin/describe && \
+    mkdir -p $HOME/.local/shell_addons.d
 
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux
 RUN [ "${KUBE_VERSION:-latest}" = "latest" ] && \
-        KUBE_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
-        KUBE_VERSION="v$(echo ${KUBE_VERSION} | sed s/^v//g)" && \
-    curl -LO "https://dl.k8s.io/release/${KUBE_VERSION}/bin/linux/amd64/kubectl" && \
-    curl -LO "https://dl.k8s.io/${KUBE_VERSION}/bin/linux/amd64/kubectl.sha256" && \
-    CHECKSUM_VERIFY_STATUS=$(echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check) && \
-    LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "kubectl: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+        version=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
+        version="v$(echo ${KUBE_VERSION} | sed s/^v//g)" && \
+    status=$(./verify-checksum-method2.sh \
+        "https://dl.k8s.io/release/${version}/bin/linux/amd64/kubectl" \
+        "kubectl" \
+        "https://dl.k8s.io/${version}/bin/linux/amd64/kubectl.sha256" \
+        "kubectl.sha256") && \
+    echo $status && \
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
     printf "Kubernetes %s\n" "$(kubectl version --short --client)" >> /.versions
 
-# https://helm.sh/docs/intro/install/
+# # https://helm.sh/docs/intro/install/
 RUN [ "${HELM_VERSION:-latest}" = "latest" ] && \
         HELM_VERSION=$(./gh-get-latest-release.sh "helm/helm") || \
         HELM_VERSION="v$(echo ${HELM_VERSION} | sed s/^v//g)" && \
@@ -59,114 +63,134 @@ RUN [ "${HELM_VERSION:-latest}" = "latest" ] && \
     ./get_helm.sh --version ${HELM_VERSION} && \
     printf "Helm %s\n" "$(helm version --short)" >> /.versions
 
-# https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-convert-plugin
 RUN [ "${KUBECTL_CONVERT_VERSION:-latest}" = "latest" ] && \
-        KUBECTL_CONVERT_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
-        KUBECTL_CONVERT_VERSION="v$(echo ${KUBECTL_CONVERT_VERSION} | sed s/^v//g)" && \
-    curl -LO "https://dl.k8s.io/release/${KUBECTL_CONVERT_VERSION}/bin/linux/amd64/kubectl-convert" && \
-    curl -L "https://dl.k8s.io/${KUBECTL_CONVERT_VERSION}/bin/linux/amd64/kubectl-convert.sha256" -o "kubectl-convert-${KUBECTL_CONVERT_VERSION}.sha256" && \
-    CHECKSUM_VERIFY_STATUS=$(echo "$(cat kubectl-convert-${KUBECTL_CONVERT_VERSION}.sha256)  kubectl-convert" | sha256sum --check) && \
-    LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "kubectl-convert: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+        version=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
+        version="v$(echo ${KUBECTL_CONVERT_VERSION} | sed s/^v//g)" && \
+    status=$(./verify-checksum-method2.sh \
+        "https://dl.k8s.io/release/${version}/bin/linux/amd64/kubectl-convert" \
+        "kubectl-convert" \
+        "https://dl.k8s.io/${version}/bin/linux/amd64/kubectl-convert.sha256" \
+        "kubectl-convert-${version}.sha256") && \
+    echo $status && \
     install -o root -g root -m 0755 kubectl-convert /usr/local/bin/kubectl-convert
 
-# https://kind.sigs.k8s.io/
-RUN [ "${KIND_VERSION:-latest}" = "latest" ] && \
-        KIND_VERSION=$(./gh-get-latest-release.sh "kubernetes-sigs/kind") || \
-        KIND_VERSION="v$(echo ${KIND_VERSION} | sed s/^v//g)" && \
-    curl -LO "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64" && \
-    curl -LO "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64.sha256sum" && \
-    CHECKSUM_VERIFY_STATUS=$(cat kind-linux-amd64.sha256sum | grep --color=never kind-linux-amd64 | sha256sum -c -) && \
-    LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "kind-linux-amd64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+# # https://kind.sigs.k8s.io/
+RUN version=$(./gh-get-version.sh "${KIND_VERSION}" "latest" "kubernetes-sigs/kind") && \
+    status=$(./verify-checksum-method1.sh \
+        "https://kind.sigs.k8s.io/dl/${version}/kind-linux-amd64" \
+        "kind-linux-amd64" \
+        "https://kind.sigs.k8s.io/dl/${version}/kind-linux-amd64.sha256sum" \
+        "kind-linux-amd64.sha256sum") && \
+    echo $status && \
     install kind-linux-amd64 /usr/local/bin/kind && \
     kind --version >> /.versions
 
-# https://github.com/doitintl/kube-no-trouble
+# # https://github.com/doitintl/kube-no-trouble
 RUN curl -sSL https://git.io/install-kubent | sh -
 
-# Install kubectx and kubens
-# https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
-RUN [ "${KUBECTX:-latest}" = "latest" ] && \
-        KUBECTX_VERSION=$(./gh-get-latest-release.sh "ahmetb/kubectx") || \
-        KUBECTX_VERSION="v$(echo ${KUBECTX_VERSION} | sed s/^v//g)" && \
-    curl -LO "https://github.com/ahmetb/kubectx/releases/download/${KUBECTX_VERSION}/kubectx_${KUBECTX_VERSION}_linux_x86_64.tar.gz" && \
-    curl -LO "https://github.com/ahmetb/kubectx/releases/download/${KUBECTX_VERSION}/kubens_${KUBECTX_VERSION}_linux_x86_64.tar.gz" && \
-    curl -L "https://github.com/ahmetb/kubectx/releases/download/${KUBECTX_VERSION}/checksums.txt" -o "kubectx-${KUBECTX_VERSION}.sha256" && \
-    CHECKSUM_VERIFY_STATUS=$(cat kubectx-${KUBECTX_VERSION}.sha256 | grep --color=never kubectx_${KUBECTX_VERSION}_linux_x86_64.tar.gz | sha256sum -c -) && \
-    LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "kubectx_${KUBECTX_VERSION}_linux_x86_64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
-    tar -xvzf kubectx_${KUBECTX_VERSION}_linux_x86_64.tar.gz && \
+# # Install kubectx and kubens
+# # https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
+RUN version=$(./gh-get-version.sh "${KUBECTX_VERSION}" "latest" "ahmetb/kubectx") && \
+    status=$(./verify-checksum-method1.sh \
+        "https://github.com/ahmetb/kubectx/releases/download/${version}/kubectx_${version}_linux_x86_64.tar.gz" \
+        "kubectx_${version}_linux_x86_64.tar.gz" \
+        "https://github.com/ahmetb/kubectx/releases/download/${version}/checksums.txt" \
+        "kubectx-${version}.sha256") && \
+    echo $status && \
+    tar -xvzf kubectx_${version}_linux_x86_64.tar.gz && \
     install kubectx /usr/local/bin/kubectx && \
-    printf "kubectx: %s\n" "$(kubectx --version)" >> /.versions && \
-    CHECKSUM_VERIFY_STATUS=$(cat kubectx-${KUBECTX_VERSION}.sha256 | grep --color=never kubens_${KUBECTX_VERSION}_linux_x86_64.tar.gz | sha256sum -c -) && \
-    LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "kubens_${KUBECTX_VERSION}_linux_x86_64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
-    tar -xvzf kubens_${KUBECTX_VERSION}_linux_x86_64.tar.gz && \
+    printf "kubectx: %s\n" "$(kubectx --version)" >> /.versions
+
+RUN version=$(./gh-get-version.sh "${KUBECTX_VERSION}" "latest" "ahmetb/kubectx") && \
+    status=$(./verify-checksum-method1.sh \
+        "https://github.com/ahmetb/kubectx/releases/download/${version}/kubens_${version}_linux_x86_64.tar.gz" \
+        "kubens_${version}_linux_x86_64.tar.gz" \
+        "https://github.com/ahmetb/kubectx/releases/download/${version}/checksums.txt" \
+        "kubens-${version}.sha256") && \
+    echo $status && \
+    tar -xvzf kubens_${version}_linux_x86_64.tar.gz && \
     install kubens /usr/local/bin/kubens && \
     printf "kubens: %s\n" "$(kubens --version)" >> /.versions
 
-# curl -L https://istio.io/downloadIstio | ISTIO_VERSION=$ISTIO_VERSION TARGET_ARCH=x86_64 sh -
-RUN [ "${ISTIO_VERSION:-latest}" = "latest" ] && \
-        ISTIO_VERSION=$(./gh-get-latest-release.sh "istio/istio") || \
-        ISTIO_VERSION="$(echo ${ISTIO_VERSION} | sed s/^v//g)" && \
-    curl -LO "https://github.com/istio/istio/releases/download/${ISTIO_VERSION}/istio-${ISTIO_VERSION}-linux-amd64.tar.gz" && \
-    curl -LO "https://github.com/istio/istio/releases/download/${ISTIO_VERSION}/istio-${ISTIO_VERSION}-linux-amd64.tar.gz.sha256" && \
-    CHECKSUM_VERIFY_STATUS=$(cat istio-${ISTIO_VERSION}-linux-amd64.tar.gz.sha256 | grep --color=never istio-${ISTIO_VERSION}-linux-amd64.tar.gz | sha256sum -c -) && \
-    LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "istio-${ISTIO_VERSION}-linux-amd64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
-    tar -xvzf istio-${ISTIO_VERSION}-linux-amd64.tar.gz && \
-    install istio-${ISTIO_VERSION}/bin/istioctl /usr/local/bin/istioctl && \
-    cp istio-${ISTIO_VERSION}/tools/istioctl.bash $HOME/.istioctl.bash && \
+# # TODO: why doesn't standar istio install work?
+# RUN version=$(./gh-get-version.sh "${ISTIO_VERSION}" "latest" "istio/istio" | sed s/^v//g) && \
+#     { curl -L https://istio.io/downloadIstio ISTIO_VERSION=$ISTIO_VERSION TARGET_ARCH=x86_64 | sh -; } && \
+#     install istio-${version}/bin/istioctl /usr/local/bin/istioctl && \
+#     cp istio-${version}/tools/istioctl.bash $HOME/.istioctl.bash && \
+#     printf "istio: %s\n" "$(istioctl version --remote=false --short)" >> /.versions
+
+RUN version=$(./gh-get-version.sh "${ISTIO_VERSION}" "latest" "istio/istio" | sed s/^v//g) && \
+    status=$(./verify-checksum-method1.sh \
+        "https://github.com/istio/istio/releases/download/${version}/istio-${version}-linux-amd64.tar.gz" \
+        "istio-${version}-linux-amd64.tar.gz" \
+        "https://github.com/istio/istio/releases/download/${version}/istio-${version}-linux-amd64.tar.gz.sha256" \
+        "istio-${version}-linux-amd64.tar.gz.sha256") && \
+    echo $status && \
+    tar -xvzf istio-${version}-linux-amd64.tar.gz && \
+    install istio-${version}/bin/istioctl /usr/local/bin/istioctl && \
+    cp istio-${version}/tools/istioctl.bash $HOME/.istioctl.bash && \
     printf "istio: %s\n" "$(istioctl version --remote=false --short)" >> /.versions
 
-RUN [ "${HASHICORP_VAULT_VERSION:-latest}" = "latest" ] && \
-        HASHICORP_VAULT_VERSION=$(./gh-get-latest-release.sh "hashicorp/vault") || echo >/dev/null && \
-        HASHICORP_VAULT_VERSION="$(echo ${HASHICORP_VAULT_VERSION} | sed s/^v//g)" && \
-    curl -LO "https://releases.hashicorp.com/vault/${HASHICORP_VAULT_VERSION}/vault_${HASHICORP_VAULT_VERSION}_linux_amd64.zip" && \
-    curl -LO "https://releases.hashicorp.com/vault/${HASHICORP_VAULT_VERSION}/vault_${HASHICORP_VAULT_VERSION}_SHA256SUMS" && \
-    CHECKSUM_VERIFY_STATUS=$(cat vault_${HASHICORP_VAULT_VERSION}_SHA256SUMS | grep --color=never vault_${HASHICORP_VAULT_VERSION}_linux_amd64.zip | sha256sum -c -) && \
-    LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "vault_${HASHICORP_VAULT_VERSION}_linux_amd64.zip: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
-    unzip "vault_${HASHICORP_VAULT_VERSION}_linux_amd64.zip" && \
+RUN version=$(./gh-get-version.sh "${HASHICORP_VAULT_VERSION}" "latest" "hashicorp/vault" | sed s/^v//g) && \
+    status=$(./verify-checksum-method1.sh \
+        "https://releases.hashicorp.com/vault/${version}/vault_${version}_linux_amd64.zip" \
+        "vault_${version}_linux_amd64.zip" \
+        "https://releases.hashicorp.com/vault/${version}/vault_${version}_SHA256SUMS" \
+        "vault_${version}_SHA256SUMS") && \
+    echo $status && \
+    unzip -o "vault_${version}_linux_amd64.zip" && \
     install vault /usr/local/bin/vault && \
     printf "Hashicorp %s\n" "$(vault --version | awk '{print $1" "$2}')" >> /.versions
 
 RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
-        TERRAFORM_VERSION=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') || \
-        TERRAFORM_VERSION="$(echo ${TERRAFORM_VERSION} | sed s/^v//g)" && \
-    curl -LO "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" && \
-    curl -LO "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS" && \
-    CHECKSUM_VERIFY_STATUS=$(cat terraform_${TERRAFORM_VERSION}_SHA256SUMS | grep --color=never terraform_${TERRAFORM_VERSION}_linux_amd64.zip | sha256sum -c -) && \
-    LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "terraform_${TERRAFORM_VERSION}_linux_amd64.zip: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
-    unzip "terraform_${TERRAFORM_VERSION}_linux_amd64.zip" && \
+        version=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') || \
+        version="$(echo ${TERRAFORM_VERSION} | sed s/^v//g)" && \
+    status=$(./verify-checksum-method1.sh \
+        "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_amd64.zip" \
+        "terraform_${version}_linux_amd64.zip" \
+        "https://releases.hashicorp.com/terraform/${version}/terraform_${version}_SHA256SUMS" \
+        "terraform_${version}_SHA256SUMS") && \
+    echo $status && \
+    unzip -o "terraform_${version}_linux_amd64.zip" && \
     install terraform /usr/local/bin/terraform && \
     printf "Hashicorp %s\n" "$(echo $(terraform version) | awk '{print $1" "$2}')" >> /.versions && \
     terraform -install-autocomplete
 
-RUN [ "${TERRAGRUNT_VERSION:-latest}" = "latest" ] && \
-        TERRAGRUNT_VERSION=$(./gh-get-latest-release.sh "gruntwork-io/terragrunt") || \
-        TERRAGRUNT_VERSION="v$(echo ${TERRAGRUNT_VERSION} | sed s/^v//g)" && \
-    curl -LO "https://github.com/gruntwork-io/terragrunt/releases/download/${TERRAGRUNT_VERSION}/terragrunt_linux_amd64" && \
-    curl -L "https://github.com/gruntwork-io/terragrunt/releases/download/${TERRAGRUNT_VERSION}/SHA256SUMS" -o "terragrunt_${TERRAGRUNT_VERSION}_SHA256SUMS" && \
-    CHECKSUM_VERIFY_STATUS=$(cat terragrunt_${TERRAGRUNT_VERSION}_SHA256SUMS | grep --color=never terragrunt_linux_amd64 | sha256sum -c -) && \
-    LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "terragrunt_linux_amd64: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+RUN version=$(./gh-get-version.sh "${TERRAGRUNT_VERSION}" "latest" "gruntwork-io/terragrunt") && \
+    status=$(./verify-checksum-method1.sh \
+        "https://github.com/gruntwork-io/terragrunt/releases/download/${version}/terragrunt_linux_amd64" \
+        "terragrunt_linux_amd64" \
+        "https://github.com/gruntwork-io/terragrunt/releases/download/${version}/SHA256SUMS" \
+        "terragrunt_${version}_SHA256SUMS") && \
+    echo $status && \
     install terragrunt_linux_amd64 /usr/local/bin/terragrunt && \
     terragrunt --version >> /.versions
 
-RUN [ "${K9S_VERSION:-latest}" = "latest" ] && \
-        K9S_VERSION=$(./gh-get-latest-release.sh "derailed/k9s") || \
-        K9S_VERSION="v$(echo ${K9S_VERSION} | sed s/^v//g)" && \
-    curl -LO "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz" && \
-    curl -L "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/checksums.txt" -o "k9s-${K9S_VERSION}-checksums.txt" && \
-    CHECKSUM_VERIFY_STATUS=$(cat "k9s-${K9S_VERSION}-checksums.txt" | grep --color=never k9s_Linux_amd64.tar.gz | sha256sum -c -) && \
-    LAST_ERR=$? && \
-    [ "$CHECKSUM_VERIFY_STATUS" = "k9s_Linux_amd64.tar.gz: OK" -a $LAST_ERR -eq 0 ] && printf "\033[92;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS" || { printf "\033[91;1m%s\033[0m\n" "$CHECKSUM_VERIFY_STATUS"; printf "Error %d. Exiting ...\n" $LAST_ERR >&2; exit $LAST_ERR; } && \
+RUN version=$(./gh-get-version.sh "${K9S_VERSION}" "latest" "derailed/k9s") && \
+    status=$(./verify-checksum-method1.sh \
+        "https://github.com/derailed/k9s/releases/download/${version}/k9s_Linux_amd64.tar.gz" \
+        "k9s_Linux_amd64.tar.gz" \
+        "https://github.com/derailed/k9s/releases/download/${version}/checksums.txt" \
+        "k9s-${version}-checksums.txt") && \
+    echo $status && \
     tar -xvzf k9s_Linux_amd64.tar.gz k9s -C . && \
     install k9s /usr/local/bin/k9s && \
     k9s version
+
+# TODO
+# Download and configure gh client, so the github api can be leveraged.
+# (https://docs.github.com/en/rest/git/tags?apiVersion=2022-11-28#get-a-tag)
+RUN KUBE_PS1_VERSION="v$(echo ${KUBE_PS1_VERSION} | sed s/^v//g)" && \
+    status_code=$(curl -sLI -o /dev/null -w "%{http_code}" "https://github.com/jonmosco/kube-ps1/archive/refs/tags/${KUBE_PS1_VERSION}.zip") && \
+    [ $status_code -eq 200 ] && \
+    curl -LO "https://github.com/jonmosco/kube-ps1/archive/refs/tags/${KUBE_PS1_VERSION}.zip" && \
+    unzip_result="$(unzip -o ${KUBE_PS1_VERSION}.zip)" && \
+    echo $unzip_result | grep -q -i creating && \
+    unzip_dir="$(echo $unzip_result | awk '{print $5}' | tr -d '/')" && \
+    grep -q -E -i "^(\[\[?.+DEBUG.*\])(.+)(set -x)$" "${unzip_dir}/kube-ps1.sh" && \
+    sed -E -i "0,/^\[\[?.+DEBUG.*\].+set -x$/s/^(\[\[?.+DEBUG.*\])(.+)(set -x)$/#\1\2\3/" "${unzip_dir}/kube-ps1.sh" && \
+    printf "Installing '%s' to '%s' ...\n" "${unzip_dir}/kube-ps1.sh" "$HOME/.local/shell_addons.d/kube-ps1.sh" && \
+    mv ${unzip_dir}/kube-ps1.sh $HOME/.local/shell_addons.d/
 
 RUN rm -rf /tmp/downloads && \
     echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
@@ -185,13 +209,21 @@ export GIT_EDITOR="${EDITOR}"
 export KUBE_EDITOR="${EDITOR}"
 export CLUSTER_PREFIX="${CLUSTER_PREFIX:-di}"
 
+if [ -d $HOME/.local/shell_addons.d ]; then
+    for f in \$(find $HOME/.local/shell_addons.d -mindepth 1 -type f -name '*.sh' | sort -u); do
+        . "\${f}"
+    done
+fi
+
 if [ -d $HOME/.local/profile.d ]; then
     for f in \$(find $HOME/.local/profile.d -mindepth 1 -type f -name '*.sh' | sort -u); do
         . "\${f}"
     done
 fi
 
-. $HOME/.local/init.sh
+if [ -f ${HOME}/.local/init.sh ]; then
+    . ${HOME}/.local/init.sh
+fi
 
 EOF
 

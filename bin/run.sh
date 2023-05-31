@@ -28,14 +28,14 @@ printf "\033[92;1m>>>\033[94;1m %s: %s\033[92;1m <<<\033[0m\n" "cloud-cli-tools"
 
 cd "${SCRIPT_DIR}/../"
 
-[ -f conf/.env ] && source conf/.env
-source conf/shared/project.env
-source conf/main/defaults.env
-source conf/shared/docker-shared.env
-source conf/base/versions-base.env
-source conf/base/docker-base.env
-source conf/main/versions.env
-source conf/main/docker.env
+[ -f conf/.env ] && . conf/.env
+. conf/shared/project.env
+. conf/main/defaults.env
+. conf/shared/docker-shared.env
+. conf/base/versions-base.env
+. conf/base/docker-base.env
+. conf/main/versions.env
+. conf/main/docker.env
 
 count() { echo $#; }
 check_lockfile() { echo "$(cat ${1})"; }
@@ -310,12 +310,6 @@ run_new() {
             -d
             "${docker_image}"
             bash
-            --
-            'echo \"HOSTNAME: \$HOSTNAME\"\; \
-            echo \"USERNAME: \$USERNAME\"\; \
-            echo \"TEAM_NAME: \$TEAM_NAME\"\; \
-            echo \"GIT_CONFIG_FULL_NAME: \$GIT_CONFIG_FULL_NAME\"\; \
-            echo \"GIT_CONFIG_EMAIL: \$GIT_CONFIG_EMAIL\"\;'
         )
         KEEP_ALIVE=true
     else
@@ -343,6 +337,7 @@ run_new() {
             -e "'AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}'"
             -e "'AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}'"
         )
+    [ "${DEBUG:-false}" = "true" ] && environment_vars+=(-e "DEBUG=true")
 
     local run_command=(docker run)
     [ -n "$PLATFORM" ] && run_command+=(--platform "linux/${PLATFORM}")

@@ -47,13 +47,13 @@ convert_zip() {
     done
 }
 
-source conf/shared/project.env
-source conf/main/defaults.env
-source conf/shared/docker-shared.env
-source conf/base/versions-base.env
-source conf/base/docker-base.env
-source conf/main/versions.env
-source conf/main/docker.env
+. conf/shared/project.env
+. conf/main/defaults.env
+. conf/shared/docker-shared.env
+. conf/base/versions-base.env
+. conf/base/docker-base.env
+. conf/main/versions.env
+. conf/main/docker.env
 
 export DOCKER_BUILDKIT="${DOCKER_BUILDKIT:-0}"
 export COMPOSE_DOCKER_CLI_BUILD="${COMPOSE_DOCKER_CLI_BUILD:-0}"
