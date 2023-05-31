@@ -7,6 +7,10 @@ inputs:
     description: "Whether to build parent image first"
     required: false
     default: 'false'
+  build-latest:
+    description: "Latest Build"
+    required: false
+    default: 'false'
   registry-username:
     description: "The Image Registry Username"
     required: false
@@ -32,6 +36,7 @@ runs:
         REGISTRY_USERNAME: "${{ inputs.registry-username }}"
         REGISTRY_PASSWORD: "${{ inputs.registry-password }}"
         DOCKER_LOGIN: "${{ inputs.docker-login }}"
+        DOCKER_BUILD_LATEST: "${{ inputs.build-latest }}"
         DEBUG: "${{ inputs.debug }}"
       run: bin/build.sh -B -N
 
@@ -42,5 +47,6 @@ runs:
         REGISTRY_USERNAME: "${{ inputs.registry-username }}"
         REGISTRY_PASSWORD: "${{ inputs.registry-password }}"
         DOCKER_LOGIN: "${{ inputs.docker-login }}"
+        DOCKER_BUILD_LATEST: "${{ inputs.build-latest }}"
         DEBUG: "${{ inputs.debug }}"
       run: bin/build.sh -N

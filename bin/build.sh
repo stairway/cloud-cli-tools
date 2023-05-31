@@ -64,6 +64,7 @@ DOCKER_IMAGE="${DOCKER_IMAGE:-""}"
 DOCKER_IMAGE_VERSION="${DOCKER_IMAGE_VERSION:-""}"
 DOCKER_BUILD_LATEST="${DOCKER_BUILD_LATEST:-false}"
 [ "${DEBUG:-false}" = "true" ] && DOCKER_BUILD_LATEST=false
+[ "${DOCKER_BUILD_LATEST}" = "true" ] && DOCKER_IMAGE_VERSION=latest
 
 build_base() {
     local build_opts=("")

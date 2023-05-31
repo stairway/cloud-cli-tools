@@ -1,6 +1,14 @@
-name: Build and Publish Base - Debug
+run-name: Build and Publish Base - Branch
 
 on:
+
+  # pull_request:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'conf/base/*.env'
+  #     - 'docker/dockerfiles/Dockerfile.base'
+
   push:
     branches:
       - main
@@ -23,9 +31,8 @@ jobs:
           registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
           registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push Base
+      - name: Build and Push Base - Latest
         uses: ./.github/actions/build-script-action
         with:
           build-parent: true
-          debug: true
-          docker-login: false
+          build-latest: true

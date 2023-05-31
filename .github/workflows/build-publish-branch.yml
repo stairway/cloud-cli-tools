@@ -1,13 +1,23 @@
-name: Build and Publish - Debug
+run-name: Build and Publish - Branch
 
 on:
   workflow_run:
     workflows: [Build and Publish Base - Debug]
     types: [completed]
 
+  # pull_request:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'conf/**'
+  #     - 'docker/**'
+  #     - '!conf/base/*'
+  #     - '!docker/dockerfiles/*.base'
+
   push:
     branches:
       - main
+      - develop
     paths:
       - 'conf/**'
       - 'docker/**'
@@ -73,7 +83,13 @@ jobs:
           registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and Push Main
+        if: github.ref_name == 'develop'
         uses: ./.github/actions/build-script-action
         with:
           debug: true
-          docker-login: false
+
+      - name: Build and Push Main
+        if: github.ref_name == 'main'
+        uses: ./.github/actions/build-script-action
+        with:
+          build-latest: true

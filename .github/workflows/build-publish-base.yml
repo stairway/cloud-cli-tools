@@ -1,4 +1,4 @@
-name: Build and Publish Base
+run-name: Build and Publish Base
 
 on:
   push:
@@ -28,7 +28,6 @@ jobs:
         uses: ./.github/actions/build-script-action
         with:
           build-parent: true
-          docker-login: false
 
       # TODO
       # - name: Base - Build and Push
