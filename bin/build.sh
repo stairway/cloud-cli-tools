@@ -50,6 +50,7 @@ convert_zip() {
 . conf/shared/project.env
 . conf/main/defaults.env
 . conf/shared/docker-shared.env
+echo "LATEST: $LATEST"
 . conf/base/versions-base.env
 . conf/base/docker-base.env
 . conf/main/versions.env
