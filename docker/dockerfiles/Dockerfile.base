@@ -181,8 +181,11 @@ status=\$(echo "\$(cat \${4})  \${2}" | sha256sum --check)
 verify_checksum_method2 "\$@"
 EOF
 
-RUN git --version >> /.versions && \
-    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
+RUN mkdir -m 0755 -p /etc/apt/keyrings && \
+    git --version >> /.versions
+
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
+    chmod a+r /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
     echo \
         "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages \
         stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null && \
@@ -191,8 +194,7 @@ RUN git --version >> /.versions && \
     apt-get clean -y && \
     gh --version >> /.versions
 
-RUN mkdir -m 0755 -p /etc/apt/keyrings && \
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     chmod a+r /etc/apt/keyrings/docker.gpg && \
     echo \
         "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
