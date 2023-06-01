@@ -32,7 +32,7 @@ jobs:
           registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
           registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push Base - Debug
+      - name: Build and Push Base - Dev
         if: github.ref_name == 'develop'
         uses: ./.github/actions/build-script-action
         with:

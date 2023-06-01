@@ -82,13 +82,13 @@ jobs:
           registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
           registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push Main
+      - name: Build and Push - Dev
         if: github.ref_name == 'develop'
         uses: ./.github/actions/build-script-action
         with:
           debug: true
 
-      - name: Build and Push Main
+      - name: Build and Push - Latest
         if: github.ref_name == 'main'
         uses: ./.github/actions/build-script-action
         with:
