@@ -36,7 +36,7 @@ runs:
         REGISTRY_USERNAME: "${{ inputs.registry-username }}"
         REGISTRY_PASSWORD: "${{ inputs.registry-password }}"
         DOCKER_LOGIN: "${{ inputs.docker-login }}"
-        DOCKER_BUILD_LATEST: "${{ inputs.build-latest }}"
+        LATEST: "${{ inputs.build-latest }}"
         DEBUG: "${{ inputs.debug }}"
       run: bin/build.sh -B -N
 
@@ -47,6 +47,6 @@ runs:
         REGISTRY_USERNAME: "${{ inputs.registry-username }}"
         REGISTRY_PASSWORD: "${{ inputs.registry-password }}"
         DOCKER_LOGIN: "${{ inputs.docker-login }}"
-        DOCKER_BUILD_LATEST: "${{ inputs.build-latest }}"
+        LATEST: "${{ inputs.build-latest }}"
         DEBUG: "${{ inputs.debug }}"
       run: bin/build.sh -N

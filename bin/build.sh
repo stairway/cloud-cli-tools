@@ -62,9 +62,9 @@ DOCKER_IMAGE_PARENT="${DOCKER_IMAGE_PARENT:-""}"
 DOCKER_IMAGE_PARENT_VERSION="${DOCKER_IMAGE_PARENT_VERSION:-""}"
 DOCKER_IMAGE="${DOCKER_IMAGE:-""}"
 DOCKER_IMAGE_VERSION="${DOCKER_IMAGE_VERSION:-""}"
-DOCKER_BUILD_LATEST="${DOCKER_BUILD_LATEST:-false}"
-[ "${DEBUG:-false}" = "true" ] && DOCKER_BUILD_LATEST=false
-[ "${DOCKER_BUILD_LATEST}" = "true" ] && DOCKER_IMAGE_PARENT_VERSION=base-latest && DOCKER_IMAGE_VERSION=latest
+LATEST="${LATEST:-false}"
+[ "${DEBUG:-false}" = "true" ] && LATEST=false
+[ "${LATEST}" = "true" ] && DOCKER_IMAGE_PARENT_VERSION=base-latest && DOCKER_IMAGE_VERSION=latest
 
 build_base() {
     local build_opts=("")
@@ -137,7 +137,7 @@ build_new() {
     )
 
     local build_tags=(-t "${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}")
-    if [ "${DOCKER_BUILD_LATEST}" = "true" ]; then
+    if [ "${LATEST}" = "true" ]; then
         [ "${DEBUG:-false}" != "true" -a "latest" != "$DOCKER_IMAGE_VERSION" ] && build_tags+=(-t "${DOCKER_IMAGE}:latest")
     fi
 
