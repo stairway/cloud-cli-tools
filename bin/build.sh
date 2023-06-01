@@ -62,9 +62,6 @@ DOCKER_IMAGE_PARENT="${DOCKER_IMAGE_PARENT:-""}"
 DOCKER_IMAGE_PARENT_VERSION="${DOCKER_IMAGE_PARENT_VERSION:-""}"
 DOCKER_IMAGE="${DOCKER_IMAGE:-""}"
 DOCKER_IMAGE_VERSION="${DOCKER_IMAGE_VERSION:-""}"
-LATEST="${LATEST:-false}"
-[ "${DEBUG:-false}" = "true" ] && LATEST=false
-[ "${LATEST}" = "true" ] && DOCKER_IMAGE_PARENT_VERSION=base-latest && DOCKER_IMAGE_VERSION=latest
 
 build_base() {
     local build_opts=("")
@@ -137,8 +134,8 @@ build_new() {
     )
 
     local build_tags=(-t "${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}")
-    if [ "${LATEST}" = "true" ]; then
-        [ "${DEBUG:-false}" != "true" -a "latest" != "$DOCKER_IMAGE_VERSION" ] && build_tags+=(-t "${DOCKER_IMAGE}:latest")
+    if [ "${LATEST:-false}" = "true" ]; then
+        [ "${DEBUG:-false}" != "true" -a "${LATEST_SUFFIX}" != "$DOCKER_IMAGE_VERSION" ] && build_tags+=(-t "${DOCKER_IMAGE}:${LATEST_SUFFIX}")
     fi
 
     local build_command=(docker buildx build)
