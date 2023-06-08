@@ -75,6 +75,8 @@ jobs:
 
       - name: Build and Push Main
         uses: ./.github/actions/build-script-action
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # TODO
       # - name: Main - Build and Push

@@ -36,6 +36,7 @@ jobs:
         if: github.ref_name == 'develop'
         uses: ./.github/actions/build-script-action
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           build-parent: true
           debug: true
 
@@ -43,5 +44,6 @@ jobs:
         if: github.ref_name == 'main'
         uses: ./.github/actions/build-script-action
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           build-parent: true
           build-latest: true

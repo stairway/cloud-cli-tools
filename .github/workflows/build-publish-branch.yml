@@ -86,10 +86,12 @@ jobs:
         if: github.ref_name == 'develop'
         uses: ./.github/actions/build-script-action
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           debug: true
 
       - name: Build and Push - Latest
         if: github.ref_name == 'main'
         uses: ./.github/actions/build-script-action
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           build-latest: true

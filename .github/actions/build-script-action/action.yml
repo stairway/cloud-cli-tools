@@ -3,6 +3,9 @@ name: Build and Push Docker Images
 description: Build and push docker images with buildx, using the build script
 
 inputs:
+  github-token:
+    description: "A PAT to authenticate with Github"
+    required: false
   build-parent:
     description: "Whether to build parent image first"
     required: false
@@ -33,6 +36,7 @@ runs:
       if: ${{ inputs.build-parent == 'true' }}
       shell: bash
       env:
+        GH_CLIENT_TOKEN: "${{ inputs.github-token }}"
         REGISTRY_USERNAME: "${{ inputs.registry-username }}"
         REGISTRY_PASSWORD: "${{ inputs.registry-password }}"
         DOCKER_LOGIN: "${{ inputs.docker-login }}"
@@ -44,6 +48,7 @@ runs:
       if: ${{ inputs.build-parent != 'true' }}
       shell: bash
       env:
+        GH_CLIENT_TOKEN: "${{ inputs.github-token }}"
         REGISTRY_USERNAME: "${{ inputs.registry-username }}"
         REGISTRY_PASSWORD: "${{ inputs.registry-password }}"
         DOCKER_LOGIN: "${{ inputs.docker-login }}"
