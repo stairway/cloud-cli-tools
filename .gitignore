@@ -20,5 +20,6 @@
 # Except for ...
 !/bin/_*
 !/.github
+!/.editorconfig
 # !dist/cct*.zip
 # !dist/cct*.tgz
