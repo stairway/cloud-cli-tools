@@ -50,7 +50,6 @@ convert_zip() {
 . conf/shared/project.env
 . conf/main/defaults.env
 . conf/shared/docker-shared.env
-echo "LATEST: $LATEST"
 . conf/base/versions-base.env
 . conf/base/docker-base.env
 . conf/main/versions.env
@@ -63,6 +62,7 @@ DOCKER_IMAGE_PARENT="${DOCKER_IMAGE_PARENT:-""}"
 DOCKER_IMAGE_PARENT_VERSION="${DOCKER_IMAGE_PARENT_VERSION:-""}"
 DOCKER_IMAGE="${DOCKER_IMAGE:-""}"
 DOCKER_IMAGE_VERSION="${DOCKER_IMAGE_VERSION:-""}"
+GH_CLIENT_TOKEN="${GH_CLIENT_TOKEN:-""}"
 
 build_base() {
     local build_opts=("")
@@ -81,6 +81,7 @@ build_base() {
     [ "${UBUNTU_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "VERSION=${UBUNTU_VERSION}")
     [ "${AWS_VAULT_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "AWS_VAULT_VERSION=${AWS_VAULT_VERSION}")
     [ "${MINIKUBE_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "MINIKUBE_VERSION=${MINIKUBE_VERSION}")
+    [ -z "${GH_CLIENT_TOKEN}" ] || build_args+=(--build-arg "GH_CLIENT_TOKEN=${GH_CLIENT_TOKEN}")
 
     local build_labels=(
         --label "'org.opencontainers.image.vendor=${VENDOR_ORGANIZATION}'"
@@ -128,6 +129,7 @@ build_new() {
     [ "${TERRAFORM_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg "'TERRAFORM_VERSION=${TERRAFORM_VERSION}'")
     [ "${TERRAGRUNT_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg "'TERRAGRUNT_VERSION=${TERRAGRUNT_VERSION}'")
     [ "${HELM_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg "'HELM_VERSION=${HELM_VERSION}'")
+    [ -z "${GH_CLIENT_TOKEN}" ] || build_args+=(--build-arg "GH_CLIENT_TOKEN=${GH_CLIENT_TOKEN}")
 
     local build_labels=(
         --label "'org.opencontainers.image.vendor=${VENDOR_ORGANIZATION}'"

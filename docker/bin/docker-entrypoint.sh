@@ -129,7 +129,7 @@ trap die INT
 
 _set_input_cmd() {
     [ "${1#ba}" != "sh" ] || INPUT_SHELL="$1" && INPUT_SHELL="${INPUT_SHELL:-$SHELL}"
-    [ "${DEBUG:-false}" = "true" ] && printf "Set INPUT_SHELL to '%s'" "$INPUT_SHELL"
+    [ "${DEBUG:-false}" = "true" ] && printf "Set INPUT_SHELL to '%s'\n" "$INPUT_SHELL"
 }
 
 _print_shells() {

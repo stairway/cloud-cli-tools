@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -euf
+LC_CTYPE=C
+
+echo
+printf "\033[92;1m>>> \033[94;1m%s\033[92;1m <<<\033[0m\n" "GH Client Auth Login Script"
+
+GH_CLIENT_TOKEN="${GH_CLIENT_TOKEN:-""}"
+
+if [ -z "$GH_CLIENT_TOKEN" ]; then
+    printf ""
+
+    while [ -z "$GH_CLIENT_TOKEN" ]; do
+        printf "Github Token: "
+        read -s GH_CLIENT_TOKEN
+    done
+    echo
+fi
+
+echo "${GH_CLIENT_TOKEN}" | gh auth login --with-token </dev/stdin
