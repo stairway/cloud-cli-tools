@@ -18,7 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name:
+      - name: Setup QEMU, Docker Buildx, and Login
         uses: ./.github/actions/setup-docker-buildx-action
         with:
           registry-username: ${{ secrets.DOCKERHUB_USERNAME }}

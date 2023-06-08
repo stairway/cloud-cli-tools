@@ -370,3 +370,5 @@ LABEL org.opencontainers.image.documentation="https://github.com/${GITHUB_REPO}/
 LABEL org.opencontainers.image.url="https://github.com/${GITHUB_REPO}"
 LABEL org.opencontainers.image.source="https://github.com/${GITHUB_REPO}/blob/main/docker/dockerfiles/Dockerfile.base"
 LABEL org.opencontainers.image.revision="${GIT_COMMIT}"
+
+

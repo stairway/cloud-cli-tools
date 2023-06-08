@@ -172,8 +172,9 @@ RUN KUBE_PS1_VERSION="v$(echo ${KUBE_PS1_VERSION} | sed s/^v//g)" && \
     printf "Installing '%s' to '%s' ...\n" "${unzip_dir}/kube-ps1.sh" "$HOME/.local/shell_addons.d/kube-ps1.sh" && \
     mv ${unzip_dir}/kube-ps1.sh $HOME/.local/shell_addons.d/
 
-RUN if [ "${DEBUG:-false}" != "true" ]; then rm -rf $DOWNLOADS; fi && \
-    echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
+RUN set -x; if [ "${DEBUG:-false}" != "true" ]; then rm -rf $DOWNLOADS; fi
+
+RUN echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
     ln -s /usr/share/bash-completion/completions/git ~/.git-completion.bash && \
     echo "complete -C /usr/local/bin/aws_completer aws" >> "${HOME}/.bashrc" && \
     echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
@@ -231,3 +232,4 @@ LABEL org.opencontainers.image.url="https://github.com/${GITHUB_REPO}"
 LABEL org.opencontainers.image.source="https://github.com/${GITHUB_REPO}/blob/main/docker/dockerfiles/Dockerfile.main"
 LABEL org.opencontainers.image.version="${IMAGE_VERSION}"
 LABEL org.opencontainers.image.revision="${GIT_COMMIT}"
+

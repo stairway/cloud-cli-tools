@@ -38,7 +38,7 @@ jobs:
             conf/base/*.env
             docker/dockerfiles/*.base
 
-  show:
+  check:
     runs-on: ubuntu-latest
     needs: setup
     steps:
@@ -50,18 +50,12 @@ jobs:
         run: echo '${{ needs.setup.outputs.all_changed_files }}'
       - name: Show Outputs
         run: echo '${{ toJson(needs.setup.outputs) }}'
-      - name: Show Refs
-        run: |
-          echo "github.head_ref: ${{ github.head_ref }}"
-          echo "github.ref: ${{ github.ref }}"
-          echo "github.ref_name: ${{ github.ref_name }}"
-          echo "github.event.workflow_run.head_branch: ${{ github.event.workflow_run.head_branch }}"
       - name: Concurrency Group
         run: echo '${{ github.event.workflow_run.head_branch || github.ref_name || github.head_ref || github.ref }}'
 
   docker:
     runs-on: ubuntu-latest
-    needs: setup
+    needs: check
     if: github.event.workflow_run.conclusion == 'success' || !needs.setup.outputs.build_base || needs.setup.outputs.build_base == 'false'
     steps:
       - name: Checkout

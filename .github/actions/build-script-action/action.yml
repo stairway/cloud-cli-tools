@@ -32,6 +32,14 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Show Refs
+      shell: bash
+      run: |
+        echo "github.head_ref: ${{ github.head_ref }}"
+        echo "github.ref: ${{ github.ref }}"
+        echo "github.ref_name: ${{ github.ref_name }}"
+        echo "github.event.workflow_run.head_branch: ${{ github.event.workflow_run.head_branch }}"
+
     - name: Build Base
       if: ${{ inputs.build-parent == 'true' }}
       shell: bash

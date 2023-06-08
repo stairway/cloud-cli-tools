@@ -33,6 +33,9 @@ jobs:
       build_base: ${{ steps.changed-files.outputs.any_changed }}
       any_changed: ${{ steps.changed-files.outputs.any_changed }}
       all_changed_files: ${{ steps.changed-files.outputs.all_changed_files }}
+      branch_name: ${{ steps.get-branch-name.outputs.branch-name }}
+      build_latest: ${{ steps.get-build-opts.outputs.build-latest }}
+      build_dev: ${{ steps.get-build-opts.outputs.build-dev }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -47,7 +50,19 @@ jobs:
             conf/base/*.env
             docker/dockerfiles/*.base
 
-  show:
+      - id: get-branch-name
+        uses: ./.github/actions/get-branch-name-action
+
+      - id: get-build-opts
+        run: |
+          if [ "${{ steps.get-branch-name.outputs.branch-name }}" = "main" ]; then
+            echo "build-latest=true" >> $GITHUB_OUTPUT
+          fi
+          if [ "${{ steps.get-branch-name.outputs.branch-name }}" = "develop" ]; then
+            echo "build-dev=true" >> $GITHUB_OUTPUT
+          fi
+
+  check:
     runs-on: ubuntu-latest
     needs: setup
     steps:
@@ -59,18 +74,12 @@ jobs:
         run: echo '${{ needs.setup.outputs.all_changed_files }}'
       - name: Show Outputs
         run: echo '${{ toJson(needs.setup.outputs) }}'
-      - name: Show Refs
-        run: |
-          echo "github.head_ref: ${{ github.head_ref }}"
-          echo "github.ref: ${{ github.ref }}"
-          echo "github.ref_name: ${{ github.ref_name }}"
-          echo "github.event.workflow_run.head_branch: ${{ github.event.workflow_run.head_branch }}"
       - name: Concurrency Group
         run: echo '${{ github.event.workflow_run.head_branch || github.ref_name || github.head_ref || github.ref }}'
 
   docker:
     runs-on: ubuntu-latest
-    needs: setup
+    needs: [setup, check]
     if: github.event.workflow_run.conclusion == 'success' || !needs.setup.outputs.build_base || needs.setup.outputs.build_base == 'false'
     steps:
       - name: Checkout
@@ -82,16 +91,9 @@ jobs:
           registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
           registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push - Dev
-        if: github.ref_name == 'develop'
+      - name: Build and Push
         uses: ./.github/actions/build-script-action
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          debug: true
-
-      - name: Build and Push - Latest
-        if: github.ref_name == 'main'
-        uses: ./.github/actions/build-script-action
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          build-latest: true
+          build-latest: ${{ needs.setup.outputs.build_latest }}
+          debug: ${{ needs.setup.outputs.build_dev }}
