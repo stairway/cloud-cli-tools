@@ -30,10 +30,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - id: get-branch-name
+      - name: Get Branch Name
+        id: get-branch-name
         uses: ./.github/actions/get-branch-name-action
 
-      - id: get-build-opts
+      - name: Get Build Options
+        id: get-build-opts
         run: |
           if [ "${{ steps.get-branch-name.outputs.branch-name }}" = "main" ]; then
             echo "build-latest=true" >> $GITHUB_OUTPUT
