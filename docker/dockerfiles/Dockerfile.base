@@ -115,6 +115,36 @@ ARG DOCKER_PKGS="\
 
 WORKDIR $DOWNLOADS
 
+RUN touch $DOWNLOAD_SCRIPTS/str-lower.sh && \
+    chmod +x $DOWNLOAD_SCRIPTS/str-lower.sh && \
+    cat > $DOWNLOAD_SCRIPTS/str-lower.sh <<EOF
+#!/bin/sh -euf
+echo "\$@" | tr '[:upper:]' '[:lower:]'
+EOF
+
+RUN touch $DOWNLOAD_SCRIPTS/get-arch.sh && \
+    chmod +x $DOWNLOAD_SCRIPTS/get-arch.sh && \
+    cat > $DOWNLOAD_SCRIPTS/get-arch.sh <<EOF
+#!/bin/sh -euf
+uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/'
+EOF
+
+RUN touch $DOWNLOAD_SCRIPTS/get-os.sh && \
+    chmod +x $DOWNLOAD_SCRIPTS/get-os.sh && \
+    cat > $DOWNLOAD_SCRIPTS/get-os.sh <<EOF
+#!/bin/sh -euf
+uname -s
+EOF
+
+RUN touch $DOWNLOAD_SCRIPTS/get-platform.sh && \
+    chmod +x $DOWNLOAD_SCRIPTS/get-platform.sh && \
+    cat > $DOWNLOAD_SCRIPTS/get-platform.sh <<EOF
+#!/bin/sh -euf
+os=\$($DOWNLOAD_SCRIPTS/get-os.sh)
+arch=\$($DOWNLOAD_SCRIPTS/get-arch.sh)
+echo "\${os}_\${arch}"
+EOF
+
 RUN touch $DOWNLOAD_SCRIPTS/gh-auth-status.sh && \
     chmod +x $DOWNLOAD_SCRIPTS/gh-auth-status.sh && \
     cat > $DOWNLOAD_SCRIPTS/gh-auth-status.sh <<EOF
@@ -334,6 +364,15 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
         ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update || \
         ./aws/install; } && update_in_case_v1_installed && \
     aws --version >> /.versions
+
+RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${EKSCTL_VERSION}" "latest" "weaveworks/eksctl") && \
+    platform=$($DOWNLOAD_SCRIPTS/get-platform.sh) && \
+    status=$($DOWNLOAD_SCRIPTS/gh-download-and-verify.sh "weaveworks/eksctl" "${version}" \
+        "eksctl_${platform}.tar.gz" "eksctl_checksums.txt") && \
+    echo $status && \
+    tar -xzf eksctl_${platform}.tar.gz -C ./ && rm eksctl_${platform}.tar.gz && \
+    install eksctl /usr/local/bin/eksctl && \
+    printf "eksctl: %s\n" "$(eksctl --version 2>&1)" >> /.versions
 
 RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${AWS_VAULT_VERSION}" "latest" "99designs/aws-vault") && \
     status=$($DOWNLOAD_SCRIPTS/gh-download-and-verify.sh "99designs/aws-vault" "${version}" \
