@@ -1,10 +1,6 @@
 name: Build and Publish
 
 on:
-  workflow_run:
-    workflows: [Build and Publish Base]
-    types: [completed]
-
   push:
     tags:
       - 'v*'
@@ -12,8 +8,6 @@ on:
     paths:
       - 'conf/**'
       - 'docker/**'
-      - '!conf/base/*'
-      - '!docker/dockerfiles/*.base'
 
 concurrency: ${{ github.event.workflow_run.head_branch || github.ref_name || github.head_ref || github.ref }}
 
@@ -56,7 +50,6 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     needs: check
-    if: github.event.workflow_run.conclusion == 'success' || !needs.setup.outputs.build_base || needs.setup.outputs.build_base == 'false'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -66,6 +59,15 @@ jobs:
         with:
           registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
           registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Base
+        if: needs.setup.outputs.build_base == 'true'
+        uses: ./.github/actions/build-script-action
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          build-parent: true
+          build-latest: ${{ needs.setup.outputs.build_latest }}
+          debug: ${{ needs.setup.outputs.build_dev }}
 
       - name: Build and Push Main
         uses: ./.github/actions/build-script-action
