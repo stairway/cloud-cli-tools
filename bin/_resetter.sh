@@ -51,6 +51,7 @@ cleanup_dotfiles() {
             [ "${item_basename}" = ".password-store" -a "${aws_config_restore}" != "true" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
             [ "${item_basename}" = ".dpctl" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
             [ "${item_basename}" = ".kube" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
+            [ "${item_basename}" = "${DOCKER_HISTFILE_NAME:-bash_history}" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
             [ "${item_basename}" = ".profile.d" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
         done
     fi

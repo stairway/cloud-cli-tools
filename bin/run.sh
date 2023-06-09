@@ -65,6 +65,8 @@ VSCODE_DEBUGPY_PORT="${VSCODE_DEBUGPY_PORT:-5678}"
 YES_VALUE="${YES_VALUE:-yes}"
 NO_VALUE="${NO_VALUE:-no}"
 
+DOCKER_HISTFILE_NAME="${DOCKER_HISTFILE_NAME:-.bash_history}"
+
 init_mountcache() {
     [ -n "$(which uuidgen)" ] && RANDOMSTR=$(uuidgen) || RANDOMSTR="$(openssl rand -hex 16)"
     CONTAINER_NAME="${RANDOMSTR}"
@@ -269,10 +271,15 @@ arr_to_str() {
 }
 
 run_new() {
-    local docker_user_home=/root
-    [ "${DOCKER_USER:-root}" = "root" ] || docker_user_home="/home/${DOCKER_USER}"
+    local docker_user_home=
+    [ "${DOCKER_USER:-root}" = "root" ] && \
+        docker_user_home="/${DOCKER_USER}" || \
+        docker_user_home="/home/${DOCKER_USER}"
 
     [ -d "mount/home/${DOCKER_USER}" ] || mkdir -p "mount/home/${DOCKER_USER}"
+
+    local docker_histfile="${DOCKER_HISTFILE:-${docker_user_home}/${DOCKER_HISTFILE_NAME}}"
+    touch "${PWD}/mount/home/${DOCKER_USER}/${DOCKER_HISTFILE_NAME}"
 
     copy_addons
     # copy_profile "docker/profile" "mount/home/${DOCKER_USER}/.profile.d"
@@ -292,6 +299,8 @@ run_new() {
         -v "${mountpoint}/.awsvault:${docker_user_home}/.awsvault"
         -v "${mountpoint}/.gnupg:${docker_user_home}/.gnupg"
         -v "${mountpoint}/.password-store:${docker_user_home}/.password-store"
+        # --mount "type=volume,src='${RANDOMSTR}',dst=${docker_user_home}/.local"
+        -v "${PWD}/mount/home/${DOCKER_USER}/${DOCKER_HISTFILE_NAME}:${docker_histfile}"
         -v "${PWD}/mount/home/${DOCKER_USER}/.aws:${docker_user_home}/.aws"
         -v "${PWD}/mount/home/${DOCKER_USER}/.kube:${docker_user_home}/.kube"
         -v "${PWD}/mount/home/${DOCKER_USER}/.dpctl:${docker_user_home}/.dpctl"
@@ -330,7 +339,7 @@ run_new() {
         -e "'GIT_CONFIG_EMAIL=${GIT_CONFIG_EMAIL}'"
         -e "'GIT_CONFIG_FULL_NAME=${GIT_CONFIG_FULL_NAME}'"
         -e "EDITOR=${FILE_EDITOR}"
-        # -e "HISTFILE=${docker_user_home}/.bash_history"
+        -e "HISTFILE=${docker_histfile}"
     )
     [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && environment_vars+=(-e "VSCODE_DEBUGPY_PORT=${VSCODE_DEBUGPY_PORT}")
     [ -n "${AWS_ACCESS_KEY_ID:-""}" -a -n "${AWS_SECRET_ACCESS_KEY:-""}" ] && \
