@@ -24,7 +24,8 @@ ENV BOOL="${TRUE}|${FALSE}"
 
 ENV USER="${USER:-root}"
 ENV HOME="${HOME:-/root}"
-ENV PATH="/opt/bin:${PATH}"
+ENV PATH="${HOME}/.local/bin:/opt/bin:${PATH}"
+ENV PROMPT_COMMAND='history -a;history -c;history -r'
 ENV DOWNLOADS="${DOWNLOADS:-${HOME}/.local/downloads}"
 ENV DOWNLOAD_SCRIPTS="${DOWNLOAD_SCRIPTS:-${HOME}/.local/scripts}"
 
@@ -183,7 +184,6 @@ RUN echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash
     echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > $HOME/.local/init.sh && \
     cat >> "${HOME}/.bashrc" <<EOF
 
-export PATH="${HOME}/.local/bin:\${PATH}"
 export EDITOR="${EDITOR}"
 export VISUAL="${EDITOR}"
 export GIT_EDITOR="${EDITOR}"
@@ -219,16 +219,9 @@ ENTRYPOINT [ "/usr/local/bin/docker-entrypoint.sh" ]
 # Additional Metadata
 ARG VERSION=base-latest
 ARG IMAGE_BASE_NAME="stairwaytowonderland/cloud-cli-tools"
-ARG IMAGE_NAME="stairwaytowonderland/cloud-cli-tools"
-ARG IMAGE_VERSION=latest
-ARG GIT_COMMIT=
-ARG BUILD_DATE=
 LABEL org.opencontainers.image.base.name="${IMAGE_BASE_NAME}:${VERSION}"
 LABEL org.opencontainers.image.description="docker run <image>:<tag> describe"
 LABEL org.opencontainers.image.title="Cloud CLI Tools"
-LABEL org.opencontainers.image.created-date="${BUILD_DATE}"
 LABEL org.opencontainers.image.documentation="https://github.com/${GITHUB_REPO}/tree/main/docker#readme"
 LABEL org.opencontainers.image.url="https://github.com/${GITHUB_REPO}"
 LABEL org.opencontainers.image.source="https://github.com/${GITHUB_REPO}/blob/main/docker/dockerfiles/Dockerfile.main"
-LABEL org.opencontainers.image.version="${IMAGE_VERSION}"
-LABEL org.opencontainers.image.revision="${GIT_COMMIT}"
