@@ -66,6 +66,9 @@ RUN [ "${HELM_VERSION:-latest}" = "latest" ] && \
     ./get_helm.sh --version ${HELM_VERSION} && \
     printf "Helm %s\n" "$(helm version --short)" >> /.versions
 
+##################################################
+### SLIM - comment out the following section
+##################################################
 RUN [ "${KUBECTL_CONVERT_VERSION:-latest}" = "latest" ] && \
         version=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
         version="v$(echo ${KUBECTL_CONVERT_VERSION} | sed s/^v//g)" && \
@@ -105,6 +108,7 @@ RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${KUBECTX_VERSION}" "latest" 
     tar -xvzf kubens_${version}_linux_x86_64.tar.gz && \
     install kubens /usr/local/bin/kubens && \
     printf "kubens: %s\n" "$(kubens --version)" >> /.versions
+##################################################
 
 # # TODO: why doesn't standard istio install work?
 # RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${ISTIO_VERSION}" "latest" "istio/istio" | sed s/^v//g) && \
@@ -189,6 +193,12 @@ export VISUAL="${EDITOR}"
 export GIT_EDITOR="${EDITOR}"
 export KUBE_EDITOR="${EDITOR}"
 export CLUSTER_PREFIX="${CLUSTER_PREFIX:-di}"
+
+if [ -f $HOME/.local/.env ]; then
+    set -o allexport
+    . $HOME/.local/.env
+    set +o allexport
+fi
 
 if [ -d $HOME/.local/shell_addons.d ]; then
     for f in \$(find $HOME/.local/shell_addons.d -mindepth 1 -type f -name '*.sh' | sort -u); do
