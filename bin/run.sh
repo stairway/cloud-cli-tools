@@ -163,7 +163,7 @@ user_prompt() {
         [ -f "$0" ] && command_msg+=($0) || command_msg+=(bin/run.sh)
 
         command_msg+=(
-            -e "${FILE_EDITOR}"
+            -d "${FILE_EDITOR}"
             -m "'${GIT_CONFIG_EMAIL}'"
             -n "'${GIT_CONFIG_FULL_NAME}'"
             -p "${PLATFORM}"
@@ -179,7 +179,7 @@ user_prompt() {
             option="$1"
             shift
             case "${option}" in
-                -e|--editor)
+                -d|--editor)
                     [ -n "$1" ] || { usage >&2; exit 1; }
                     FILE_EDITOR="$1"
                     shift
