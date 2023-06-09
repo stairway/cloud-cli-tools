@@ -81,5 +81,6 @@ cloud_prompt() {
 
 _PS1_DEFAULT=
 [ -z "$_PS1_DEFAULT" ] && _PS1_DEFAULT=$PS1
-PS1="$(echo $_PS1_DEFAULT | sed 's/\\$$//')"${C_GREEN}'$(parse_git_branch)'${C_NC}'\$ '
-PS1='$(cloud_prompt)'$PS1
+OLD_PS1="$(echo $_PS1_DEFAULT | sed 's/\\$$//')"${C_GREEN}'$(parse_git_branch)'${C_NC}'\$ '
+OLD_PS1='$(cloud_prompt)'$OLD_PS1
+PS1=$OLD_PS1

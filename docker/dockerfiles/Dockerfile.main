@@ -25,9 +25,10 @@ ENV BOOL="${TRUE}|${FALSE}"
 ENV USER="${USER:-root}"
 ENV HOME="${HOME:-/root}"
 ENV PATH="${HOME}/.local/bin:/opt/bin:${PATH}"
-ENV PROMPT_COMMAND='history -a;history -c;history -r'
 ENV DOWNLOADS="${DOWNLOADS:-${HOME}/.local/downloads}"
 ENV SCRIPTS="${SCRIPTS:-${HOME}/.local/scripts}"
+ENV ENVFILE="${ENVFILE:-${HOME}/.local/.env}"
+ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;. "${ENVFILE:-${HOME}/.local/.env}"; set +a >/dev/null'
 
 USER root
 WORKDIR $DOWNLOADS
@@ -194,9 +195,9 @@ export GIT_EDITOR="${EDITOR}"
 export KUBE_EDITOR="${EDITOR}"
 export CLUSTER_PREFIX="${CLUSTER_PREFIX:-di}"
 
-if [ -f $HOME/.local/.env ]; then
+if [ -f $ENVFILE ]; then
     set -o allexport
-    . $HOME/.local/.env
+    . $ENVFILE
     set +o allexport
 fi
 
