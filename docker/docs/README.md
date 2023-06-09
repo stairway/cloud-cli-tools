@@ -20,9 +20,12 @@ docker run \
     -e GIT_CONFIG_FULL_NAME="{First-Name Last-Name}" \
     -e GIT_CONFIG_EMAIL="{email}" \
     -e EDITOR={nano|vim} \
+    -e HISTFILE="{histfile (/root/.bash_history)}"
     -v /var/lib/docker/volumes/{instance-name}/_data/.awsvault:/root/.awsvault \
     -v /var/lib/docker/volumes/{instance-name}/_data/.gnupg:/root/.gnupg \
     -v /var/lib/docker/volumes/{instance-name}/_data/.password-store:/root/.password-store \
+    -v ${PWD}/mount/home/root/.bash_history:/root/.bash_history \
+    -v ${PWD}/mount/home/root/.env:/root/.local/.env \
     -v ${PWD}/mount/home/root/.aws:/root/.aws \
     -v ${PWD}/mount/home/root/.kube:/root/.kube \
     -v ${PWD}/mount/home/root/.dpctl:/root/.dpctl \
@@ -49,10 +52,13 @@ docker run \
     -e GIT_CONFIG_FULL_NAME="{First-Name Last-Name}" \
     -e GIT_CONFIG_EMAIL="{email}" \
     -e EDITOR={nano|vim} \
+    -e HISTFILE="{histfile (/root/.bash_history)}"
     -e VSCODE_DEBUGPY_PORT={yes|no} \
     -v /var/lib/docker/volumes/{instance-name}/_data/.awsvault:/root/.awsvault \
     -v /var/lib/docker/volumes/{instance-name}/_data/.gnupg:/root/.gnupg \
     -v /var/lib/docker/volumes/{instance-name}/_data/.password-store:/root/.password-store \
+    -v ${PWD}/mount/home/root/.bash_history:/root/.bash_history \
+    -v ${PWD}/mount/home/root/.env:/root/.local/.env \
     -v ${PWD}/mount/home/root/.aws:/root/.aws \
     -v ${PWD}/mount/home/root/.kube:/root/.kube \
     -v ${PWD}/mount/home/root/.dpctl:/root/.dpctl \
