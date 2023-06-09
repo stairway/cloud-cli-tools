@@ -16,7 +16,7 @@ ARG EDITOR=nano
 ARG USER=root
 ARG HOME=/root
 ARG DOWNLOADS=${HOME}/.local/downloads
-ARG DOWNLOAD_SCRIPTS=${HOME}/.local/scripts
+ARG SCRIPTS=${HOME}/.local/scripts
 
 # only used if HOME != root
 ARG UID=1001
@@ -24,7 +24,7 @@ ARG UID=1001
 ENV USER=${USER}
 ENV HOME=${HOME}
 ENV DOWNLOADS=${DOWNLOADS}
-ENV DOWNLOAD_SCRIPTS=${DOWNLOAD_SCRIPTS}
+ENV SCRIPTS=${SCRIPTS}
 
 ENV TZ=${TZ}
 ENV TERM=xterm-color
@@ -66,7 +66,7 @@ RUN [ "${USER:-root}" = "root" ] || { \
         echo "${USER}:${USER}" | chpasswd && \
         echo 'root:root' | chpasswd; } && \
     mkdir -p $DOWNLOADS && \
-    mkdir -p $DOWNLOAD_SCRIPTS
+    mkdir -p $SCRIPTS
 
 # Install packages
 RUN apt-get update -y && \
@@ -115,39 +115,39 @@ ARG DOCKER_PKGS="\
 
 WORKDIR $DOWNLOADS
 
-RUN touch $DOWNLOAD_SCRIPTS/str-lower.sh && \
-    chmod +x $DOWNLOAD_SCRIPTS/str-lower.sh && \
-    cat > $DOWNLOAD_SCRIPTS/str-lower.sh <<EOF
+RUN touch $SCRIPTS/str-lower.sh && \
+    chmod +x $SCRIPTS/str-lower.sh && \
+    cat > $SCRIPTS/str-lower.sh <<EOF
 #!/bin/sh -euf
 echo "\$@" | tr '[:upper:]' '[:lower:]'
 EOF
 
-RUN touch $DOWNLOAD_SCRIPTS/get-arch.sh && \
-    chmod +x $DOWNLOAD_SCRIPTS/get-arch.sh && \
-    cat > $DOWNLOAD_SCRIPTS/get-arch.sh <<EOF
+RUN touch $SCRIPTS/get-arch.sh && \
+    chmod +x $SCRIPTS/get-arch.sh && \
+    cat > $SCRIPTS/get-arch.sh <<EOF
 #!/bin/sh -euf
 uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/'
 EOF
 
-RUN touch $DOWNLOAD_SCRIPTS/get-os.sh && \
-    chmod +x $DOWNLOAD_SCRIPTS/get-os.sh && \
-    cat > $DOWNLOAD_SCRIPTS/get-os.sh <<EOF
+RUN touch $SCRIPTS/get-os.sh && \
+    chmod +x $SCRIPTS/get-os.sh && \
+    cat > $SCRIPTS/get-os.sh <<EOF
 #!/bin/sh -euf
 uname -s
 EOF
 
-RUN touch $DOWNLOAD_SCRIPTS/get-platform.sh && \
-    chmod +x $DOWNLOAD_SCRIPTS/get-platform.sh && \
-    cat > $DOWNLOAD_SCRIPTS/get-platform.sh <<EOF
+RUN touch $SCRIPTS/get-platform.sh && \
+    chmod +x $SCRIPTS/get-platform.sh && \
+    cat > $SCRIPTS/get-platform.sh <<EOF
 #!/bin/sh -euf
-os=\$($DOWNLOAD_SCRIPTS/get-os.sh)
-arch=\$($DOWNLOAD_SCRIPTS/get-arch.sh)
+os=\$($SCRIPTS/get-os.sh)
+arch=\$($SCRIPTS/get-arch.sh)
 echo "\${os}_\${arch}"
 EOF
 
-RUN touch $DOWNLOAD_SCRIPTS/gh-auth-status.sh && \
-    chmod +x $DOWNLOAD_SCRIPTS/gh-auth-status.sh && \
-    cat > $DOWNLOAD_SCRIPTS/gh-auth-status.sh <<EOF
+RUN touch $SCRIPTS/gh-auth-status.sh && \
+    chmod +x $SCRIPTS/gh-auth-status.sh && \
+    cat > $SCRIPTS/gh-auth-status.sh <<EOF
 #!/bin/sh -euf
 gh_auth_status() {
     gh auth status 2>/dev/null || { [ -n "\${GH_CLIENT_TOKEN:-""}" ] && /usr/local/bin/gh-login >/dev/null 2>&1; }
@@ -157,9 +157,9 @@ gh_auth_status
 exit \$?
 EOF
 
-RUN touch $DOWNLOAD_SCRIPTS/gh-get-latest-release.sh && \
-    chmod +x $DOWNLOAD_SCRIPTS/gh-get-latest-release.sh && \
-    cat > $DOWNLOAD_SCRIPTS/gh-get-latest-release.sh <<EOF
+RUN touch $SCRIPTS/gh-get-latest-release.sh && \
+    chmod +x $SCRIPTS/gh-get-latest-release.sh && \
+    cat > $SCRIPTS/gh-get-latest-release.sh <<EOF
 #!/bin/sh -euf
 # https://docs.github.com/en/rest/overview/resources-in-the-rest-api?apiVersion=2022-11-28#rate-limiting
 gh_curl_latest_release() {
@@ -168,7 +168,7 @@ grep '\"tag_name\":' | \
 sed -E 's/.*\"([^\"]+)\".*/\1/'
 }
 gh_client_latest_release() {
-    $DOWNLOAD_SCRIPTS/gh-auth-status.sh && gh api "repos/\${1}/releases/latest" --jq '.tag_name' 2>/dev/null
+    $SCRIPTS/gh-auth-status.sh && gh api "repos/\${1}/releases/latest" --jq '.tag_name' 2>/dev/null
     return \$?
 }
 gh_client_latest_release "\$@" || \
@@ -176,15 +176,15 @@ gh_curl_latest_release "\$@"
 exit \$?
 EOF
 
-RUN touch $DOWNLOAD_SCRIPTS/gh-get-version.sh && \
-    chmod +x $DOWNLOAD_SCRIPTS/gh-get-version.sh && \
-    cat > $DOWNLOAD_SCRIPTS/gh-get-version.sh <<EOF
+RUN touch $SCRIPTS/gh-get-version.sh && \
+    chmod +x $SCRIPTS/gh-get-version.sh && \
+    cat > $SCRIPTS/gh-get-version.sh <<EOF
 #!/bin/sh -euf
 gh_get_version() {
     local return_code=$?
     local version
     [ "\${1:-\$2}" = "\$2" ] && \
-version=\$($DOWNLOAD_SCRIPTS/gh-get-latest-release.sh "\$3") || \
+version=\$($SCRIPTS/gh-get-latest-release.sh "\$3") || \
 version="v\$(echo \$1 | sed s/^v//g)"
     return_code=\$?
     echo "\$version"
@@ -194,21 +194,21 @@ gh_get_version "\$@"
 exit \$?
 EOF
 
-RUN touch $DOWNLOAD_SCRIPTS/gh-download-release-asset.sh && \
-    chmod +x $DOWNLOAD_SCRIPTS/gh-download-release-asset.sh && \
-    cat > $DOWNLOAD_SCRIPTS/gh-download-release-asset.sh <<EOF
+RUN touch $SCRIPTS/gh-download-release-asset.sh && \
+    chmod +x $SCRIPTS/gh-download-release-asset.sh && \
+    cat > $SCRIPTS/gh-download-release-asset.sh <<EOF
 #!/bin/sh -euf
 gh_download_release_asset() {
-    $DOWNLOAD_SCRIPTS/gh-auth-status.sh && gh release --repo "\${1}" download "\${2}" -p "\${3}" 2>/dev/null
+    $SCRIPTS/gh-auth-status.sh && gh release --repo "\${1}" download "\${2}" -p "\${3}" 2>/dev/null
     return \$?
 }
 gh_download_release_asset "\$@"
 exit \$?
 EOF
 
-RUN touch $DOWNLOAD_SCRIPTS/gh-download-and-verify.sh && \
-    chmod +x $DOWNLOAD_SCRIPTS/gh-download-and-verify.sh && \
-    cat > $DOWNLOAD_SCRIPTS/gh-download-and-verify.sh <<EOF
+RUN touch $SCRIPTS/gh-download-and-verify.sh && \
+    chmod +x $SCRIPTS/gh-download-and-verify.sh && \
+    cat > $SCRIPTS/gh-download-and-verify.sh <<EOF
 #!/bin/sh -euf
 asset_name="\${3}"
 asset_dir_rel="\${1}/\${2}/\$(echo \${3} | awk -F'.' '{print \$1}')"
@@ -217,8 +217,8 @@ cd "${DOWNLOADS}/\${asset_dir_rel}"
 gh_client_download_verify() {
     local return_code=\$?
     local status=
-    $DOWNLOAD_SCRIPTS/gh-download-release-asset.sh "\${1}" "\${2}" "\${3}" && \
-$DOWNLOAD_SCRIPTS/gh-download-release-asset.sh "\${1}" "\${2}" "\${4}" && \
+    $SCRIPTS/gh-download-release-asset.sh "\${1}" "\${2}" "\${3}" && \
+$SCRIPTS/gh-download-release-asset.sh "\${1}" "\${2}" "\${4}" && \
 status=\$(cat \${4} | grep --color=never \${3} | sha256sum -c -)
     return_code=\$?
     if [ \$return_code -eq 0 -a "\$status" = "\${3}: OK" ]; then
@@ -249,9 +249,9 @@ exit_code=\$?
 exit \$exit_code
 EOF
 
-RUN touch $DOWNLOAD_SCRIPTS/download-and-verify-1.sh && \
-    chmod +x $DOWNLOAD_SCRIPTS/download-and-verify-1.sh && \
-    cat > $DOWNLOAD_SCRIPTS/download-and-verify-1.sh <<EOF
+RUN touch $SCRIPTS/download-and-verify-1.sh && \
+    chmod +x $SCRIPTS/download-and-verify-1.sh && \
+    cat > $SCRIPTS/download-and-verify-1.sh <<EOF
 #!/bin/sh -euf
 asset_name="\${4}"
 asset_dir_rel="\${2}/\${3}/\$(echo \${4} | awk -F'.' '{print \$1}')"
@@ -287,9 +287,9 @@ exit_code=\$?
 exit \$exit_code
 EOF
 
-RUN touch $DOWNLOAD_SCRIPTS/download-and-verify-2.sh && \
-    chmod +x $DOWNLOAD_SCRIPTS/download-and-verify-2.sh && \
-    cat > $DOWNLOAD_SCRIPTS/download-and-verify-2.sh <<EOF
+RUN touch $SCRIPTS/download-and-verify-2.sh && \
+    chmod +x $SCRIPTS/download-and-verify-2.sh && \
+    cat > $SCRIPTS/download-and-verify-2.sh <<EOF
 #!/bin/sh -euf
 asset_name="\${4}"
 asset_dir_rel="\${2}/\${3}/\$(echo \${4} | awk -F'.' '{print \$1}')"
@@ -348,8 +348,8 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /
     apt-get clean -y && \
     docker --version >> /.versions
 
-RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${DOCKER_COMPOSE_VERSION}" "latest" "docker/compose") && \
-    status=$($DOWNLOAD_SCRIPTS/gh-download-and-verify.sh "docker/compose" "${version}" \
+RUN version=$($SCRIPTS/gh-get-version.sh "${DOCKER_COMPOSE_VERSION}" "latest" "docker/compose") && \
+    status=$($SCRIPTS/gh-download-and-verify.sh "docker/compose" "${version}" \
         "docker-compose-linux-x86_64" "docker-compose-linux-x86_64.sha256") && \
     echo $status && \
     install docker-compose-linux-x86_64 /usr/local/bin/docker-compose && \
@@ -365,24 +365,24 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
         ./aws/install; } && update_in_case_v1_installed && \
     aws --version >> /.versions
 
-RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${EKSCTL_VERSION}" "latest" "weaveworks/eksctl") && \
-    platform=$($DOWNLOAD_SCRIPTS/get-platform.sh) && \
-    status=$($DOWNLOAD_SCRIPTS/gh-download-and-verify.sh "weaveworks/eksctl" "${version}" \
+RUN version=$($SCRIPTS/gh-get-version.sh "${EKSCTL_VERSION}" "latest" "weaveworks/eksctl") && \
+    platform=$($SCRIPTS/get-platform.sh) && \
+    status=$($SCRIPTS/gh-download-and-verify.sh "weaveworks/eksctl" "${version}" \
         "eksctl_${platform}.tar.gz" "eksctl_checksums.txt") && \
     echo $status && \
     tar -xzf eksctl_${platform}.tar.gz -C ./ && rm eksctl_${platform}.tar.gz && \
     install eksctl /usr/local/bin/eksctl && \
     printf "eksctl: %s\n" "$(eksctl --version 2>&1)" >> /.versions
 
-RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${AWS_VAULT_VERSION}" "latest" "99designs/aws-vault") && \
-    status=$($DOWNLOAD_SCRIPTS/gh-download-and-verify.sh "99designs/aws-vault" "${version}" \
+RUN version=$($SCRIPTS/gh-get-version.sh "${AWS_VAULT_VERSION}" "latest" "99designs/aws-vault") && \
+    status=$($SCRIPTS/gh-download-and-verify.sh "99designs/aws-vault" "${version}" \
         "aws-vault-linux-amd64" "SHA256SUMS") && \
     echo $status && \
     install aws-vault-linux-amd64 /usr/local/bin/aws-vault && \
     printf "aws-vault: %s\n" "$(aws-vault --version 2>&1)" >> /.versions
 
-RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kubernetes/minikube") && \
-    status=$($DOWNLOAD_SCRIPTS/download-and-verify-2.sh "https://storage.googleapis.com/minikube/releases" \
+RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kubernetes/minikube") && \
+    status=$($SCRIPTS/download-and-verify-2.sh "https://storage.googleapis.com/minikube/releases" \
         "kubernetes/minikube" "${version}" \
         "minikube-linux-amd64" "minikube-linux-amd64.sha256") && \
     echo $status && \

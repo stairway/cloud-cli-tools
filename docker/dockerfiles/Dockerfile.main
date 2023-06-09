@@ -27,7 +27,7 @@ ENV HOME="${HOME:-/root}"
 ENV PATH="${HOME}/.local/bin:/opt/bin:${PATH}"
 ENV PROMPT_COMMAND='history -a;history -c;history -r'
 ENV DOWNLOADS="${DOWNLOADS:-${HOME}/.local/downloads}"
-ENV DOWNLOAD_SCRIPTS="${DOWNLOAD_SCRIPTS:-${HOME}/.local/scripts}"
+ENV SCRIPTS="${SCRIPTS:-${HOME}/.local/scripts}"
 
 USER root
 WORKDIR $DOWNLOADS
@@ -50,7 +50,7 @@ RUN for f in $(ls -1 /tmp/addons); do install "/tmp/addons/${f}" "/usr/local/bin
 RUN [ "${KUBE_VERSION:-latest}" = "latest" ] && \
         version=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
         version="v$(echo ${KUBE_VERSION} | sed s/^v//g)" && \
-    status=$($DOWNLOAD_SCRIPTS/download-and-verify-2.sh "https://dl.k8s.io/release" \
+    status=$($SCRIPTS/download-and-verify-2.sh "https://dl.k8s.io/release" \
         "kubernetes/kubectl" "${version}" \
         "kubectl" "kubectl.sha256" "bin/linux/amd64") && \
     echo $status && \
@@ -59,7 +59,7 @@ RUN [ "${KUBE_VERSION:-latest}" = "latest" ] && \
 
 # https://helm.sh/docs/intro/install/
 RUN [ "${HELM_VERSION:-latest}" = "latest" ] && \
-        HELM_VERSION=$($DOWNLOAD_SCRIPTS/gh-get-latest-release.sh "helm/helm") || \
+        HELM_VERSION=$($SCRIPTS/gh-get-latest-release.sh "helm/helm") || \
         HELM_VERSION="v$(echo ${HELM_VERSION} | sed s/^v//g)" && \
     curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && \
     chmod 700 get_helm.sh && \
@@ -72,15 +72,15 @@ RUN [ "${HELM_VERSION:-latest}" = "latest" ] && \
 RUN [ "${KUBECTL_CONVERT_VERSION:-latest}" = "latest" ] && \
         version=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
         version="v$(echo ${KUBECTL_CONVERT_VERSION} | sed s/^v//g)" && \
-    status=$($DOWNLOAD_SCRIPTS/download-and-verify-2.sh "https://dl.k8s.io/release" \
+    status=$($SCRIPTS/download-and-verify-2.sh "https://dl.k8s.io/release" \
         "kubernetes/kubectl-convert" "${version}" \
         "kubectl-convert" "kubectl-convert.sha256" "bin/linux/amd64") && \
     echo $status && \
     install -o root -g root -m 0755 kubectl-convert /usr/local/bin/kubectl-convert
 
 # https://kind.sigs.k8s.io/
-RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${KIND_VERSION}" "latest" "kubernetes-sigs/kind") && \
-    status=$($DOWNLOAD_SCRIPTS/download-and-verify-1.sh "https://kind.sigs.k8s.io/dl" \
+RUN version=$($SCRIPTS/gh-get-version.sh "${KIND_VERSION}" "latest" "kubernetes-sigs/kind") && \
+    status=$($SCRIPTS/download-and-verify-1.sh "https://kind.sigs.k8s.io/dl" \
         "kubernetes-sigs/kind" "${version}" \
         "kind-linux-amd64" "kind-linux-amd64.sha256sum") && \
     echo $status && \
@@ -93,16 +93,16 @@ RUN curl -sSL https://git.io/install-kubent | sh -
 
 # Install kubectx and kubens
 # https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
-RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${KUBECTX_VERSION}" "latest" "ahmetb/kubectx") && \
-    status=$($DOWNLOAD_SCRIPTS/gh-download-and-verify.sh "ahmetb/kubectx" "${version}" \
+RUN version=$($SCRIPTS/gh-get-version.sh "${KUBECTX_VERSION}" "latest" "ahmetb/kubectx") && \
+    status=$($SCRIPTS/gh-download-and-verify.sh "ahmetb/kubectx" "${version}" \
         "kubectx_${version}_linux_x86_64.tar.gz" "checksums.txt") && \
     echo $status && \
     tar -xvzf kubectx_${version}_linux_x86_64.tar.gz && \
     install kubectx /usr/local/bin/kubectx && \
     printf "kubectx: %s\n" "$(kubectx --version)" >> /.versions
 
-RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${KUBECTX_VERSION}" "latest" "ahmetb/kubectx") && \
-    status=$($DOWNLOAD_SCRIPTS/gh-download-and-verify.sh "ahmetb/kubectx" "${version}" \
+RUN version=$($SCRIPTS/gh-get-version.sh "${KUBECTX_VERSION}" "latest" "ahmetb/kubectx") && \
+    status=$($SCRIPTS/gh-download-and-verify.sh "ahmetb/kubectx" "${version}" \
         "kubens_${version}_linux_x86_64.tar.gz" "checksums.txt") && \
     echo $status && \
     tar -xvzf kubens_${version}_linux_x86_64.tar.gz && \
@@ -111,14 +111,14 @@ RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${KUBECTX_VERSION}" "latest" 
 ##################################################
 
 # # TODO: why doesn't standard istio install work?
-# RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${ISTIO_VERSION}" "latest" "istio/istio" | sed s/^v//g) && \
+# RUN version=$($SCRIPTS/gh-get-version.sh "${ISTIO_VERSION}" "latest" "istio/istio" | sed s/^v//g) && \
 #     { curl -L https://istio.io/downloadIstio ISTIO_VERSION=$ISTIO_VERSION TARGET_ARCH=x86_64 | sh -; } && \
 #     install istio-${version}/bin/istioctl /usr/local/bin/istioctl && \
 #     cp istio-${version}/tools/istioctl.bash $HOME/.istioctl.bash && \
 #     printf "istio: %s\n" "$(istioctl version --remote=false --short)" >> /.versions
 
-RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${ISTIO_VERSION}" "latest" "istio/istio" | sed s/^v//g) && \
-    status=$($DOWNLOAD_SCRIPTS/gh-download-and-verify.sh "istio/istio" "${version}" \
+RUN version=$($SCRIPTS/gh-get-version.sh "${ISTIO_VERSION}" "latest" "istio/istio" | sed s/^v//g) && \
+    status=$($SCRIPTS/gh-download-and-verify.sh "istio/istio" "${version}" \
         "istio-${version}-linux-amd64.tar.gz" "istio-${version}-linux-amd64.tar.gz.sha256") && \
     echo $status && \
     tar -xvzf istio-${version}-linux-amd64.tar.gz && \
@@ -126,8 +126,8 @@ RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${ISTIO_VERSION}" "latest" "i
     cp istio-${version}/tools/istioctl.bash $HOME/.istioctl.bash && \
     printf "istio: %s\n" "$(istioctl version --remote=false --short)" >> /.versions
 
-RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${HASHICORP_VAULT_VERSION}" "latest" "hashicorp/vault" | sed s/^v//g) && \
-    status=$($DOWNLOAD_SCRIPTS/download-and-verify-1.sh "https://releases.hashicorp.com/vault" \
+RUN version=$($SCRIPTS/gh-get-version.sh "${HASHICORP_VAULT_VERSION}" "latest" "hashicorp/vault" | sed s/^v//g) && \
+    status=$($SCRIPTS/download-and-verify-1.sh "https://releases.hashicorp.com/vault" \
         "hashicorp/vault" "${version}" \
         "vault_${version}_linux_amd64.zip" "vault_${version}_SHA256SUMS") && \
     echo $status && \
@@ -138,7 +138,7 @@ RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${HASHICORP_VAULT_VERSION}" "
 RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
         version=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') || \
         version="$(echo ${TERRAFORM_VERSION} | sed s/^v//g)" && \
-    status=$($DOWNLOAD_SCRIPTS/download-and-verify-1.sh "https://releases.hashicorp.com/terraform" \
+    status=$($SCRIPTS/download-and-verify-1.sh "https://releases.hashicorp.com/terraform" \
         "hashicorp/terraform" "${version}" \
         "terraform_${version}_linux_amd64.zip" "terraform_${version}_SHA256SUMS") && \
     echo $status && \
@@ -147,15 +147,15 @@ RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
     printf "Hashicorp %s\n" "$(echo $(terraform version) | awk '{print $1" "$2}')" >> /.versions && \
     terraform -install-autocomplete
 
-RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${TERRAGRUNT_VERSION}" "latest" "gruntwork-io/terragrunt") && \
-    status=$($DOWNLOAD_SCRIPTS/gh-download-and-verify.sh "gruntwork-io/terragrunt" "${version}" \
+RUN version=$($SCRIPTS/gh-get-version.sh "${TERRAGRUNT_VERSION}" "latest" "gruntwork-io/terragrunt") && \
+    status=$($SCRIPTS/gh-download-and-verify.sh "gruntwork-io/terragrunt" "${version}" \
         "terragrunt_linux_amd64" "SHA256SUMS") && \
     echo $status && \
     install terragrunt_linux_amd64 /usr/local/bin/terragrunt && \
     terragrunt --version >> /.versions
 
-RUN version=$($DOWNLOAD_SCRIPTS/gh-get-version.sh "${K9S_VERSION}" "latest" "derailed/k9s") && \
-    status=$($DOWNLOAD_SCRIPTS/gh-download-and-verify.sh "derailed/k9s" "${version}" \
+RUN version=$($SCRIPTS/gh-get-version.sh "${K9S_VERSION}" "latest" "derailed/k9s") && \
+    status=$($SCRIPTS/gh-download-and-verify.sh "derailed/k9s" "${version}" \
         "k9s_Linux_amd64.tar.gz" "checksums.txt") && \
     echo $status && \
     tar -xvzf k9s_Linux_amd64.tar.gz k9s -C . && \
