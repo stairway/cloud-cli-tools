@@ -105,6 +105,12 @@ deep_clean() {
     else
         printf "\033[91m>\033[0m Not Found. %s\n" "${NOTHING_MSG}"
     fi
+    printf "\033[93m>\033[0m Checking: %s\n" "${WORKING_DIRECTORY}/.env"
+    if [ -f "${WORKING_DIRECTORY}/.env" ]; then
+        rm -f "${WORKING_DIRECTORY}/.env"
+    else
+        printf "\033[91m>\033[0m Not Found. %s\n" "${NOTHING_MSG}"
+    fi
     remove_volume
 }
 

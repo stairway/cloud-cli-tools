@@ -280,6 +280,7 @@ run_new() {
 
     local docker_histfile="${DOCKER_HISTFILE:-${docker_user_home}/${DOCKER_HISTFILE_NAME}}"
     touch "${PWD}/mount/home/${DOCKER_USER}/${DOCKER_HISTFILE_NAME}"
+    touch "${PWD}/mount/home/${DOCKER_USER}/.env"
 
     copy_addons
     # copy_profile "docker/profile" "mount/home/${DOCKER_USER}/.profile.d"
@@ -301,6 +302,7 @@ run_new() {
         -v "${mountpoint}/.password-store:${docker_user_home}/.password-store"
         # --mount "type=volume,src='${RANDOMSTR}',dst=${docker_user_home}/.local"
         -v "${PWD}/mount/home/${DOCKER_USER}/${DOCKER_HISTFILE_NAME}:${docker_histfile}"
+        -v "${PWD}/mount/home/${DOCKER_USER}/.env:${docker_user_home}/.local/.env"
         -v "${PWD}/mount/home/${DOCKER_USER}/.aws:${docker_user_home}/.aws"
         -v "${PWD}/mount/home/${DOCKER_USER}/.kube:${docker_user_home}/.kube"
         -v "${PWD}/mount/home/${DOCKER_USER}/.dpctl:${docker_user_home}/.dpctl"
