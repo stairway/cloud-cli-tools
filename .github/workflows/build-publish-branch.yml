@@ -38,12 +38,19 @@ jobs:
       - name: Get Base Sha
         id: get-base-sha
         run: |
-          if [ "${{ github.event.before }}x" != "x" ]; then
-            echo "base_sha=${GH_EVENT_BEFORE}" >> $GITHUB_OUTPUT
+          ref_name=$(echo "${GITHUB_REF}" | awk -F'/' '{print $2}')
+          previous_sha=
+          if [ "${ref_name}" = "tags" ]; then
+            previous_tag=$(git rev-parse "$(git tag --sort=-v:refname | head -n 2 | tail -n 1)")
+            previous_sha=$(git rev-list -n 1 "${previous_tag}")
           else
-            previous_sha=$(git rev-list -n 1 "HEAD^")
-            echo "base-sha=${previous_sha}" >> $GITHUB_OUTPUT
+            if [ "${{ github.event.before }}x" != "x" ]; then
+              previous_sha="${GH_EVENT_BEFORE}"
+            else
+              previous_sha=$(git rev-list -n 1 "HEAD^")
+            fi
           fi
+          echo "base-sha=${previous_sha}" >> $GITHUB_OUTPUT
 
       - name: Get changed files matching filter
         id: changed-files
