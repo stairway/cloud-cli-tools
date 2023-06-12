@@ -28,6 +28,7 @@ jobs:
         id: changed-files
         uses: ./.github/actions/changed-files-action
         with:
+          since_last_remote_commit: true
           files: |
             conf/base/*.env
             docker/dockerfiles/*.base

@@ -35,15 +35,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get Base Sha
-        id: get-base-sha
-        uses: ./.github/actions/get-base-sha-action
-
       - name: Get changed files matching filter
         id: changed-files
         uses: ./.github/actions/changed-files-action
         with:
-          base_sha: ${{ steps.get-base-sha.outputs.base_sha }}
+          since_last_remote_commit: true
           files: |
             conf/base/*.env
             docker/dockerfiles/*.base
