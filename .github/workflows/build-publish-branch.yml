@@ -28,16 +28,28 @@ jobs:
       branch_name: ${{ steps.get-branch-name.outputs.branch-name }}
       build_latest: ${{ steps.get-build-opts.outputs.build-latest }}
       build_dev: ${{ steps.get-build-opts.outputs.build-dev }}
+      base_sha: ${{ steps.get-base-sha.outputs.base-sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
+      - name: Get Base Sha
+        id: get-base-sha
+        run: |
+          if [ "${{ github.event.before }}x" != "x" ]; then
+            echo "base_sha=${GH_EVENT_BEFORE}" >> $GITHUB_OUTPUT
+          else
+            previous_sha=$(git rev-list -n 1 "HEAD^")
+            echo "base-sha=${previous_sha}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Get changed files matching filter
         id: changed-files
         uses: ./.github/actions/changed-files-action
         with:
+          base_sha: ${{ github.event.before }}
           files: |
             conf/base/*.env
             docker/dockerfiles/*.base
