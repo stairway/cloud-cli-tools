@@ -37,26 +37,13 @@ jobs:
 
       - name: Get Base Sha
         id: get-base-sha
-        run: |
-          ref_name=$(echo "${GITHUB_REF}" | awk -F'/' '{print $2}')
-          previous_sha=
-          if [ "${ref_name}" = "tags" ]; then
-            previous_tag=$(git rev-parse "$(git tag --sort=-v:refname | head -n 2 | tail -n 1)")
-            previous_sha=$(git rev-list -n 1 "${previous_tag}")
-          else
-            if [ "${{ github.event.before }}x" != "x" ]; then
-              previous_sha="${GH_EVENT_BEFORE}"
-            else
-              previous_sha=$(git rev-list -n 1 "HEAD^")
-            fi
-          fi
-          echo "base-sha=${previous_sha}" >> $GITHUB_OUTPUT
+        uses: ./.github/actions/get-base-sha-action
 
       - name: Get changed files matching filter
         id: changed-files
         uses: ./.github/actions/changed-files-action
         with:
-          base_sha: ${{ github.event.before }}
+          base_sha: ${{ steps.get-base-sha.outputs.base_sha }}
           files: |
             conf/base/*.env
             docker/dockerfiles/*.base
