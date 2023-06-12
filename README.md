@@ -3,8 +3,11 @@
 ## **Table of Contents**
 
 1. [Summary](#summary)
-1. [Setup Requirements](#setup-requirements)
-   1. [Required Dependencies](#required-dependencies)
+1. [Requirements](#requirements)
+   1. [General Requirements](#general-requirements)
+   1. [Install Requirements](#general-requirements)
+   1. [Run Requirements](#general-requirements)
+   1. [Build Requirements](#general-requirements)
 1. [Setup Instructions](#setup-instructions)
    1. [Run Only](#run-only)
    1. [Build & Run](#build--run)
@@ -35,18 +38,38 @@ Certain files and folders are persisted from the container. It is 100% safe to r
 
 Password data is encrypted and persisted in an obfuscated directory.
 
-## **Setup Requirements**
+## **Requirements**
 
-### Required dependencies
+### General Requirements
 * [docker](https://docs.docker.com/get-docker/)
 * [jq](https://stedolan.github.io/jq/download/)
+* bash v3.x+
+
+### Install Requirements
+* [Github PAT](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) (with repo access)
+
+### Run Requirements
+* (same as [General Requirements](#general-requirements))
+
+### Build Requirements
 * [buildx](https://www.docker.com/blog/how-to-rapidly-build-multi-architecture-images-with-buildx/) (only required for building)
 
 **\*NOTE\***
 
 If you're having trouble building, check if you have Experimental Features enabled in the Settings for Docker Desktop. If it's enabled, then disable it.
 
-### **Run Instructions**
+## **Install Instructions**
+1. Download the install package from [`dist/cct-wwg-internal.zip`](https://github.com/wwg-internal/cloud-cli-tools/blob/main/dist/cct-wwg-internal.zip)
+1. Unzip (unless overriden with the `unzip` command, the extracted directory will be named `cloud-cli-tools`) ...
+    ```shell
+    unzip cct-wwg-internal.zip && cd cloud-cli-tools
+1. Install
+
+    ```shell
+    GH_PAT=<pat> RELEASE_VERSION=<tag> eval "$(<cct)"
+    ```
+
+## **Run Instructions**
 
 ```bash
 $ bin/run.sh
