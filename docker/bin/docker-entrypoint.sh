@@ -129,10 +129,7 @@ print_args() {
 trap die INT
 
 case "$1" in
-    describe)
-        describe
-        ;;
-    help)
+    describe|help)
         describe
         ;;
     sh|bash)

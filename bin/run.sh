@@ -300,7 +300,6 @@ run_new() {
         -v "${mountpoint}/.awsvault:${docker_user_home}/.awsvault"
         -v "${mountpoint}/.gnupg:${docker_user_home}/.gnupg"
         -v "${mountpoint}/.password-store:${docker_user_home}/.password-store"
-        # --mount "type=volume,src='${RANDOMSTR}',dst=${docker_user_home}/.local"
         -v "${PWD}/mount/home/${DOCKER_USER}/${DOCKER_HISTFILE_NAME}:${docker_histfile}"
         -v "${PWD}/mount/home/${DOCKER_USER}/.env:${docker_user_home}/.local/.env"
         -v "${PWD}/mount/home/${DOCKER_USER}/.aws:${docker_user_home}/.aws"
@@ -309,6 +308,7 @@ run_new() {
         -v "${PWD}/mount/home/${DOCKER_USER}/.ssh:${docker_user_home}/.ssh"
         -v "${PWD}/mount/data:/data"
         -v /var/run/docker.sock:/var/run/docker.sock
+        # --mount "type=volume,src='${RANDOMSTR}',dst=${docker_user_home}/.local"
     )
     [ -d "${PWD}/mount/addons" -a $(count $(ls -1 ${PWD}/mount/addons)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/addons:/tmp/addons")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh")
