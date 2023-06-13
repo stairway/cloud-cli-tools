@@ -127,11 +127,6 @@ print_args() {
 
 trap die INT
 
-_set_input_cmd() {
-    [ "${1#ba}" != "sh" ] || INPUT_SHELL="$1" && INPUT_SHELL="${INPUT_SHELL:-$SHELL}"
-    [ "${DEBUG:-false}" = "true" ] && printf "Set INPUT_SHELL to '%s'\n" "$INPUT_SHELL"
-}
-
 _print_shells() {
     printf "Default Shell: ${SHELL}\n"
     printf "Input Shell: ${INPUT_SHELL}\n"
@@ -142,7 +137,7 @@ _login_exec() {
 }
 
 _initialize() {
-    _set_input_cmd "$@"
+    [ "${1#ba}" != "sh" ] || INPUT_SHELL="$1" && INPUT_SHELL="${INPUT_SHELL:-$SHELL}"
     [ "${DEBUG:-false}" = "true" ] && _print_shells
     [ "${DEBUG:-false}" = "true" ] && print_args "$@"
     [ "$(basename ${INPUT_SHELL})" = "$(basename ${SHELL})" ] && do_init || return 1
