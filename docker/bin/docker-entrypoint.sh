@@ -124,34 +124,9 @@ print_args() {
         printf "arg: ${arg}\n"
     done
 }
+[ "${DEBUG:-false}" = "true" ] && print_args
 
 trap die INT
-
-_print_shells() {
-    printf "Default Shell: ${SHELL}\n"
-    printf "Input Shell: ${INPUT_SHELL}\n"
-}
-
-_login_exec() {
-    ${1:-$INPUT_SHELL} -l
-}
-
-_initialize() {
-    [ "${1#ba}" != "sh" ] || INPUT_SHELL="$1" && INPUT_SHELL="${INPUT_SHELL:-$SHELL}"
-    [ "${DEBUG:-false}" = "true" ] && _print_shells
-    [ "${DEBUG:-false}" = "true" ] && print_args "$@"
-    [ "$(basename ${INPUT_SHELL})" = "$(basename ${SHELL})" ] && do_init || return 1
-}
-
-# _double_dash() {
-#     # first arg is `-f`, `--some-option`, or `--`
-#     if [ "${1#-}" != "$1" ]; then
-#         if [ "${1}" = "--" ]; then
-#             return 0
-#         fi
-#     fi
-#     return 1
-# }
 
 case "$1" in
     describe)
@@ -161,18 +136,14 @@ case "$1" in
         describe
         ;;
     sh|bash)
-        _initialize "$@"
-        eval "$@"
-        ${INPUT_SHELL} -l
-        [ $exit_code -eq 0 ] || exit_code=$?
+        shift
         ;;
-    *)
-        _initialize "$@"
-        eval "${INPUT_SHELL} -c 'exec $@'"
-        ${INPUT_SHELL} -l
-        [ $exit_code -eq 0 ] || exit_code=$?
-        ;;
+    *) ;;
 esac
 
+do_init
+eval "bash -c '$@'"
+bash -l
+[ $exit_code -eq 0 ] || exit_code=$?
 [ $exit_code -eq 0 ] || die
 [ "${KEEP_ALIVE:-false}" = "true" ] && tail -f /dev/null

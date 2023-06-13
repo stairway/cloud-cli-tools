@@ -311,7 +311,8 @@ run_new() {
         -v /var/run/docker.sock:/var/run/docker.sock
     )
     [ -d "${PWD}/mount/addons" -a $(count $(ls -1 ${PWD}/mount/addons)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/addons:/tmp/addons")
-    # [ -d "${PWD}/mount/home/${DOCKER_USER}/.profile.d" -a $(count $(ls -1 ${PWD}/mount/home/${DOCKER_USER}/.profile.d)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/home/${DOCKER_USER}/.profile.d:${docker_user_home}/.local/profile.d")
+    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh")
+    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/profile:${docker_user_home}/.local/profile.d")
 
     local run_mode=("")
     [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && run_mode+=("-p ${VSCODE_DEBUGPY_PORT}:${VSCODE_DEBUGPY_PORT}")
@@ -320,7 +321,6 @@ run_new() {
         run_mode+=(
             -d
             "${docker_image}"
-            bash
         )
         KEEP_ALIVE=true
     else
@@ -328,7 +328,6 @@ run_new() {
             --rm
             -it
             "${docker_image}"
-            bash -c \'init.sh\'
         )
         KEEP_ALIVE=false
     fi

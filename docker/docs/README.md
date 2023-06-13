@@ -68,5 +68,4 @@ docker run \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -d \
     {image}:{tag}
-    bash -c "init.sh"
 ```
