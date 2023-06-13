@@ -99,10 +99,13 @@ check_crypto() {
 exit_code=0
 waiting() { printf "${1:-.}"; sleep 1; }
 die() {
-    local color=$exit_code
+    local color=0
+    local exit_code=${1:-$?}
+    local msg="${2:-""}"
+    [ -n "${msg}" ] && printf "%s\n" "$2"
     [ $exit_code -eq 0 ] && color=92 || color=91
     printf "\n\033[%d;1mExiting with code %d " $color $exit_code
-    for i in {1..2}; do waiting; done
+    for i in {1..3}; do waiting; done
     printf "\033[0m\n"
 }
 
@@ -119,6 +122,10 @@ do_init() {
     fi
 }
 
+keep_alive() {
+    [ "${KEEP_ALIVE:-false}" = "true" ] && tail -f /dev/null
+}
+
 print_args() {
     for arg in $@; do
         printf "arg: ${arg}\n"
@@ -129,18 +136,29 @@ print_args() {
 trap die INT
 
 case "$1" in
+    docker)
+        printf "You must exec into a shell to run the command: %s\n" "$(echo $@)"
+        die 1
+        ;;
     describe|help)
         describe
         ;;
     sh|bash)
+        do_init
         shift
+        eval "bash -l -c '$@'"
+        bash -l
+        [ $exit_code -eq 0 ] || exit_code=$?
+        keep_alive
         ;;
-    *) ;;
+    *)
+        # [ "${1#ba}" = "sh" ] && do_init && shift
+        do_init
+        eval "bash -l -c '$@'"
+        bash -l
+        [ $exit_code -eq 0 ] || exit_code=$?
+        keep_alive
+        ;;
 esac
 
-do_init
-eval "bash -c '$@'"
-bash -l
-[ $exit_code -eq 0 ] || exit_code=$?
 [ $exit_code -eq 0 ] || die
-[ "${KEEP_ALIVE:-false}" = "true" ] && tail -f /dev/null
