@@ -8,6 +8,11 @@ on:
   #     - 'conf/**'
   #     - 'docker/**'
 
+  workflow_dispatch:
+    branches:
+      - main
+      - develop
+
   push:
     branches:
       - main
