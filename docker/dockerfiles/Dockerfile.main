@@ -70,45 +70,45 @@ RUN [ "${HELM_VERSION:-latest}" = "latest" ] && \
 ##################################################
 ### SLIM - comment out the following section
 ##################################################
-RUN [ "${KUBECTL_CONVERT_VERSION:-latest}" = "latest" ] && \
-        version=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
-        version="v$(echo ${KUBECTL_CONVERT_VERSION} | sed s/^v//g)" && \
-    status=$($SCRIPTS/download-and-verify-2.sh "https://dl.k8s.io/release" \
-        "kubernetes/kubectl-convert" "${version}" \
-        "kubectl-convert" "kubectl-convert.sha256" "bin/linux/amd64") && \
-    echo $status && \
-    install -o root -g root -m 0755 kubectl-convert /usr/local/bin/kubectl-convert
+# RUN [ "${KUBECTL_CONVERT_VERSION:-latest}" = "latest" ] && \
+#         version=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
+#         version="v$(echo ${KUBECTL_CONVERT_VERSION} | sed s/^v//g)" && \
+#     status=$($SCRIPTS/download-and-verify-2.sh "https://dl.k8s.io/release" \
+#         "kubernetes/kubectl-convert" "${version}" \
+#         "kubectl-convert" "kubectl-convert.sha256" "bin/linux/amd64") && \
+#     echo $status && \
+#     install -o root -g root -m 0755 kubectl-convert /usr/local/bin/kubectl-convert
 
-# https://kind.sigs.k8s.io/
-RUN version=$($SCRIPTS/gh-get-version.sh "${KIND_VERSION}" "latest" "kubernetes-sigs/kind") && \
-    status=$($SCRIPTS/download-and-verify-1.sh "https://kind.sigs.k8s.io/dl" \
-        "kubernetes-sigs/kind" "${version}" \
-        "kind-linux-amd64" "kind-linux-amd64.sha256sum") && \
-    echo $status && \
-    install kind-linux-amd64 /usr/local/bin/kind && \
-    kind --version >> /.versions
+# # https://kind.sigs.k8s.io/
+# RUN version=$($SCRIPTS/gh-get-version.sh "${KIND_VERSION}" "latest" "kubernetes-sigs/kind") && \
+#     status=$($SCRIPTS/download-and-verify-1.sh "https://kind.sigs.k8s.io/dl" \
+#         "kubernetes-sigs/kind" "${version}" \
+#         "kind-linux-amd64" "kind-linux-amd64.sha256sum") && \
+#     echo $status && \
+#     install kind-linux-amd64 /usr/local/bin/kind && \
+#     kind --version >> /.versions
 
-# https://github.com/doitintl/kube-no-trouble
-# The extra space (`... | sh - `) is required
-RUN curl -sSL https://git.io/install-kubent | sh - 
+# # https://github.com/doitintl/kube-no-trouble
+# # The extra space (`... | sh - `) is required
+# RUN curl -sSL https://git.io/install-kubent | sh - 
 
-# Install kubectx and kubens
-# https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
-RUN version=$($SCRIPTS/gh-get-version.sh "${KUBECTX_VERSION}" "latest" "ahmetb/kubectx") && \
-    status=$($SCRIPTS/gh-download-and-verify.sh "ahmetb/kubectx" "${version}" \
-        "kubectx_${version}_linux_x86_64.tar.gz" "checksums.txt") && \
-    echo $status && \
-    tar -xvzf kubectx_${version}_linux_x86_64.tar.gz && \
-    install kubectx /usr/local/bin/kubectx && \
-    printf "kubectx: %s\n" "$(kubectx --version)" >> /.versions
+# # Install kubectx and kubens
+# # https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
+# RUN version=$($SCRIPTS/gh-get-version.sh "${KUBECTX_VERSION}" "latest" "ahmetb/kubectx") && \
+#     status=$($SCRIPTS/gh-download-and-verify.sh "ahmetb/kubectx" "${version}" \
+#         "kubectx_${version}_linux_x86_64.tar.gz" "checksums.txt") && \
+#     echo $status && \
+#     tar -xvzf kubectx_${version}_linux_x86_64.tar.gz && \
+#     install kubectx /usr/local/bin/kubectx && \
+#     printf "kubectx: %s\n" "$(kubectx --version)" >> /.versions
 
-RUN version=$($SCRIPTS/gh-get-version.sh "${KUBECTX_VERSION}" "latest" "ahmetb/kubectx") && \
-    status=$($SCRIPTS/gh-download-and-verify.sh "ahmetb/kubectx" "${version}" \
-        "kubens_${version}_linux_x86_64.tar.gz" "checksums.txt") && \
-    echo $status && \
-    tar -xvzf kubens_${version}_linux_x86_64.tar.gz && \
-    install kubens /usr/local/bin/kubens && \
-    printf "kubens: %s\n" "$(kubens --version)" >> /.versions
+# RUN version=$($SCRIPTS/gh-get-version.sh "${KUBECTX_VERSION}" "latest" "ahmetb/kubectx") && \
+#     status=$($SCRIPTS/gh-download-and-verify.sh "ahmetb/kubectx" "${version}" \
+#         "kubens_${version}_linux_x86_64.tar.gz" "checksums.txt") && \
+#     echo $status && \
+#     tar -xvzf kubens_${version}_linux_x86_64.tar.gz && \
+#     install kubens /usr/local/bin/kubens && \
+#     printf "kubens: %s\n" "$(kubens --version)" >> /.versions
 ##################################################
 
 # # TODO: why doesn't standard istio install work?
