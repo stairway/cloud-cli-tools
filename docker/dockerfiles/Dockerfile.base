@@ -31,6 +31,9 @@ ENV HOME=${HOME}
 ENV DOWNLOADS=${DOWNLOADS}
 ENV SCRIPTS=${SCRIPTS}
 
+# This can be switched to ${HOME}/.bashrc
+ENV BASHRC=/etc/bash.bashrc
+
 ENV TZ=${TZ}
 ENV TERM=xterm-color
 ENV EDITOR=${EDITOR}
@@ -407,7 +410,7 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kuberne
     install minikube-linux-amd64 /usr/local/bin/minikube && \
     printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
-RUN echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi"  >> "${HOME}/.bashrc"
+RUN echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi"  >> $BASHRC
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 USER $USER

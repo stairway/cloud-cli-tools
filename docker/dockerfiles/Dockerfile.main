@@ -29,6 +29,7 @@ ENV DOWNLOADS="${DOWNLOADS:-/opt/downloads}"
 ENV SCRIPTS="${SCRIPTS:-/opt/scripts}"
 ENV ENVFILE="${ENVFILE:-/opt/.env}"
 ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;. "${ENVFILE:-${HOME}/.local/.env}"; set +a >/dev/null'
+ENV BASHRC="${BASHRC:-${HOME}/.bashrc}"
 
 USER root
 WORKDIR $DOWNLOADS
@@ -145,8 +146,7 @@ RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
     echo $status && \
     unzip -o "terraform_${version}_linux_amd64.zip" && \
     install terraform /usr/local/bin/terraform && \
-    printf "Hashicorp %s\n" "$(echo $(terraform version) | awk '{print $1" "$2}')" >> /.versions && \
-    terraform -install-autocomplete
+    printf "Hashicorp %s\n" "$(echo $(terraform version) | awk '{print $1" "$2}')" >> /.versions
 
 RUN version=$($SCRIPTS/gh-get-version.sh "${TERRAGRUNT_VERSION}" "latest" "gruntwork-io/terragrunt") && \
     status=$($SCRIPTS/gh-download-and-verify.sh "gruntwork-io/terragrunt" "${version}" \
@@ -180,14 +180,15 @@ RUN KUBE_PS1_VERSION="v$(echo ${KUBE_PS1_VERSION} | sed s/^v//g)" && \
 
 RUN set -x; [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS
 
-RUN echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
-    ln -s /usr/share/bash-completion/completions/git ~/.git-completion.bash && \
-    echo "complete -C /usr/local/bin/aws_completer aws" >> "${HOME}/.bashrc" && \
-    echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
-    echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> "${HOME}/.bashrc" && \
-    echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> "${HOME}/.bashrc" && \
-    echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > $HOME/.local/init.sh && \
-    cat >> "${HOME}/.bashrc" <<EOF
+RUN echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> $BASHRC && \
+    ln -s /usr/share/bash-completion/completions/git "${HOME}/.git-completion.bash "&& \
+    echo "complete -C /usr/local/bin/aws_completer aws" >> $BASHRC && \
+    echo "complete -C /usr/local/bin/terraform terraform" >> $BASHRC && \
+    echo ". <(kubectl completion bash)" >> $BASHRC && \
+    echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> $BASHRC && \
+    echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> $BASHRC && \
+    echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > /opt/init.sh && \
+    cat >> $BASHRC <<EOF
 
 export EDITOR="\${EDITOR:-$EDITOR}"
 export VISUAL="\${EDITOR:-$EDITOR}"
@@ -213,8 +214,8 @@ if [ -d "\${HOME}/.local/profile.d" ]; then
     done
 fi
 
-if [ -f "\${HOME}/.local/init.sh" ]; then
-    . "\${HOME}/.local/init.sh"
+if [ -f /opt/init.sh ]; then
+    . /opt/init.sh
 fi
 
 EOF
