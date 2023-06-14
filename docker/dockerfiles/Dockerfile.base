@@ -58,7 +58,7 @@ COPY bin/gh-login /usr/local/bin/
 RUN [ "${USER:-root}" = "root" ] || { \
         INSTALL_PKGS="${INSTALL_PKGS} sudo" && \
         groupadd -g ${GID} ${USER} && \
-        useradd --create-home --home-dir ${HOMEDIR} --shell /bin/bash --gid ${GID} --groups sudo --uid ${UID} ${USER} && \
+        useradd --create-home --home-dir ${HOMEDIR} --shell /bin/bash --gid ${GID} --no-user-group --groups sudo --uid ${UID} ${USER} && \
         echo "${USER}:${USER}" | chpasswd && \
         echo 'root:root' | chpasswd; } && \
     mkdir -p $DOWNLOADS && \
