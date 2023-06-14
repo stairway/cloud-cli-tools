@@ -133,7 +133,7 @@ if [ -d /tmp/addons ]; then
     if [ $(count ${files[@]}) -gt 0 ]; then
         for f in ${files[@]}; do
             fname="$(basename ${f})"
-            target="/usr/local/bin/${fname}"
+            target="/opt/bin/${fname}"
             if [ ! -f "${target}" ]; then
                 printf "\033[93m>\033[0m Installing '%s' to '%s'\n" "${f}" "/usr/local/bin/${fname}"
                 install "${f}" "${target}"
