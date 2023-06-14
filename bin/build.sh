@@ -73,7 +73,7 @@ build_base() {
     local build_args=("")
     [ "${UBUNTU_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "VERSION=${UBUNTU_VERSION}")
     [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg "USER=${DOCKER_USER}")
-    [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg "HOME=/home/${DOCKER_USER}")
+    [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg "HOMEDIR=/home/${DOCKER_USER}")
     [ "${UBUNTU_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "VERSION=${UBUNTU_VERSION}")
     [ "${AWS_VAULT_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "AWS_VAULT_VERSION=${AWS_VAULT_VERSION}")
     [ "${MINIKUBE_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "MINIKUBE_VERSION=${MINIKUBE_VERSION}")
