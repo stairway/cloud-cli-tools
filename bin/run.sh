@@ -301,7 +301,7 @@ run_new() {
         -v "${mountpoint}/.gnupg:${docker_user_home}/.gnupg"
         -v "${mountpoint}/.password-store:${docker_user_home}/.password-store"
         -v "${PWD}/mount/home/${DOCKER_USER}/${DOCKER_HISTFILE_NAME}:${docker_histfile}"
-        -v "${PWD}/mount/home/${DOCKER_USER}/.env:${docker_user_home}/.local/.env"
+        -v "${PWD}/mount/home/${DOCKER_USER}/.env:/opt/.env"
         -v "${PWD}/mount/home/${DOCKER_USER}/.aws:${docker_user_home}/.aws"
         -v "${PWD}/mount/home/${DOCKER_USER}/.kube:${docker_user_home}/.kube"
         -v "${PWD}/mount/home/${DOCKER_USER}/.dpctl:${docker_user_home}/.dpctl"
