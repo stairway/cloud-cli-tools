@@ -83,6 +83,9 @@ RUN apt-get update -y && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
+# Pip install for default python version
+RUN pip3 install pre-commit pytest debugpy localstack
+
 # Install additional python versions
 RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -F'.' '{print $1"."$2}') && \
     [ "${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" != "${PYTHON_DEFAULT_VERSION}" ] && \
@@ -98,7 +101,9 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
         apt-get clean -y
 
 RUN curl -sSL https://install.python-poetry.org | python3 -
-RUN pip3 install pre-commit pytest debugpy
+
+# Pip install for alternative python version
+RUN pip3 install pre-commit pytest debugpy localstack
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
