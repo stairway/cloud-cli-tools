@@ -65,7 +65,7 @@ RUN [ "${USER:-root}" = "root" ] || { \
     mkdir -p $SCRIPTS
 
 RUN groupadd -o --system --gid 888 localstack && \
-    useradd -o -system --create-home --shell /bin/bash --user-group --uid 888 localstack
+    useradd -o --system --create-home --shell /bin/bash --user-group --uid 888 localstack
 
 # Install packages
 RUN apt-get update -y && \
