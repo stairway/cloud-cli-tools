@@ -13,6 +13,10 @@ ARG TZ=America/Chicago
 ARG EDITOR=nano
 
 # default values
+ARG ROOT_USER=root
+ARG ROOT_HOME=/root
+ARG LOCALSTACK_USER=localstack
+ARG LOCALSTACK_HOME=/home/localstack
 ARG USER=root
 ARG HOME=/root
 ARG DOWNLOADS=/opt/downloads
@@ -21,6 +25,11 @@ ARG SCRIPTS=/opt/scripts
 # only used if HOME != root
 ARG UID=1001
 ARG GID=1001
+
+ENV USER=${USER}
+ENV HOME=${HOME}
+ENV DOWNLOADS=${DOWNLOADS}
+ENV SCRIPTS=${SCRIPTS}
 
 ENV TZ=${TZ}
 ENV TERM=xterm-color
@@ -55,16 +64,16 @@ ARG INSTALL_PKGS="\
 COPY bin/gh-login /usr/local/bin/
 
 # TODO: gpg not currently working with non-root user
-RUN [ "${USER:-root}" = "root" ] || { \
+RUN [ "${USER:-$ROOT_USER}" = "${ROOT_USER}" ] || { \
         INSTALL_PKGS="${INSTALL_PKGS} sudo" && \
         groupadd -g ${GID} ${USER} && \
         useradd --create-home --home-dir ${HOME} --shell /bin/bash --gid ${GID} --no-user-group --groups sudo --uid ${UID} ${USER} && \
         echo "${USER}:${USER}" | chpasswd && \
-        echo 'root:root' | chpasswd; } && \
+        echo "${ROOT_USER}:${ROOT_USER}" | chpasswd; } && \
     mkdir -p $DOWNLOADS && \
     mkdir -p $SCRIPTS
 
-RUN useradd -o --system --create-home --shell /bin/bash --user-group --uid 888 localstack
+RUN useradd --system --create-home --home-dir ${LOCALSTACK_HOME} --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_USER}
 
 # Install packages
 RUN apt-get update -y && \
@@ -83,10 +92,9 @@ RUN apt-get update -y && \
 
 # Pip install for default python version
 USER localstack
-RUN python3 -m pip install --user localstack
-USER ${USER}
-RUN pip3 install pre-commit pytest debugpy
-USER root
+RUN HOME=${LOCALSTACK_HOME} python3 -m pip install --user localstack
+USER ${ROOT_USER}
+RUN HOME=${ROOT_USER} pip3 install pre-commit pytest debugpy
 
 # Install additional python versions
 RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -F'.' '{print $1"."$2}') && \
@@ -102,14 +110,13 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
         DEBIAN_FRONTEND=noninteractive apt-get install -y python-is-python3 && \
         apt-get clean -y
 
-RUN curl -sSL https://install.python-poetry.org | python3 -
-
-# Pip install for alternative python version
+# Pip (and poetry) install for override python version
 USER localstack
-RUN python3 -m pip install --user localstack
+RUN HOME=${LOCALSTACK_HOME} python3 -m pip install --user localstack
 USER ${USER}
 RUN pip3 install pre-commit pytest debugpy
-USER root
+RUN curl -sSL https://install.python-poetry.org | python3 - 
+USER ${ROOT_USER}
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
