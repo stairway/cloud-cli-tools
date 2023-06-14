@@ -112,6 +112,7 @@ die() {
 do_init() {
     versions
     init_git && check_crypto
+    [ -d ${HOME} ] || mkdir -p ${HOME}
     ln -s /data ${HOME}/data
     if [ ${VSCODE_DEBUGPY_PORT:-0} -gt 999 ]; then
         if [ ! -d /data/.vscode ]; then
