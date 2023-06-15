@@ -164,8 +164,9 @@ case "$1" in
     *)
         # [ "${1#ba}" = "sh" ] && do_init && shift
         do_init
-        eval "bash -l -c '$@'"
-        bash -l
+        # eval "bash -l -c '$@'"
+        # bash -l
+        bash -c "$@; exec bash"
         [ $exit_code -eq 0 ] || exit_code=$?
         keep_alive
         ;;

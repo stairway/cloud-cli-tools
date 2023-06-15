@@ -31,7 +31,6 @@ ENV DOTLOCAL=${DOTLOCAL:-$HOME/.local}
 ENV DOWNLOADS=${DOTLOCAL}/downloads
 ENV SCRIPTS=${DOTLOCAL}/scripts
 
-# This can be switched to ${HOME}/.bashrc
 ENV BASHRC_EXTRA=${DOTLOCAL}/.bashrc
 
 ENV TZ=${TZ}
@@ -83,19 +82,20 @@ RUN apt-get update -y && \
     . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
 # TODO: gpg not currently working with non-root user
-RUN [ "${USER:-$ROOT_USER}" = "${ROOT_USER}" ] || { \
-        useradd --system --create-home --home-dir ${HOME} --shell /bin/bash --user-group --groups sudo --uid ${UID} ${USER} && \
-        echo "${USER}:${USER}" | chpasswd && \
-        echo "${ROOT_USER}:${ROOT_USER}" | chpasswd && \
-        echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers; } && \
-    mkdir -p $DOTLOCAL && \
-    mkdir -p $DOWNLOADS && \
-    mkdir -p $SCRIPTS && \
-    mkdir -p $HOME/.local && \
-    chown -R $USER $DOTLOCAL
+RUN [ "${USER:-$ROOT_USER}" != "${ROOT_USER}" ] && \
+    useradd --create-home --home-dir ${HOME} --shell /bin/bash --user-group --groups sudo --uid ${UID} ${USER} && \
+    echo "${USER}:${USER}" | chpasswd && \
+    echo "${ROOT_USER}:${ROOT_USER}" | chpasswd && \
+    echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    mkdir -p $HOME/.local
 
 RUN useradd --system --create-home --home-dir ${LOCALSTACK_HOME} --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_USER} && \
     echo "${LOCALSTACK_USER}:${LOCALSTACK_USER}" | chpasswd
+
+RUN mkdir -p $DOTLOCAL && \
+    mkdir -p $DOWNLOADS && \
+    mkdir -p $SCRIPTS && \
+    chown -R $USER $DOTLOCAL
 
 # Pip install for default python version
 USER $LOCALSTACK_USER
