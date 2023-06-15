@@ -98,7 +98,7 @@ RUN mkdir -p $DOTLOCAL && \
 
 # Pip install for default python version
 USER $LOCALSTACK_USER
-RUN HOME=${LOCALSTACK_HOME} python3 -m pip install --user localstack
+RUN HOME=/home/$LOCALSTACK_HOME python3 -m pip install --user localstack
 USER $USER
 RUN sudo pip3 install --user pre-commit pytest debugpy
 USER root
@@ -119,10 +119,9 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
 
 # Pip (and poetry) install for override python version
 USER $LOCALSTACK_USER
-RUN HOME=${LOCALSTACK_HOME} python3 -m pip install --user localstack
+RUN HOME=/home/$LOCALSTACK_HOME python3 -m pip install --user localstack
 USER $USER
 RUN sudo pip3 install --user pre-commit pytest debugpy
-RUN set -x; echo $HOME; ls -la $HOME/.local
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
 USER root
 
