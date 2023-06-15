@@ -49,11 +49,24 @@ init_gpg() {
     if [ ${#file_list[@]} -lt 9 ]; then
         printf "\033[93m>\033[0m Generating gpg key with empty passphrase ...\n\033[96;1m%s\033[0m\n" "gpg --quick-gen-key ..."
         # /usr/bin/gpg --no-tty --with-colons --fingerprint -K
-        gpg --quick-gen-key --yes --always-trust --batch --passphrase '' aws-vault
+        gpg_command=("")
+        [ "${USER}" = "root" ] && gpg_command+=(sudo)
+        gpg_command+=(
+            gpg
+            --quick-gen-key
+            --lock-never
+            --yes
+            --always-trust
+            --batch
+            --passphrase ''
+            aws-vault
+        )
+
+        eval "$(echo ${gpg_command[@]})"
 
         ### *Fixes* gpg: WARNING: unsafe permissions on homedir '~/.gnupg'
-        chown -R $USER $HOME/.gnupg
-        chmod 700 $HOME/.gnupg
+        # chown -R $USER $HOME/.gnupg
+        # chmod 700 $HOME/.gnupg
         #chmod 600 $HOME/.gnupg/*
     fi
 }

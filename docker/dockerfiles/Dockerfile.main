@@ -45,6 +45,7 @@ ADD addons/**/*.tgz /tmp/addons/
 
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y sudo && \
+    echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> visudo && \
     apt-get clean -y
 
 RUN for f in $(ls -1 /tmp/addons); do install "/tmp/addons/${f}" "/usr/local/bin/${f}"; done && \

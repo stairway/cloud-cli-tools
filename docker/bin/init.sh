@@ -130,13 +130,22 @@ if [ -d /tmp/addons ]; then
     fi
 
     files="$(find /tmp/addons -mindepth 1 -type f | grep -v -P '\.tgz|\.zip|/archive')"
+    addon_install=("")
+    [ "${USER}" = "root" ] && addon_install+=(sudo)
+    addon_install+=(install)
     if [ $(count ${files[@]}) -gt 0 ]; then
         for f in ${files[@]}; do
             fname="$(basename ${f})"
             target="/opt/bin/${fname}"
             if [ ! -f "${target}" ]; then
                 printf "\033[93m>\033[0m Installing '%s' to '%s'\n" "${f}" "/usr/local/bin/${fname}"
-                sudo install "${f}" "${target}"
+                addon_install_file=(${addon_install[@]})
+                addon_install_file+=(
+                    "${f}"
+                    "${target}"
+                )
+
+                eval "$(echo ${addon_install_file[@]})"
             fi
         done
         rm -f ${files[@]}
