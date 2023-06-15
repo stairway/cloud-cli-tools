@@ -123,7 +123,7 @@ USER $LOCALSTACK_USER
 RUN HOME=${LOCALSTACK_HOME} python3 -m pip install --user localstack
 USER $USER
 RUN sudo pip3 install --user pre-commit pytest debugpy
-RUN set -x; echo $HOME; ls -la $HOME/devops
+RUN set -x; echo $HOME; ls -la $HOME/.local
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
 USER $ROOT_USER
 
