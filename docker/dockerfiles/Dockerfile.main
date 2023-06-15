@@ -25,12 +25,10 @@ ENV BOOL="${TRUE}|${FALSE}"
 ENV USER="${USER:-root}"
 ENV HOME="${HOME:-/root}"
 ENV DOTLOCAL="${DOTLOCAL:-/opt/.local}"
-ENV PATH="${HOME}/.local/bin:/opt/bin:${PATH}"
 ENV DOWNLOADS="${DOWNLOADS:-$DOTLOCAL/downloads}"
 ENV SCRIPTS="${SCRIPTS:-$DOTLOCAL/scripts}"
 ENV ENVFILE="${ENVFILE:-$DOTLOCAL/.env}"
 ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;. "${ENVFILE:-${HOME}/.local/.env}"; set +a >/dev/null'
-ENV BASHRC="${BASHRC:-/etc/bash.bashrc}"
 
 USER root
 WORKDIR $DOWNLOADS
@@ -180,47 +178,6 @@ RUN KUBE_PS1_VERSION="v$(echo ${KUBE_PS1_VERSION} | sed s/^v//g)" && \
     mv ${unzip_dir}/kube-ps1.sh /opt/.local/shell_addons.d/
 
 RUN set -x; [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS
-
-RUN echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> $BASHRC && \
-    ln -s /usr/share/bash-completion/completions/git "${HOME}/.git-completion.bash "&& \
-    echo "complete -C /usr/local/bin/aws_completer aws" >> $BASHRC && \
-    echo "complete -C /usr/local/bin/terraform terraform" >> $BASHRC && \
-    echo ". <(kubectl completion bash)" >> $BASHRC && \
-    echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> $BASHRC && \
-    echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> $BASHRC && \
-    echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > /opt/.local/init.sh && \
-    cat >> $BASHRC <<EOF
-
-export PATH="${PATH}"
-export EDITOR="\${EDITOR:-$EDITOR}"
-export VISUAL="\${EDITOR:-$EDITOR}"
-export GIT_EDITOR="\${EDITOR:-$EDITOR}"
-export KUBE_EDITOR="\${EDITOR:-$EDITOR}"
-export CLUSTER_PREFIX="\${CLUSTER_PREFIX:-di}"
-
-if [ -f "\${ENVFILE}" ]; then
-    set -o allexport
-    . "\${ENVFILE}"
-    set +o allexport
-fi
-
-if [ -d "/opt/.local/shell_addons.d" ]; then
-    for f in \$(find "/opt/.local/shell_addons.d" -mindepth 1 -type f -name '*.sh' | sort -u); do
-        . "\${f}"
-    done
-fi
-
-if [ -d "/opt/.local/profile.d" ]; then
-    for f in \$(find "/opt/.local/profile.d" -mindepth 1 -type f -name '*.sh' | sort -u); do
-        . "\${f}"
-    done
-fi
-
-if [ -f /opt/.local/init.sh ]; then
-    . /opt/.local/init.sh
-fi
-
-EOF
 
 USER $USER
 WORKDIR $HOME
