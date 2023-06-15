@@ -38,8 +38,8 @@ COPY docs/* /docs/
 COPY opt/* /opt/bin/
 COPY bin/* /usr/local/bin/
 
-COPY profile/* $HOME/.local/profile.d/
-COPY conf $HOME/.conf
+COPY profile/* /opt/profile.d/
+COPY conf /opt/.conf
 
 ADD addons/**/*.tgz /tmp/addons/
 
@@ -51,7 +51,7 @@ RUN apt-get update -y && \
 RUN for f in $(ls -1 /tmp/addons); do install "/tmp/addons/${f}" "/usr/local/bin/${f}"; done && \
     rm -rf /tmp/addons && \
     chmod +x /opt/bin/describe && \
-    mkdir -p $HOME/.local/shell_addons.d
+    mkdir -p /opt/shell_addons.d
 
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux
 RUN [ "${KUBE_VERSION:-latest}" = "latest" ] && \
@@ -180,8 +180,8 @@ RUN KUBE_PS1_VERSION="v$(echo ${KUBE_PS1_VERSION} | sed s/^v//g)" && \
     unzip_dir="$(echo $unzip_result | awk '{print $5}' | tr -d '/')" && \
     grep -q -E -i "^(\[\[?.+DEBUG.*\])(.+)(set -x)$" "${unzip_dir}/kube-ps1.sh" && \
     sed -E -i "0,/^\[\[?.+DEBUG.*\].+set -x$/s/^(\[\[?.+DEBUG.*\])(.+)(set -x)$/#\1\2\3/" "${unzip_dir}/kube-ps1.sh" && \
-    printf "Installing '%s' to '%s' ...\n" "${unzip_dir}/kube-ps1.sh" "$HOME/.local/shell_addons.d/kube-ps1.sh" && \
-    mv ${unzip_dir}/kube-ps1.sh $HOME/.local/shell_addons.d/
+    printf "Installing '%s' to '%s' ...\n" "${unzip_dir}/kube-ps1.sh" "/opt/kube-ps1.sh" && \
+    mv ${unzip_dir}/kube-ps1.sh /opt/shell_addons.d/
 
 RUN set -x; [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS
 
@@ -208,14 +208,14 @@ if [ -f "\${ENVFILE}" ]; then
     set +o allexport
 fi
 
-if [ -d "\${HOME}/.local/shell_addons.d" ]; then
-    for f in \$(find "\${HOME}/.local/shell_addons.d" -mindepth 1 -type f -name '*.sh' | sort -u); do
+if [ -d "/opt/shell_addons.d" ]; then
+    for f in \$(find "/opt/shell_addons.d" -mindepth 1 -type f -name '*.sh' | sort -u); do
         . "\${f}"
     done
 fi
 
-if [ -d "\${HOME}/.local/profile.d" ]; then
-    for f in \$(find "\${HOME}/.local/profile.d" -mindepth 1 -type f -name '*.sh' | sort -u); do
+if [ -d "/opt/profile.d" ]; then
+    for f in \$(find "/opt/profile.d" -mindepth 1 -type f -name '*.sh' | sort -u); do
         . "\${f}"
     done
 fi

@@ -67,7 +67,7 @@ init_aws() {
     local last_err=0
     printf "\033[92;1m>>>\033[94;1m Initializing %s \033[92;1m>>>\033[0m\n" "AWS (and dpctl)"
 
-    if [ ! -f /.initialized ]; then
+    if [ ! -f $HOME/.initialized ]; then
         local current_vault_user="$(aws-vault list | grep user | awk '{ print $2 }')"
         if [ "${current_vault_user}" != "${DEFAULT_VAULT_USER}" ]; then
             [ ! -f "$HOME/.password-store/.gpg-id" -o ! -f "$HOME/.gnupg/trustdb.gpg" ] && printf "Still Initializing ..." && \
@@ -103,11 +103,11 @@ EOF
             }
 
         iam_verify "${TEAM_NAME}" "nonprod" \
-            && date -u +%Y%m%dT%H%M%SZ > /.initialized \
+            && date -u +%Y%m%dT%H%M%SZ > $HOME/.initialized \
             || last_err=$?
     fi
 
-    [ $last_err -eq 0 -a -f /.initialized ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "AWS (and dpctl)"
+    [ $last_err -eq 0 -a -f $HOME/.initialized ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "AWS (and dpctl)"
 }
 
 if [ -d /tmp/addons ]; then
