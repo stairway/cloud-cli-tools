@@ -22,8 +22,8 @@ ENV TRUE='y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1'
 ENV FALSE='n|N|no|No|NO|false|False|FALSE|off|Off|OFF|0'
 ENV BOOL="${TRUE}|${FALSE}"
 
-ENV USER="${USER:-root}"
-ENV HOME="${HOME:-/root}"
+ENV USER="${USER:-devops}"
+ENV HOME="${HOME:-/home/$USER}"
 ENV DOTLOCAL="${DOTLOCAL:-/opt/.local}"
 ENV PATH="${HOME}/.local/bin:${DOTLOCAL}/bin:/opt/bin:${PATH}"
 ENV DOWNLOADS="${DOWNLOADS:-$DOTLOCAL/downloads}"

@@ -13,20 +13,12 @@ ARG TZ=America/Chicago
 ARG EDITOR=nano
 
 # default values
-ARG ROOT_USER=root
-ARG ROOT_HOME=/root
 ARG LOCALSTACK_USER=localstack
-ARG LOCALSTACK_HOME=/home/localstack
-ARG USER=root
-ARG HOME=/root
+ARG USER=devops
+ARG HOME=/home/devops
 ARG DOTLOCAL=/opt/.local
 
-# only used if HOME != root
-ARG UID=1001
-ARG GID=1001
-
 ENV USER=${USER}
-ENV HOME=${HOME}
 ENV DOTLOCAL=${DOTLOCAL:-$HOME/.local}
 ENV DOWNLOADS=${DOTLOCAL}/downloads
 ENV SCRIPTS=${DOTLOCAL}/scripts
@@ -61,13 +53,13 @@ ARG INSTALL_PKGS="\
     lsb-release \
     python3-pip \
     python3-venv \
-    npm"
+    npm \
+    sudo"
 
 COPY bin/gh-login /usr/local/bin/
 
 # Install packages
 RUN apt-get update -y && \
-    [ "${USER:-$ROOT_USER}" = "${ROOT_USER}" ] || INSTALL_PKGS="${INSTALL_PKGS} sudo" && \
     export TZ_COUNTRY=$(echo "$TZ" | awk -F'/' '{print $1}') && \
     export TZ_CITY=$(echo "$TZ" | awk -F'/' '{print $2}') && \
     echo "tzdata tzdata/Areas select $TZ_COUNTRY" | debconf-set-selections && \
@@ -82,14 +74,21 @@ RUN apt-get update -y && \
     . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
 # TODO: gpg not currently working with non-root user
-RUN [ "${USER:-$ROOT_USER}" != "${ROOT_USER}" ] && \
-    useradd --create-home --home-dir ${HOME} --shell /bin/bash --user-group --groups sudo --uid ${UID} ${USER} && \
+RUN [ "${USER:-root}" != "root" ] && \
+    useradd --create-home --home-dir /home/$USER --shell /bin/bash --user-group --groups sudo $USER && \
     echo "${USER}:${USER}" | chpasswd && \
-    echo "${ROOT_USER}:${ROOT_USER}" | chpasswd && \
+    echo "root:root" | chpasswd && \
     echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
     mkdir -p $HOME/.local
 
-RUN useradd --system --create-home --home-dir ${LOCALSTACK_HOME} --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_USER} && \
+RUN [ "${USER:-root}" != "root" ] && \
+    useradd --create-home --home-dir /home/ubuntu --shell /bin/bash --user-group --groups sudo ubuntu && \
+    echo "ubuntu:ubuntu" | chpasswd && \
+    echo "root:root" | chpasswd && \
+    echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    mkdir -p /home/ubuntu/.local
+
+RUN useradd --system --create-home --home-dir /home/$LOCALSTACK_USER --shell /bin/bash --user-group --uid 888 $LOCALSTACK_USER && \
     echo "${LOCALSTACK_USER}:${LOCALSTACK_USER}" | chpasswd
 
 RUN mkdir -p $DOTLOCAL && \
@@ -102,7 +101,7 @@ USER $LOCALSTACK_USER
 RUN HOME=${LOCALSTACK_HOME} python3 -m pip install --user localstack
 USER $USER
 RUN sudo pip3 install --user pre-commit pytest debugpy
-USER $ROOT_USER
+USER root
 
 # Install additional python versions
 RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -F'.' '{print $1"."$2}') && \
@@ -125,7 +124,7 @@ USER $USER
 RUN sudo pip3 install --user pre-commit pytest debugpy
 RUN set -x; echo $HOME; ls -la $HOME/.local
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
-USER $ROOT_USER
+USER root
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en

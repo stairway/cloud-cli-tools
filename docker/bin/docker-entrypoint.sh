@@ -125,8 +125,8 @@ do_init() {
     ln -s /data ${HOME}/data
     if [ ${VSCODE_DEBUGPY_PORT:-0} -gt 999 ]; then
         if [ ! -d /data/.vscode ]; then
-            [ -d /opt/.local/.conf/vscode ] && \
-                cp -r /opt/.local/.conf/vscode /data/.vscode && \
+            [ -d $DOTLOCAL/.conf/vscode ] && \
+                cp -r $DOTLOCAL/.conf/vscode /data/.vscode && \
                 sed -i -r "s/(\"port\"):\s*(\"\\$\{VSCODE_DEBUGPY_PORT\}\")$/\1: ${VSCODE_DEBUGPY_PORT}/g" /data/.vscode/launch.json
         fi
     fi
@@ -164,9 +164,8 @@ case "$1" in
     *)
         # [ "${1#ba}" = "sh" ] && do_init && shift
         do_init
-        # eval "bash -l -c '$@'"
-        # bash -l
-        bash -c "$@; exec bash"
+        eval "bash -l -c '$@'"
+        bash -l
         [ $exit_code -eq 0 ] || exit_code=$?
         keep_alive
         ;;
