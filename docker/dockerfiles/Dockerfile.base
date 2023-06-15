@@ -14,11 +14,11 @@ ARG EDITOR=nano
 
 # default values
 ARG LOCALSTACK_USER=localstack
-ARG USER=devops
+ARG UNAME=devops
 ARG HOME=/home/devops
 ARG DOTLOCAL=/opt/.local
 
-ENV USER=${USER}
+ENV UNAME=${UNAME}
 ENV DOTLOCAL=${DOTLOCAL:-$HOME/.local}
 ENV DOWNLOADS=${DOTLOCAL}/downloads
 ENV SCRIPTS=${DOTLOCAL}/scripts
@@ -74,34 +74,34 @@ RUN apt-get update -y && \
     . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
 # TODO: gpg not currently working with non-root user
-RUN [ "${USER:-root}" != "root" ] && \
-    useradd --create-home --home-dir /home/$USER --shell /bin/bash --user-group --groups sudo $USER && \
-    echo "${USER}:${USER}" | chpasswd && \
+RUN [ "${UNAME:-root}" != "root" ] && \
+    useradd --create-home --home-dir /home/$UNAME --shell /bin/bash --user-group --groups sudo $UNAME && \
+    echo "${UNAME}:${UNAME}" | chpasswd && \
     echo "root:root" | chpasswd && \
-    echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    echo "${UNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
     mkdir -p $HOME/.local
 
-RUN [ "${USER:-root}" != "root" ] && \
+RUN [ "${UNAME:-root}" != "root" ] && \
     useradd --create-home --home-dir /home/ubuntu --shell /bin/bash --user-group --groups sudo ubuntu && \
     echo "ubuntu:ubuntu" | chpasswd && \
     echo "root:root" | chpasswd && \
     echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
     mkdir -p /home/ubuntu/.local
 
-# RUN useradd --system --create-home --home-dir /home/$LOCALSTACK_USER --shell /bin/bash --user-group --uid 888 $LOCALSTACK_USER && \
-#     echo "${LOCALSTACK_USER}:${LOCALSTACK_USER}" | chpasswd
-
-RUN useradd --system --create-home --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_USER} && \
+RUN useradd --system --create-home --home-dir /home/$LOCALSTACK_USER --shell /bin/bash --user-group $LOCALSTACK_USER && \
     echo "${LOCALSTACK_USER}:${LOCALSTACK_USER}" | chpasswd
+
+# RUN useradd --system --create-home --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_USER} && \
+#     echo "${LOCALSTACK_USER}:${LOCALSTACK_USER}" | chpasswd
 
 RUN mkdir -p $DOTLOCAL && \
     mkdir -p $DOWNLOADS && \
     mkdir -p $SCRIPTS && \
-    chown -R $USER $DOTLOCAL
+    chown -R $UNAME $DOTLOCAL
 
 # Pip install for default python version
 USER $LOCALSTACK_USER
-RUN HOME=/home/$LOCALSTACK_HOME python3 -m pip install --user localstack
+RUN HOME=/home/$LOCALSTACK_USER python3 -m pip install --user localstack
 USER $USER
 RUN sudo pip3 install --user pre-commit pytest debugpy
 USER root
@@ -122,8 +122,8 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
 
 # Pip (and poetry) install for override python version
 USER $LOCALSTACK_USER
-RUN HOME=/home/$LOCALSTACK_HOME python3 -m pip install --user localstack
-USER $USER
+RUN HOME=/home/$LOCALSTACK_USER python3 -m pip install --user localstack
+USER $UNAME
 RUN sudo pip3 install --user pre-commit pytest debugpy
 RUN set -x; echo $HOME; ls -la $HOME/.local
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
@@ -419,7 +419,7 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kuberne
     printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-USER $USER
+USER $UNAME
 WORKDIR $HOME
 
 # Additional Metadata

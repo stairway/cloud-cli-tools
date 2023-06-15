@@ -52,7 +52,7 @@ init_gpg() {
         sudo gpg --quick-gen-key --homedir "${HOME}/.gnupg" --yes --always-trust --batch --passphrase '' aws-vault
 
         ### *Fixes* gpg: WARNING: unsafe permissions on homedir '~/.gnupg'
-        sudo chown -R $USER $HOME/.gnupg
+        sudo chown -R $UNAME $HOME/.gnupg
         sudo chmod 700 $HOME/.gnupg
         #chmod 600 $HOME/.gnupg/*
     fi
@@ -62,7 +62,7 @@ init_pass() {
     # THIS IS WHERE pass IS INITIALIZED
 
     mkdir -p $HOME/.password-store
-    sudo chown -R $USER:$USER $HOME/.password-store
+    sudo chown -R $UNAME:$UNAME $HOME/.password-store
     sudo chmod -R 700 $HOME/.password-store
 
     local file_list=0

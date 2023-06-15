@@ -131,7 +131,7 @@ if [ -d /tmp/addons ]; then
 
     files="$(find /tmp/addons -mindepth 1 -type f | grep -v -P '\.tgz|\.zip|/archive')"
     addon_install=("")
-    [ "${USER}" = "root" ] || addon_install+=(sudo)
+    [ "${UNAME}" = "root" ] || addon_install+=(sudo)
     addon_install+=(install)
     if [ $(count ${files[@]}) -gt 0 ]; then
         for f in ${files[@]}; do
