@@ -99,7 +99,7 @@ RUN useradd --system --create-home --home-dir ${LOCALSTACK_HOME} --shell /bin/ba
 USER localstack
 RUN HOME=${LOCALSTACK_HOME} python3 -m pip install --user localstack
 USER ${USER}
-RUN pip3 install --user pre-commit pytest debugpy
+RUN sudo pip3 install --user pre-commit pytest debugpy
 USER ${ROOT_USER}
 
 # Install additional python versions
@@ -120,7 +120,7 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
 USER localstack
 RUN HOME=${LOCALSTACK_HOME} python3 -m pip install --user localstack
 USER ${USER}
-RUN pip3 install --user pre-commit pytest debugpy
+RUN sudo pip3 install --user pre-commit pytest debugpy
 RUN curl -sSL https://install.python-poetry.org | python3 - 
 USER ${ROOT_USER}
 
