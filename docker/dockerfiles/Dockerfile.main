@@ -22,8 +22,8 @@ ENV TRUE='y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1'
 ENV FALSE='n|N|no|No|NO|false|False|FALSE|off|Off|OFF|0'
 ENV BOOL="${TRUE}|${FALSE}"
 
-ENV UNAME="${UNAME:-devops}"
-ENV HOME="${HOME:-/home/$UNAME}"
+ENV UNAME="${UNAME:-ubuntu}"
+ENV HOME="${HOME:-/home/ubuntu}"
 ENV DOTLOCAL="${DOTLOCAL:-/opt/.local}"
 ENV PATH="${HOME}/.local/bin:${DOTLOCAL}/bin:/opt/bin:${PATH}"
 ENV DOWNLOADS="${DOWNLOADS:-$DOTLOCAL/downloads}"
@@ -230,14 +230,14 @@ if [ -f \$DOTLOCAL/.bashrc_extra ]; then
 fi
 EOF
 
-RUN [ "$UNAME" = "root" ] || \
+RUN set -x; [ "$UNAME" = "root" ] || \
 cat >> $HOME/.bashrc <<EOF
 if [ -f \$DOTLOCAL/.bashrc_extra ]; then
     . \$DOTLOCAL/.bashrc_extra
 fi
 EOF
 
-USER $UNAME
+USER ubuntu
 WORKDIR $HOME
 
 VOLUME [ "/data", "$HOME/.ssh", "$HOME/.gnupg", "$HOME/.password-store", "$HOME/.awsvault" ]

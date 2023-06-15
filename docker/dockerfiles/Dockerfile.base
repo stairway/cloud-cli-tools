@@ -14,8 +14,8 @@ ARG EDITOR=nano
 
 # default values
 ARG LOCALSTACK_USER=localstack
-ARG UNAME=devops
-ARG HOME=/home/devops
+ARG UNAME=root
+ARG HOME=/root
 ARG DOTLOCAL=/opt/.local
 
 ENV UNAME=${UNAME}
@@ -73,17 +73,17 @@ RUN apt-get update -y && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
-RUN useradd --create-home --home-dir /home/ubuntu --shell /bin/bash --user-group --groups sudo ubuntu && \
-    echo "ubuntu:ubuntu" | chpasswd && \
-    echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-    mkdir -p /home/ubuntu/.local
-
 # TODO: gpg not currently working with non-root user
 RUN useradd --create-home --home-dir /home/devops --shell /bin/bash --user-group --groups sudo devops && \
     echo "devops:devops" | chpasswd && \
     echo "root:root" | chpasswd && \
     echo "devops ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
     mkdir -p /home/devops/.local
+
+RUN useradd --create-home --home-dir /home/ubuntu --shell /bin/bash --user-group --groups sudo ubuntu && \
+    echo "ubuntu:ubuntu" | chpasswd && \
+    echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    mkdir -p /home/ubuntu/.local
 
 RUN useradd --system --create-home --home-dir /home/$LOCALSTACK_USER --shell /bin/bash --user-group $LOCALSTACK_USER && \
     echo "${LOCALSTACK_USER}:${LOCALSTACK_USER}" | chpasswd
@@ -94,12 +94,12 @@ RUN useradd --system --create-home --home-dir /home/$LOCALSTACK_USER --shell /bi
 RUN mkdir -p $DOTLOCAL && \
     mkdir -p $DOWNLOADS && \
     mkdir -p $SCRIPTS && \
-    chown -R $UNAME $DOTLOCAL
+    chown -R ubuntu $DOTLOCAL
 
 # Pip install for default python version
 USER $LOCALSTACK_USER
 RUN HOME=/home/$LOCALSTACK_USER python3 -m pip install --user localstack
-USER $USER
+USER ubuntu
 RUN sudo pip3 install --user pre-commit pytest debugpy
 USER root
 
@@ -120,7 +120,7 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
 # Pip (and poetry) install for override python version
 USER $LOCALSTACK_USER
 RUN HOME=/home/$LOCALSTACK_USER python3 -m pip install --user localstack
-USER $UNAME
+USER ubuntu
 RUN sudo pip3 install --user pre-commit pytest debugpy
 RUN set -x; echo $HOME; ls -la $HOME/.local
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
@@ -416,7 +416,7 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kuberne
     printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-USER $UNAME
+USER ubnutu
 WORKDIR $HOME
 
 # Additional Metadata

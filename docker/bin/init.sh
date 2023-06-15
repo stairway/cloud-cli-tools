@@ -130,9 +130,7 @@ if [ -d /tmp/addons ]; then
     fi
 
     files="$(find /tmp/addons -mindepth 1 -type f | grep -v -P '\.tgz|\.zip|/archive')"
-    addon_install=("")
-    [ "${UNAME}" = "root" ] || addon_install+=(sudo)
-    addon_install+=(install)
+    addon_install=(sudo install)
     if [ $(count ${files[@]}) -gt 0 ]; then
         for f in ${files[@]}; do
             fname="$(basename ${f})"
