@@ -312,6 +312,7 @@ run_new() {
     )
     [ -d "${PWD}/mount/addons" -a $(count $(ls -1 ${PWD}/mount/addons)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/addons:/tmp/addons")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh")
+    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/init.sh:/usr/local/bin/init.sh")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/profile:${docker_user_home}/.local/profile.d")
 
     local run_mode=("")
@@ -341,7 +342,7 @@ run_new() {
         -e "'GIT_CONFIG_FULL_NAME=${GIT_CONFIG_FULL_NAME}'"
         -e "EDITOR=${FILE_EDITOR}"
         -e "'HISTFILE=${docker_histfile}'"
-        -e "'HOME=${DOCKER_USER_HOME}'"
+        -e "'HOME=${docker_user_home}'"
     )
     [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && environment_vars+=(-e "VSCODE_DEBUGPY_PORT=${VSCODE_DEBUGPY_PORT}")
     [ -n "${AWS_ACCESS_KEY_ID:-""}" -a -n "${AWS_SECRET_ACCESS_KEY:-""}" ] && \
@@ -353,6 +354,7 @@ run_new() {
 
     local run_command=(docker run)
     [ -n "$PLATFORM" ] && run_command+=(--platform "linux/${PLATFORM}")
+    [ "$DOCKER_USER" = "root" ] && run_command+=(--user root)
     run_command+=(
         --name "$CONTAINER_NAME"
         # --network=host
