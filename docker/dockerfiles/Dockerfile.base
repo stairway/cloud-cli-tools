@@ -84,7 +84,7 @@ RUN apt-get update -y && \
 
 # TODO: gpg not currently working with non-root user
 RUN [ "${USER:-$ROOT_USER}" = "${ROOT_USER}" ] || { \
-        useradd --create-home --home-dir ${HOME} --shell /bin/bash --user-group --groups sudo --uid ${UID} ${USER} && \
+        useradd --system --create-home --home-dir ${HOME} --shell /bin/bash --user-group --groups sudo --uid ${UID} ${USER} && \
         echo "${USER}:${USER}" | chpasswd && \
         echo "${ROOT_USER}:${ROOT_USER}" | chpasswd && \
         echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers; } && \
