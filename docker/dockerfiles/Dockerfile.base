@@ -88,7 +88,10 @@ RUN [ "${USER:-root}" != "root" ] && \
     echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
     mkdir -p /home/ubuntu/.local
 
-RUN useradd --system --create-home --home-dir /home/$LOCALSTACK_USER --shell /bin/bash --user-group --uid 888 $LOCALSTACK_USER && \
+# RUN useradd --system --create-home --home-dir /home/$LOCALSTACK_USER --shell /bin/bash --user-group --uid 888 $LOCALSTACK_USER && \
+#     echo "${LOCALSTACK_USER}:${LOCALSTACK_USER}" | chpasswd
+
+RUN useradd --system --create-home --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_USER} && \
     echo "${LOCALSTACK_USER}:${LOCALSTACK_USER}" | chpasswd
 
 RUN mkdir -p $DOTLOCAL && \
@@ -122,6 +125,7 @@ USER $LOCALSTACK_USER
 RUN HOME=/home/$LOCALSTACK_HOME python3 -m pip install --user localstack
 USER $USER
 RUN sudo pip3 install --user pre-commit pytest debugpy
+RUN set -x; echo $HOME; ls -la $HOME/.local
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
 USER root
 
