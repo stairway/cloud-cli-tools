@@ -25,9 +25,9 @@ ENV BOOL="${TRUE}|${FALSE}"
 ENV USER="${USER:-root}"
 ENV HOME="${HOME:-/root}"
 ENV PATH="${HOME}/.local/bin:/opt/bin:${PATH}"
-ENV DOWNLOADS="${DOWNLOADS:-/opt/downloads}"
-ENV SCRIPTS="${SCRIPTS:-/opt/scripts}"
-ENV ENVFILE="${ENVFILE:-/opt/.env}"
+ENV DOWNLOADS="${DOWNLOADS:-/opt/.local/downloads}"
+ENV SCRIPTS="${SCRIPTS:-/opt/.local/scripts}"
+ENV ENVFILE="${ENVFILE:-/opt/.local/.env}"
 ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;. "${ENVFILE:-${HOME}/.local/.env}"; set +a >/dev/null'
 ENV BASHRC="${BASHRC:-/etc/bash.bashrc}"
 
@@ -38,20 +38,15 @@ COPY docs/* /docs/
 COPY opt/* /opt/bin/
 COPY bin/* /usr/local/bin/
 
-COPY profile/* /opt/profile.d/
-COPY conf /opt/.conf
+COPY profile/* /opt/.local/profile.d/
+COPY conf /opt/.local/.conf
 
 ADD addons/**/*.tgz /tmp/addons/
-
-RUN apt-get update -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y sudo && \
-    echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-    apt-get clean -y
 
 RUN for f in $(ls -1 /tmp/addons); do install "/tmp/addons/${f}" "/usr/local/bin/${f}"; done && \
     rm -rf /tmp/addons && \
     chmod +x /opt/bin/describe && \
-    mkdir -p /opt/shell_addons.d
+    mkdir -p /opt/.local/shell_addons.d
 
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux
 RUN [ "${KUBE_VERSION:-latest}" = "latest" ] && \
@@ -180,8 +175,8 @@ RUN KUBE_PS1_VERSION="v$(echo ${KUBE_PS1_VERSION} | sed s/^v//g)" && \
     unzip_dir="$(echo $unzip_result | awk '{print $5}' | tr -d '/')" && \
     grep -q -E -i "^(\[\[?.+DEBUG.*\])(.+)(set -x)$" "${unzip_dir}/kube-ps1.sh" && \
     sed -E -i "0,/^\[\[?.+DEBUG.*\].+set -x$/s/^(\[\[?.+DEBUG.*\])(.+)(set -x)$/#\1\2\3/" "${unzip_dir}/kube-ps1.sh" && \
-    printf "Installing '%s' to '%s' ...\n" "${unzip_dir}/kube-ps1.sh" "/opt/kube-ps1.sh" && \
-    mv ${unzip_dir}/kube-ps1.sh /opt/shell_addons.d/
+    printf "Installing '%s' to '%s' ...\n" "${unzip_dir}/kube-ps1.sh" "/opt/.local/shell_addons.d/kube-ps1.sh" && \
+    mv ${unzip_dir}/kube-ps1.sh /opt/.local/shell_addons.d/
 
 RUN set -x; [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS
 
@@ -192,7 +187,7 @@ RUN echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> $BASHRC &
     echo ". <(kubectl completion bash)" >> $BASHRC && \
     echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> $BASHRC && \
     echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> $BASHRC && \
-    echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > /opt/init.sh && \
+    echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > /opt/.local/init.sh && \
     cat >> $BASHRC <<EOF
 
 export PATH="${PATH}"
@@ -208,20 +203,20 @@ if [ -f "\${ENVFILE}" ]; then
     set +o allexport
 fi
 
-if [ -d "/opt/shell_addons.d" ]; then
-    for f in \$(find "/opt/shell_addons.d" -mindepth 1 -type f -name '*.sh' | sort -u); do
+if [ -d "/opt/.local/shell_addons.d" ]; then
+    for f in \$(find "/opt/.local/shell_addons.d" -mindepth 1 -type f -name '*.sh' | sort -u); do
         . "\${f}"
     done
 fi
 
-if [ -d "/opt/profile.d" ]; then
-    for f in \$(find "/opt/profile.d" -mindepth 1 -type f -name '*.sh' | sort -u); do
+if [ -d "/opt/.local/profile.d" ]; then
+    for f in \$(find "/opt/.local/profile.d" -mindepth 1 -type f -name '*.sh' | sort -u); do
         . "\${f}"
     done
 fi
 
-if [ -f /opt/init.sh ]; then
-    . /opt/init.sh
+if [ -f /opt/.local/init.sh ]; then
+    . /opt/.local/init.sh
 fi
 
 EOF

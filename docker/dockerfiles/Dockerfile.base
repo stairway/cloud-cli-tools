@@ -19,8 +19,8 @@ ARG LOCALSTACK_USER=localstack
 ARG LOCALSTACK_HOME=/home/localstack
 ARG USER=root
 ARG HOME=/root
-ARG DOWNLOADS=/opt/downloads
-ARG SCRIPTS=/opt/scripts
+ARG DOWNLOADS=/opt/.local/downloads
+ARG SCRIPTS=/opt/.local/scripts
 
 # only used if HOME != root
 ARG UID=1001
@@ -32,7 +32,7 @@ ENV DOWNLOADS=${DOWNLOADS}
 ENV SCRIPTS=${SCRIPTS}
 
 # This can be switched to ${HOME}/.bashrc
-ENV BASHRC=/etc/bash.bashrc
+ENV BASHRC=/opt/.local/.bashrc
 
 ENV TZ=${TZ}
 ENV TERM=xterm-color
@@ -68,18 +68,21 @@ COPY bin/gh-login /usr/local/bin/
 
 # TODO: gpg not currently working with non-root user
 RUN [ "${USER:-$ROOT_USER}" = "${ROOT_USER}" ] || { \
-        INSTALL_PKGS="${INSTALL_PKGS} sudo" && \
         groupadd -g ${GID} ${USER} && \
         useradd --create-home --home-dir ${HOME} --shell /bin/bash --gid ${GID} --no-user-group --groups sudo --uid ${UID} ${USER} && \
         echo "${USER}:${USER}" | chpasswd && \
         echo "${ROOT_USER}:${ROOT_USER}" | chpasswd; } && \
     mkdir -p $DOWNLOADS && \
-    mkdir -p $SCRIPTS
+    mkdir -p $SCRIPTS && \
+    mkdir -p /opt/.local
 
 RUN useradd --system --create-home --home-dir ${LOCALSTACK_HOME} --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_USER}
 
 # Install packages
 RUN apt-get update -y && \
+    [ "${USER:-$ROOT_USER}" = "${ROOT_USER}" ] || { \
+        INSTALL_PKGS="${INSTALL_PKGS} sudo" && \
+        echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers; } && \
     export TZ_COUNTRY=$(echo "$TZ" | awk -F'/' '{print $1}') && \
     export TZ_CITY=$(echo "$TZ" | awk -F'/' '{print $2}') && \
     echo "tzdata tzdata/Areas select $TZ_COUNTRY" | debconf-set-selections && \
