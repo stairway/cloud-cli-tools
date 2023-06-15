@@ -74,14 +74,9 @@ RUN apt-get update -y && \
     . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
 # TODO: gpg not currently working with non-root user
-RUN useradd --create-home --home-dir /home/devops --shell /bin/bash --user-group --groups sudo devops && \
-    echo "devops:devops" | chpasswd && \
-    echo "root:root" | chpasswd && \
-    echo "devops ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-    mkdir -p /home/devops/.local
-
 RUN useradd --create-home --home-dir /home/ubuntu --shell /bin/bash --user-group --groups sudo ubuntu && \
     echo "ubuntu:ubuntu" | chpasswd && \
+    echo "root:root" | chpasswd && \
     echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
     mkdir -p /home/ubuntu/.local
 
