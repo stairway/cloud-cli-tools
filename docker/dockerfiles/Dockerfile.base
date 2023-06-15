@@ -84,18 +84,18 @@ RUN apt-get update -y && \
 
 # TODO: gpg not currently working with non-root user
 RUN [ "${USER:-$ROOT_USER}" = "${ROOT_USER}" ] || { \
-        groupadd -g ${GID} ${USER} && \
-        useradd --create-home --home-dir ${HOME} --shell /bin/bash --gid ${GID} --no-user-group --groups sudo --uid ${UID} ${USER} && \
+        useradd --create-home --home-dir ${HOME} --shell /bin/bash --user-group --groups sudo --uid ${UID} ${USER} && \
         echo "${USER}:${USER}" | chpasswd && \
         echo "${ROOT_USER}:${ROOT_USER}" | chpasswd && \
         echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers; } && \
+    mkdir -p $DOTLOCAL && \
     mkdir -p $DOWNLOADS && \
     mkdir -p $SCRIPTS && \
-    mkdir -p $DOTLOCAL && \
     mkdir -p $HOME/.local && \
     chown -R $USER $DOTLOCAL
 
-RUN useradd --system --create-home --home-dir ${LOCALSTACK_HOME} --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_USER}
+RUN useradd --system --create-home --home-dir ${LOCALSTACK_HOME} --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_USER} && \
+    echo "${LOCALSTACK_USER}:${LOCALSTACK_USER}" | chpasswd
 
 # Pip install for default python version
 USER $LOCALSTACK_USER

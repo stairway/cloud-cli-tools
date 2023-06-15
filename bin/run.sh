@@ -67,6 +67,8 @@ NO_VALUE="${NO_VALUE:-no}"
 
 DOCKER_HISTFILE_NAME="${DOCKER_HISTFILE_NAME:-.bash_history}"
 
+DOTLOCAL="${DOTLOCAL:-/opt/.local}"
+
 init_mountcache() {
     [ -n "$(which uuidgen)" ] && RANDOMSTR=$(uuidgen) || RANDOMSTR="$(openssl rand -hex 16)"
     CONTAINER_NAME="${RANDOMSTR}"
@@ -301,7 +303,7 @@ run_new() {
         -v "${mountpoint}/.gnupg:${docker_user_home}/.gnupg"
         -v "${mountpoint}/.password-store:${docker_user_home}/.password-store"
         -v "${PWD}/mount/home/${DOCKER_USER}/${DOCKER_HISTFILE_NAME}:${docker_histfile}"
-        -v "${PWD}/mount/home/${DOCKER_USER}/.env:/opt/.local/.env"
+        -v "${PWD}/mount/home/${DOCKER_USER}/.env:${DOTLOCAL}/.env"
         -v "${PWD}/mount/home/${DOCKER_USER}/.aws:${docker_user_home}/.aws"
         -v "${PWD}/mount/home/${DOCKER_USER}/.kube:${docker_user_home}/.kube"
         -v "${PWD}/mount/home/${DOCKER_USER}/.dpctl:${docker_user_home}/.dpctl"
@@ -313,7 +315,7 @@ run_new() {
     [ -d "${PWD}/mount/addons" -a $(count $(ls -1 ${PWD}/mount/addons)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/addons:/tmp/addons")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/init.sh:/usr/local/bin/init.sh")
-    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/profile:/opt/.local/profile.d")
+    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/profile:${DOTLOCAL}/profile.d")
 
     local run_mode=("")
     [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && run_mode+=("-p ${VSCODE_DEBUGPY_PORT}:${VSCODE_DEBUGPY_PORT}")
