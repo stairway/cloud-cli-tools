@@ -68,14 +68,12 @@ ARG INSTALL_PKGS="\
 COPY bin/gh-login /usr/local/bin/
 
 RUN echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> $BASHRC && \
-    ln -s /usr/share/bash-completion/completions/git "${HOME}/.git-completion.bash" && \
     echo "complete -C /usr/local/bin/aws_completer aws" >> $BASHRC && \
     echo "complete -C /usr/local/bin/terraform terraform" >> $BASHRC && \
     echo ". <(kubectl completion bash)" >> $BASHRC && \
     echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> $BASHRC && \
     echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> $BASHRC && \
-    echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > $DOTLOCAL/init.sh && \
-    echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi"  >> /etc/bash.bashrc
+    echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > $DOTLOCAL/init.sh
 
 RUN cat >> $BASHRC <<EOF
 
@@ -137,7 +135,10 @@ RUN [ "${USER:-$ROOT_USER}" = "${ROOT_USER}" ] || { \
     mkdir -p $SCRIPTS && \
     mkdir -p $DOTLOCAL && \
     mkdir -p $HOME/.local && \
-    chown -R $USER $DOTLOCAL
+    chown -R $USER $DOTLOCAL && \
+    ln -s /usr/share/bash-completion/completions/git "${HOME}/.git-completion.bash" && \
+    echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi"  >> /etc/bash.bashrc && \
+    mkdir -m 0755 -p /etc/apt/keyrings
 
 RUN useradd --system --create-home --home-dir ${LOCALSTACK_HOME} --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_USER}
 
@@ -395,9 +396,6 @@ exit_code=\$?
 [ \$exit_code -eq 0 ] && cp "${DOWNLOADS}/\${asset_dir_rel}/\${asset_name}" $DOWNLOADS/ >/dev/null
 exit \$exit_code
 EOF
-
-RUN mkdir -m 0755 -p /etc/apt/keyrings && \
-    git --version >> /.versions
 
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
     chmod a+r /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
