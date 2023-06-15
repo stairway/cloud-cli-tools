@@ -50,7 +50,7 @@ init_gpg() {
         printf "\033[93m>\033[0m Generating gpg key with empty passphrase ...\n\033[96;1m%s\033[0m\n" "gpg --quick-gen-key ..."
         # /usr/bin/gpg --no-tty --with-colons --fingerprint -K
         gpg_command=("")
-        [ "${USER}" = "root" ] && gpg_command+=(sudo)
+        [ "${USER}" = "root" ] || gpg_command+=(sudo)
         gpg_command+=(
             gpg
             --quick-gen-key
