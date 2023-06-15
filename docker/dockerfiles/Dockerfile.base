@@ -88,20 +88,23 @@ RUN [ "${USER:-$ROOT_USER}" = "${ROOT_USER}" ] || { \
         useradd --create-home --home-dir ${HOME} --shell /bin/bash --gid ${GID} --no-user-group --groups sudo --uid ${UID} ${USER} && \
         echo "${USER}:${USER}" | chpasswd && \
         echo "${ROOT_USER}:${ROOT_USER}" | chpasswd && \
-        echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers; } && \
-    mkdir -p $DOWNLOADS && \
+        echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers; }
+
+
+RUN useradd --system --create-home --home-dir ${LOCALSTACK_HOME} --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_USER}
+
+USER $USER
+RUN mkdir -p $DOWNLOADS && \
     mkdir -p $SCRIPTS && \
     mkdir -p /opt/.local && \
     mkdir -p $HOME/.local
 
-RUN useradd --system --create-home --home-dir ${LOCALSTACK_HOME} --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_USER}
-
 # Pip install for default python version
-USER localstack
+USER $LOCALSTACK_USER
 RUN HOME=${LOCALSTACK_HOME} python3 -m pip install --user localstack
-USER ${USER}
+USER $USER
 RUN sudo pip3 install --user pre-commit pytest debugpy
-USER ${ROOT_USER}
+USER $ROOT_USER
 
 # Install additional python versions
 RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -F'.' '{print $1"."$2}') && \
@@ -118,12 +121,13 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
         apt-get clean -y
 
 # Pip (and poetry) install for override python version
-USER localstack
+USER $LOCALSTACK_USER
 RUN HOME=${LOCALSTACK_HOME} python3 -m pip install --user localstack
-USER ${USER}
+USER $USER
 RUN sudo pip3 install --user pre-commit pytest debugpy
-RUN curl -sSL https://install.python-poetry.org | python3 - 
-USER ${ROOT_USER}
+RUN set -x; echo $HOME; ls -la $HOME/devops
+RUN curl -sSL https://install.python-poetry.org | python3 -
+USER $ROOT_USER
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
