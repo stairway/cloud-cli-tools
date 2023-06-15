@@ -19,8 +19,7 @@ ARG LOCALSTACK_USER=localstack
 ARG LOCALSTACK_HOME=/home/localstack
 ARG USER=root
 ARG HOME=/root
-ARG DOWNLOADS=/opt/.local/downloads
-ARG SCRIPTS=/opt/.local/scripts
+ARG DOTLOCAL=/opt/.local
 
 # only used if HOME != root
 ARG UID=1001
@@ -28,11 +27,12 @@ ARG GID=1001
 
 ENV USER=${USER}
 ENV HOME=${HOME}
-ENV DOWNLOADS=${DOWNLOADS}
-ENV SCRIPTS=${SCRIPTS}
+ENV DOTLOCAL=${DOTLOCAL}
+ENV DOWNLOADS=${DOTLOCAL}/downloads
+ENV SCRIPTS=${DOTLOCAL}/scripts
 
 # This can be switched to ${HOME}/.bashrc
-ENV BASHRC=/opt/.local/.bashrc
+ENV BASHRC=${DOTLOCAL}/.bashrc
 
 ENV TZ=${TZ}
 ENV TERM=xterm-color
@@ -88,16 +88,14 @@ RUN [ "${USER:-$ROOT_USER}" = "${ROOT_USER}" ] || { \
         useradd --create-home --home-dir ${HOME} --shell /bin/bash --gid ${GID} --no-user-group --groups sudo --uid ${UID} ${USER} && \
         echo "${USER}:${USER}" | chpasswd && \
         echo "${ROOT_USER}:${ROOT_USER}" | chpasswd && \
-        echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers; }
-
+        echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers; } && \
+    mkdir -p $DOWNLOADS && \
+    mkdir -p $SCRIPTS && \
+    mkdir -p $DOTLOCAL && \
+    mkdir -p $HOME/.local && \
+    chown -R $USER $DOTLOCAL
 
 RUN useradd --system --create-home --home-dir ${LOCALSTACK_HOME} --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_USER}
-
-USER $USER
-RUN mkdir -p $DOWNLOADS && \
-    mkdir -p $SCRIPTS && \
-    mkdir -p /opt/.local && \
-    mkdir -p $HOME/.local
 
 # Pip install for default python version
 USER $LOCALSTACK_USER
@@ -126,7 +124,7 @@ RUN HOME=${LOCALSTACK_HOME} python3 -m pip install --user localstack
 USER $USER
 RUN sudo pip3 install --user pre-commit pytest debugpy
 RUN set -x; echo $HOME; ls -la $HOME/devops
-RUN curl -sSL https://install.python-poetry.org | python3 -
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
 USER $ROOT_USER
 
 ENV LANG en_US.UTF-8

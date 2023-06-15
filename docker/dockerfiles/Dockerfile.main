@@ -24,10 +24,11 @@ ENV BOOL="${TRUE}|${FALSE}"
 
 ENV USER="${USER:-root}"
 ENV HOME="${HOME:-/root}"
+ENV DOTLOCAL="${DOTLOCAL:-/opt/.local}"
 ENV PATH="${HOME}/.local/bin:/opt/bin:${PATH}"
-ENV DOWNLOADS="${DOWNLOADS:-/opt/.local/downloads}"
-ENV SCRIPTS="${SCRIPTS:-/opt/.local/scripts}"
-ENV ENVFILE="${ENVFILE:-/opt/.local/.env}"
+ENV DOWNLOADS="${DOWNLOADS:-$DOTLOCAL/downloads}"
+ENV SCRIPTS="${SCRIPTS:-$DOTLOCAL/scripts}"
+ENV ENVFILE="${ENVFILE:-$DOTLOCAL/.env}"
 ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;. "${ENVFILE:-${HOME}/.local/.env}"; set +a >/dev/null'
 ENV BASHRC="${BASHRC:-/etc/bash.bashrc}"
 
