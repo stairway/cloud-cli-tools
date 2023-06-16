@@ -31,6 +31,7 @@ ENV SCRIPTS="${SCRIPTS:-$DOTLOCAL/scripts}"
 ENV ENVFILE="${ENVFILE:-$DOTLOCAL/.env}"
 ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;. "${ENVFILE:-${HOMEDIR}/.local/.env}"; set +a >/dev/null'
 
+USER root
 WORKDIR $DOWNLOADS
 
 COPY docs/* /docs/

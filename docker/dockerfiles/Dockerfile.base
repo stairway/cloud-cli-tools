@@ -13,7 +13,6 @@ ARG TZ=America/Chicago
 ARG EDITOR=nano
 
 # default values
-ARG LOCALSTACK_UNAME=localstack
 ARG UNAME=root
 ARG HOMEDIR=/root
 ARG DOTLOCAL=/opt/.local
@@ -79,36 +78,22 @@ fi
 EOF
 
 # TODO: gpg not currently working with non-root user
-# (alternative to `--groups sudu` is `echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
-RUN useradd --create-home --shell /bin/bash --user-group --groups sudo --no-log-init ubuntu && \
-    passwd -d ubuntu && \
+# (alternative to `--groups sudu` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
+RUN useradd --create-home --shell /bin/bash --user-group --groups sudo --no-log-init $UNAME && \
+    passwd -d $UNAME && \
     echo "root:root" | chpasswd && \
-    mkdir -p /home/ubuntu/.local && \
     useradd --system --create-home --user-group --no-log-init localstack && \
     passwd -d localstack && \
-    mkdir -p /home/localstack/.local
-
-RUN ls -la /home/ubuntu
-USER ubuntu
-RUN ls -la /home/ubuntu
-
-USER root
-
-RUN 
-
-# RUN useradd --system --create-home --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_UNAME} && \
-#     echo "${LOCALSTACK_UNAME}:${LOCALSTACK_UNAME}" | chpasswd
-
-RUN mkdir -p $DOTLOCAL && \
+    mkdir -p $DOTLOCAL && \
     mkdir -p $DOWNLOADS && \
     mkdir -p $SCRIPTS && \
-    chown -R ubuntu $DOTLOCAL
+    chown -R $UNAME $DOTLOCAL
 
 # Pip install for default python version
-USER $LOCALSTACK_UNAME
-RUN HOME=/home/$LOCALSTACK_UNAME python3 -m pip install --user localstack
-USER ubuntu
-RUN sudo pip3 install --user pre-commit pytest debugpy
+USER localstack
+RUN HOME=/home/localstack sudo python3 -m pip install --user localstack
+USER $UNAME
+RUN HOME=$HOMEDIR sudo pip3 install --user pre-commit pytest debugpy
 USER root
 
 # Install additional python versions
@@ -126,10 +111,10 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
         apt-get clean -y
 
 # Pip (and poetry) install for override python version
-USER $LOCALSTACK_UNAME
-RUN HOME=/home/$LOCALSTACK_UNAME python3 -m pip install --user localstack
-USER ubuntu
-RUN sudo pip3 install --user pre-commit pytest debugpy
+USER localstack
+RUN HOME=/home/localstack sudo python3 -m pip install --user localstack
+USER $UNAME
+RUN HOME=$HOMEDIR sudo pip3 install --user pre-commit pytest debugpy
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
 USER root
 
