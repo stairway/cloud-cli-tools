@@ -79,26 +79,25 @@ fi
 EOF
 
 # Seems to be an issue with `useradd --create-home --home-dir`, where `mkdir` is probably being used internally without `-p`.
-RUN mkdir -p $HOME
 
 # TODO: gpg not currently working with non-root user
-RUN useradd --create-home --home-dir $HOME --shell /bin/bash --user-group --groups sudo --no-log-init devops && \
-    passwd -d devops && \
+RUN useradd --create-home --shell /bin/bash --user-group --groups sudo --no-log-init ubuntu && \
+    passwd -d ubuntu && \
     echo "root:root" | chpasswd && \
-    # echo "devops ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-    mkdir -p /home/devops/.local
+    # echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    mkdir -p /home/ubuntu/.local
 
-RUN useradd --create-home --home-dir /home/devops2 --shell /bin/bash --user-group --groups sudo --no-log-init devops2 && \
-    passwd -d devops2 && \
-    # echo "devops2 ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-    mkdir -p /home/devops2/.local
+RUN useradd --create-home --home-dir /home/ubuntu2 --shell /bin/bash --user-group --groups sudo --no-log-init ubuntu2 && \
+    passwd -d ubuntu2 && \
+    # echo "ubuntu2 ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    mkdir -p /home/ubuntu2/.local
 
-RUN ls -la /home/devops
-RUN ls -la /home/devops2
-USER devops
-RUN ls -la /home/devops
-USER devops2
-RUN ls -la /home/devops2
+RUN ls -la /home/ubuntu
+RUN ls -la /home/ubuntu2
+USER ubuntu
+RUN ls -la /home/ubuntu
+USER ubuntu2
+RUN ls -la /home/ubuntu2
 USER root
 
 RUN useradd --system --create-home --user-group --no-log-init localstack && \
@@ -110,12 +109,12 @@ RUN useradd --system --create-home --user-group --no-log-init localstack && \
 RUN mkdir -p $DOTLOCAL && \
     mkdir -p $DOWNLOADS && \
     mkdir -p $SCRIPTS && \
-    chown -R devops $DOTLOCAL
+    chown -R ubuntu $DOTLOCAL
 
 # Pip install for default python version
 USER $LOCALSTACK_UNAME
 RUN HOME=/home/$LOCALSTACK_UNAME python3 -m pip install --user localstack
-USER devops
+USER ubuntu
 RUN sudo pip3 install --user pre-commit pytest debugpy
 USER root
 
@@ -136,7 +135,7 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
 # Pip (and poetry) install for override python version
 USER $LOCALSTACK_UNAME
 RUN HOME=/home/$LOCALSTACK_UNAME python3 -m pip install --user localstack
-USER devops
+USER ubuntu
 RUN sudo pip3 install --user pre-commit pytest debugpy
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
 USER root
