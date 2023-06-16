@@ -78,6 +78,8 @@ if [ -f \$DOTLOCAL/.bashrc_extra ]; then
 fi
 EOF
 
+RUN cut -d: -f1 /etc/passwd
+
 # TODO: gpg not currently working with non-root user
 RUN useradd --create-home --home-dir $HOME --shell /bin/bash --user-group --groups sudo --no-log-init devops && \
     passwd -d devops && \
