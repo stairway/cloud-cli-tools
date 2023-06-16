@@ -72,6 +72,12 @@ RUN apt-get update -y && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
+RUN cat >> /etc/skel/.bashrc <<EOF
+if [ -f \$DOTLOCAL/.bashrc_extra ]; then
+    . \$DOTLOCAL/.bashrc_extra
+fi
+EOF
+
 # TODO: gpg not currently working with non-root user
 RUN useradd --create-home --home-dir $HOME --shell /bin/bash --user-group --groups sudo --no-log-init devops && \
     passwd -d devops && \
