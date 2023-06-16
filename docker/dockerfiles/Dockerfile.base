@@ -78,7 +78,8 @@ if [ -f \$DOTLOCAL/.bashrc_extra ]; then
 fi
 EOF
 
-RUN cut -d: -f1 /etc/passwd
+# Seems to be an issue with `useradd --create-home --home-dir`, where `mkdir` is probably being used internally without `-p`.
+RUN mkdir /home
 
 # TODO: gpg not currently working with non-root user
 RUN useradd --create-home --home-dir $HOME --shell /bin/bash --user-group --groups sudo --no-log-init devops && \
