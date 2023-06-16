@@ -82,7 +82,7 @@ EOF
 RUN useradd --create-home --shell /bin/bash --user-group --no-log-init test
 RUN useradd --create-home --shell /bin/bash --user-group --no-log-init devops
 # TODO: gpg not currently working with non-root user
-RUN useradd --create-home --shell /bin/bash --user-group --groups sudo --no-log-init ubuntu
+RUN useradd --create-home --shell /bin/bash --user-group --no-log-init ubuntu
 
 RUN passwd -d ubuntu && \
     echo "root:root" | chpasswd && \
