@@ -22,8 +22,8 @@ ENV TRUE='y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1'
 ENV FALSE='n|N|no|No|NO|false|False|FALSE|off|Off|OFF|0'
 ENV BOOL="${TRUE}|${FALSE}"
 
-ENV UNAME="${UNAME:-ubuntu}"
-ENV HOMEDIR="${HOMEDIR:-/home/ubuntu}"
+ENV UNAME="${UNAME:-devops}"
+ENV HOMEDIR="${HOMEDIR:-/home/devops}"
 ENV DOTLOCAL="${DOTLOCAL:-/opt/.local}"
 ENV PATH="${HOMEDIR}/.local/bin:${DOTLOCAL}/bin:/opt/bin:${PATH}"
 ENV DOWNLOADS="${DOWNLOADS:-$DOTLOCAL/downloads}"
@@ -236,7 +236,7 @@ if [ -f \$DOTLOCAL/.bashrc_extra ]; then
 fi
 EOF
 
-USER ubuntu
+USER devops
 WORKDIR $HOMEDIR
 
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]

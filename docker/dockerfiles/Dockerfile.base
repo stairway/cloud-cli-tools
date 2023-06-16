@@ -27,6 +27,8 @@ ENV TERM=xterm-color
 ENV EDITOR=${EDITOR}
 ENV AWS_VAULT_BACKEND=pass
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y apt-utils && \
     apt-get clean -y
@@ -71,18 +73,27 @@ RUN apt-get update -y && \
     . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
 # TODO: gpg not currently working with non-root user
-RUN useradd --create-home --home-dir /home/ubuntu --shell /bin/bash --user-group --groups sudo ubuntu && \
-    echo "ubuntu:ubuntu" | chpasswd && \
+RUN useradd --create-home --home-dir $HOME --shell /bin/bash --user-group --groups sudo devops && \
+    passwd -d devops && \
     echo "root:root" | chpasswd && \
-    echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-    mkdir -p /home/ubuntu/.local
+    # echo "devops ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    mkdir -p /home/devops/.local
 
-RUN ls -la /home/ubuntu
-USER ubuntu
-RUN ls -la /home/ubuntu
+RUN useradd --create-home --home-dir $HOME --shell /bin/bash --user-group --groups sudo devops2 && \
+    passwd -d devops2 && \
+    # echo "devops2 ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    mkdir -p /home/devops2/.local
 
-RUN useradd --system --create-home --home-dir /home/$LOCALSTACK_UNAME --shell /bin/bash --user-group $LOCALSTACK_UNAME && \
-    echo "${LOCALSTACK_UNAME}:${LOCALSTACK_UNAME}" | chpasswd
+RUN ls -la /home/devops
+RUN ls -la /home/devops2
+USER devops
+RUN ls -la /home/devops
+USER devops2
+RUN ls -la /home/devops2
+USER root
+
+RUN useradd --system --create-home --home-dir --user-group localstack && \
+    passwd -d localstack
 
 # RUN useradd --system --create-home --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_UNAME} && \
 #     echo "${LOCALSTACK_UNAME}:${LOCALSTACK_UNAME}" | chpasswd
@@ -90,12 +101,12 @@ RUN useradd --system --create-home --home-dir /home/$LOCALSTACK_UNAME --shell /b
 RUN mkdir -p $DOTLOCAL && \
     mkdir -p $DOWNLOADS && \
     mkdir -p $SCRIPTS && \
-    chown -R ubuntu $DOTLOCAL
+    chown -R devops $DOTLOCAL
 
 # Pip install for default python version
 USER $LOCALSTACK_UNAME
 RUN HOME=/home/$LOCALSTACK_UNAME python3 -m pip install --user localstack
-USER ubuntu
+USER devops
 RUN sudo pip3 install --user pre-commit pytest debugpy
 USER root
 
@@ -116,7 +127,7 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
 # Pip (and poetry) install for override python version
 USER $LOCALSTACK_UNAME
 RUN HOME=/home/$LOCALSTACK_UNAME python3 -m pip install --user localstack
-USER ubuntu
+USER devops
 RUN sudo pip3 install --user pre-commit pytest debugpy
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
 USER root
@@ -410,7 +421,6 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kuberne
     install minikube-linux-amd64 /usr/local/bin/minikube && \
     printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 USER ubnutu
 WORKDIR $HOME
 
