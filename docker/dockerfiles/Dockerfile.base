@@ -13,17 +13,14 @@ ARG TZ=America/Chicago
 ARG EDITOR=nano
 
 # default values
-ARG LOCALSTACK_USER=localstack
+ARG LOCALSTACK_UNAME=localstack
 ARG UNAME=root
 ARG HOME=/root
 ARG DOTLOCAL=/opt/.local
 
-ENV UNAME=${UNAME}
 ENV DOTLOCAL=${DOTLOCAL:-$HOME/.local}
 ENV DOWNLOADS=${DOTLOCAL}/downloads
 ENV SCRIPTS=${DOTLOCAL}/scripts
-
-ENV BASHRC_EXTRA=${DOTLOCAL}/.bashrc
 
 ENV TZ=${TZ}
 ENV TERM=xterm-color
@@ -80,11 +77,15 @@ RUN useradd --create-home --home-dir /home/ubuntu --shell /bin/bash --user-group
     echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
     mkdir -p /home/ubuntu/.local
 
-RUN useradd --system --create-home --home-dir /home/$LOCALSTACK_USER --shell /bin/bash --user-group $LOCALSTACK_USER && \
-    echo "${LOCALSTACK_USER}:${LOCALSTACK_USER}" | chpasswd
+RUN ls -la /home/ubuntu
+USER ubuntu
+RUN ls -la /home/ubuntu
 
-# RUN useradd --system --create-home --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_USER} && \
-#     echo "${LOCALSTACK_USER}:${LOCALSTACK_USER}" | chpasswd
+RUN useradd --system --create-home --home-dir /home/$LOCALSTACK_UNAME --shell /bin/bash --user-group $LOCALSTACK_UNAME && \
+    echo "${LOCALSTACK_UNAME}:${LOCALSTACK_UNAME}" | chpasswd
+
+# RUN useradd --system --create-home --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_UNAME} && \
+#     echo "${LOCALSTACK_UNAME}:${LOCALSTACK_UNAME}" | chpasswd
 
 RUN mkdir -p $DOTLOCAL && \
     mkdir -p $DOWNLOADS && \
@@ -92,8 +93,8 @@ RUN mkdir -p $DOTLOCAL && \
     chown -R ubuntu $DOTLOCAL
 
 # Pip install for default python version
-USER $LOCALSTACK_USER
-RUN HOME=/home/$LOCALSTACK_USER python3 -m pip install --user localstack
+USER $LOCALSTACK_UNAME
+RUN HOME=/home/$LOCALSTACK_UNAME python3 -m pip install --user localstack
 USER ubuntu
 RUN sudo pip3 install --user pre-commit pytest debugpy
 USER root
@@ -113,11 +114,10 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
         apt-get clean -y
 
 # Pip (and poetry) install for override python version
-USER $LOCALSTACK_USER
-RUN HOME=/home/$LOCALSTACK_USER python3 -m pip install --user localstack
+USER $LOCALSTACK_UNAME
+RUN HOME=/home/$LOCALSTACK_UNAME python3 -m pip install --user localstack
 USER ubuntu
 RUN sudo pip3 install --user pre-commit pytest debugpy
-RUN set -x; echo $HOME; ls -la $HOME/.local
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
 USER root
 
