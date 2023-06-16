@@ -48,7 +48,8 @@ SHELL [ "/bin/bash", "-o", "pipefail", "-c" ]
 RUN for f in $(ls -1 /tmp/addons); do install "/tmp/addons/${f}" "/usr/local/bin/${f}"; done && \
     rm -rf /tmp/addons && \
     chmod +x /opt/bin/describe && \
-    mkdir -p $DOTLOCAL/shell_addons.d
+    mkdir -p $DOTLOCAL/shell_addons.d && \
+    mkdir /data && chown -R $UNAME /data
 
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux
 RUN [ "${KUBE_VERSION:-latest}" = "latest" ] && \
@@ -229,7 +230,6 @@ USER $UNAME
 WORKDIR $HOMEDIR
 
 RUN /usr/local/bin/config.sh && \
-    mkdir /data && \
     mkdir $HOMEDIR/{.ssh,.gnupg,.password-store,.awsvault}
 
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
