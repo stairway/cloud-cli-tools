@@ -91,7 +91,9 @@ RUN useradd --create-home --shell /bin/bash --user-group --groups sudo --no-log-
 
 # Pip install for default python version
 USER localstack
-RUN HOME=/home/localstack sudo python3 -m pip install --user localstack
+RUN echo $HOME
+RUN ls -la $HOME
+RUN HOME=/home/localstack python3 -m pip install --user localstack
 USER $UNAME
 RUN HOME=$HOMEDIR sudo pip3 install --user pre-commit pytest debugpy
 USER root
@@ -112,7 +114,7 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
 
 # Pip (and poetry) install for override python version
 USER localstack
-RUN HOME=/home/localstack sudo python3 -m pip install --user localstack
+RUN HOME=/home/localstack python3 -m pip install --user localstack
 USER $UNAME
 RUN HOME=$HOMEDIR sudo pip3 install --user pre-commit pytest debugpy
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
