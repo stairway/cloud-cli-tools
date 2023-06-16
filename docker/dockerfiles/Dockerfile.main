@@ -223,19 +223,6 @@ fi
 
 EOF
 
-RUN cat >> /root/.bashrc <<EOF
-if [ -f \$DOTLOCAL/.bashrc_extra ]; then
-    . \$DOTLOCAL/.bashrc_extra
-fi
-EOF
-
-RUN set -x; [ "$UNAME" = "root" ] || \
-cat >> $HOMEDIR/.bashrc <<EOF
-if [ -f \$DOTLOCAL/.bashrc_extra ]; then
-    . \$DOTLOCAL/.bashrc_extra
-fi
-EOF
-
 USER ubuntu
 WORKDIR $HOMEDIR
 
