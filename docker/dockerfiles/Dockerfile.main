@@ -229,8 +229,8 @@ EOF
 USER $UNAME
 WORKDIR $HOMEDIR
 
-RUN /usr/local/bin/config.sh && \
-    mkdir $HOMEDIR/{.ssh,.gnupg,.password-store,.awsvault}
+RUN /usr/local/bin/config.sh
+RUN for d in ".ssh,.gnupg,.password-store,.awsvault" do; [ -d $d ] || mkdir $d; done
 
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
 
