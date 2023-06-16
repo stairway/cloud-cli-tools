@@ -223,7 +223,7 @@ fi
 
 EOF
 
-USER ubuntu
+USER $UNAME
 WORKDIR $HOMEDIR
 
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]

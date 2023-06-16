@@ -79,6 +79,7 @@ EOF
 
 # TODO: gpg not currently working with non-root user
 # (alternative to `--groups sudu` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
+# (to add password, use `-p "$(openssl passwd -1 <password>)"`)
 RUN useradd --create-home --shell /bin/bash --user-group --groups sudo --no-log-init $UNAME && \
     passwd -d $UNAME && \
     echo "root:root" | chpasswd && \
