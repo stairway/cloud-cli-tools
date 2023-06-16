@@ -81,12 +81,10 @@ EOF
 # Seems to be an issue with `useradd --create-home --home-dir`, where `mkdir` is probably being used internally without `-p`.
 RUN useradd --create-home --shell /bin/bash --user-group --no-log-init test
 RUN useradd --create-home --shell /bin/bash --user-group --no-log-init devops
-RUN useradd --system --create-home --user-group --no-log-init localstack
 # TODO: gpg not currently working with non-root user
 RUN useradd --create-home --shell /bin/bash --user-group --groups sudo --no-log-init ubuntu
 
-RUN passwd -d localstack && \
-    passwd -d ubuntu && \
+RUN passwd -d ubuntu && \
     echo "root:root" | chpasswd && \
     # echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
     mkdir -p /home/ubuntu/.local
