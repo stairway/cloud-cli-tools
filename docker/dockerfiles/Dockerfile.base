@@ -73,13 +73,13 @@ RUN apt-get update -y && \
     . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
 # TODO: gpg not currently working with non-root user
-RUN useradd --create-home --home-dir $HOME --shell /bin/bash --user-group --groups sudo devops && \
+RUN useradd --create-home --home-dir $HOME --shell /bin/bash --user-group --groups sudo --no-log-init devops && \
     passwd -d devops && \
     echo "root:root" | chpasswd && \
     # echo "devops ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
     mkdir -p /home/devops/.local
 
-RUN useradd --create-home --home-dir $HOME --shell /bin/bash --user-group --groups sudo devops2 && \
+RUN useradd --create-home --home-dir /home/devops2 --shell /bin/bash --user-group --groups sudo --no-log-init devops2 && \
     passwd -d devops2 && \
     # echo "devops2 ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
     mkdir -p /home/devops2/.local
@@ -92,7 +92,7 @@ USER devops2
 RUN ls -la /home/devops2
 USER root
 
-RUN useradd --system --create-home --user-group localstack && \
+RUN useradd --system --create-home --user-group --no-log-init localstack && \
     passwd -d localstack
 
 # RUN useradd --system --create-home --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_UNAME} && \
