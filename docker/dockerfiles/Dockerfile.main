@@ -43,6 +43,8 @@ COPY conf $DOTLOCAL/.conf
 
 ADD addons/**/*.tgz /tmp/addons/
 
+SHELL [ "/bin/bash", "-o", "pipefail", "-c" ]
+
 RUN for f in $(ls -1 /tmp/addons); do install "/tmp/addons/${f}" "/usr/local/bin/${f}"; done && \
     rm -rf /tmp/addons && \
     chmod +x /opt/bin/describe && \
@@ -226,9 +228,12 @@ EOF
 USER $UNAME
 WORKDIR $HOMEDIR
 
+RUN /usr/local/bin/config.sh && \
+    mkdir /data && \
+    mkdir $HOMEDIR/{.ssh,.gnupg,.password-store,.awsvault}
+
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
 
-SHELL [ "/bin/bash", "-o", "pipefail", "-c" ]
 ENTRYPOINT [ "/usr/local/bin/docker-entrypoint.sh" ]
 
 # Additional Metadata

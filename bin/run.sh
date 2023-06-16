@@ -303,7 +303,6 @@ run_new() {
         -v "${mountpoint}/.gnupg:${docker_user_home}/.gnupg"
         -v "${mountpoint}/.password-store:${docker_user_home}/.password-store"
         -v "${PWD}/mount/home/${DOCKER_USER}/${DOCKER_HISTFILE_NAME}:${docker_histfile}"
-        -v "${PWD}/mount/home/${DOCKER_USER}/.env:${DOTLOCAL}/.env"
         -v "${PWD}/mount/home/${DOCKER_USER}/.aws:${docker_user_home}/.aws"
         -v "${PWD}/mount/home/${DOCKER_USER}/.kube:${docker_user_home}/.kube"
         -v "${PWD}/mount/home/${DOCKER_USER}/.dpctl:${docker_user_home}/.dpctl"
@@ -316,6 +315,7 @@ run_new() {
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/init.sh:/usr/local/bin/init.sh")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/profile:${DOTLOCAL}/profile.d")
+    [ -f "${PWD}/mount/home/${DOCKER_USER}/.env" ] && mount_volumes+=(-v "${PWD}/mount/home/${DOCKER_USER}/.env:${DOTLOCAL}/.env")
 
     local run_mode=("")
     [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && run_mode+=("-p ${VSCODE_DEBUGPY_PORT}:${VSCODE_DEBUGPY_PORT}")

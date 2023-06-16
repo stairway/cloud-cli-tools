@@ -85,7 +85,7 @@ RUN useradd --create-home --shell /bin/bash --user-group --groups sudo --no-log-
     echo "root:root" | chpasswd && \
     useradd --system --create-home --user-group --no-log-init localstack && \
     passwd -d localstack && \
-    mkdir -p $DOTLOCAL && \
+    [ -d $DOTLOCAL ] || mkdir -p $DOTLOCAL && \
     mkdir -p $DOWNLOADS && \
     mkdir -p $SCRIPTS && \
     chown -R $UNAME $DOTLOCAL

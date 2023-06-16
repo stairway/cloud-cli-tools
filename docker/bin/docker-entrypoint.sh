@@ -23,7 +23,7 @@ git_config() {
     git config --global pull.rebase true
 }
 
-init_ssh() {
+ssh_config() {
     local file_list=0
     file_list=($([ -d $HOME/.ssh ] && ls $HOME/.ssh 2>/dev/null))
     local gen_date=$(date -u +%Y%m%dT%H%M%SZ)
@@ -43,35 +43,6 @@ init_ssh() {
     fi
 }
 
-init_gpg() {
-    local file_list=0
-    file_list=($([ -d $HOME/.gnupg ] && ls $HOME/.gnupg/ 2>/dev/null))
-    if [ ${#file_list[@]} -lt 9 ]; then
-        printf "\033[93m>\033[0m Generating gpg key with empty passphrase ...\n\033[96;1m%s\033[0m\n" "gpg --quick-gen-key ..."
-        # /usr/bin/gpg --no-tty --with-colons --fingerprint -K
-        sudo gpg --quick-gen-key --homedir "${HOME}/.gnupg" --yes --always-trust --batch --passphrase '' aws-vault
-
-        ### *Fixes* gpg: WARNING: unsafe permissions on homedir '~/.gnupg'
-        sudo chown -R $UNAME $HOME/.gnupg
-        sudo chmod 700 $HOME/.gnupg
-        #chmod 600 $HOME/.gnupg/*
-    fi
-}
-
-init_pass() {
-    # THIS IS WHERE pass IS INITIALIZED
-
-    mkdir -p $HOME/.password-store
-    sudo chown -R $UNAME:$UNAME $HOME/.password-store
-    sudo chmod -R 700 $HOME/.password-store
-
-    local file_list=0
-    file_list=($([ -d $HOME/.password-store ] && ls $HOME/.password-store/ 2>/dev/null))
-    if [ ${#file_list[@]} -lt 2 ]; then
-        [ -f $HOME/.password-store/.gpg-id ] || pass init --path= aws-vault
-    fi
-}
-
 versions() {
     uname -a
     cat /.versions || { printf "Versions file '%s' not found. Exiting ...\n" "/.versions" >&2; return 1; }
@@ -79,31 +50,24 @@ versions() {
 
 init_git() {
     local last_err=0
-    if [ ! -f "${HOME}/.gitconfig" ]; then
+    if [ ! -f $HOME/.gitconfig ]; then
         printf "\033[92;1m>>>\033[94;1m Initializing %s \033[92;1m>>>\033[0m\n" "Git"
 
         git_config || last_err=$?
     fi
 
-    [ $last_err -eq 0 -a -f "${HOME}/.gitconfig" ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "Git"
+    [ $last_err -eq 0 -a -f $HOME/.gitconfig ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "Git"
 }
 
-check_crypto() {
+init_ssh() {
     local last_err=0
-    if [ ! -f $HOME/.crypto ]; then
-        printf "\033[92;1m>>>\033[94;1m Checking %s \033[92;1m>>>\033[0m\n" "Crypto (ssh, gpg, pass)"
+    if [ ! -f $HOME/.ssh/{*.fingerprint,*.pub} ]; then
+        printf "\033[92;1m>>>\033[94;1m Checking %s \033[92;1m>>>\033[0m\n" "SSH Config"
 
-        init_ssh
-        init_gpg
-        init_pass
-        date -u +%Y%m%dT%H%M%SZ > $HOME/.crypto
-
-        # init_ssh && init_gpg && init_pass \
-        #     && date -u +%Y%m%dT%H%M%SZ > /.crypto \
-        #     || last_err=$?
+        ssh_config || last_err=$?
     fi
 
-    [ $last_err -eq 0 -a -f $HOME/.crypto ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "Crypto (ssh, gpg, pass)"
+    [ $last_err -eq 0 -a -f $HOME/.crypto ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "SSH"
 }
 
 exit_code=0
@@ -121,7 +85,7 @@ die() {
 
 do_init() {
     versions
-    init_git && check_crypto
+    init_git && init_ssh
     ln -s /data ${HOME}/data
     if [ ${VSCODE_DEBUGPY_PORT:-0} -gt 999 ]; then
         if [ ! -d /data/.vscode ]; then
