@@ -92,7 +92,7 @@ USER devops2
 RUN ls -la /home/devops2
 USER root
 
-RUN useradd --system --create-home --home-dir --user-group localstack && \
+RUN useradd --system --create-home --user-group localstack && \
     passwd -d localstack
 
 # RUN useradd --system --create-home --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_UNAME} && \
