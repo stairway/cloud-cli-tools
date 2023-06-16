@@ -15,10 +15,10 @@ ARG EDITOR=nano
 # default values
 ARG LOCALSTACK_UNAME=localstack
 ARG UNAME=root
-ARG HOME=/root
+ARG HOMEDIR=/root
 ARG DOTLOCAL=/opt/.local
 
-ENV DOTLOCAL=${DOTLOCAL:-$HOME/.local}
+ENV DOTLOCAL=${DOTLOCAL:-$HOMEDIR/.local}
 ENV DOWNLOADS=${DOTLOCAL}/downloads
 ENV SCRIPTS=${DOTLOCAL}/scripts
 
@@ -78,31 +78,23 @@ if [ -f \$DOTLOCAL/.bashrc_extra ]; then
 fi
 EOF
 
-# Seems to be an issue with `useradd --create-home --home-dir`, where `mkdir` is probably being used internally without `-p`.
-RUN useradd --create-home --shell /bin/bash --user-group --no-log-init test
-RUN useradd --create-home --shell /bin/bash --user-group --no-log-init devops
 # TODO: gpg not currently working with non-root user
-RUN useradd --create-home --shell /bin/bash --user-group --groups sudo --no-log-init ubuntu
-
-RUN passwd -d ubuntu && \
+# (alternative to `--groups sudu` is `echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
+RUN useradd --create-home --shell /bin/bash --user-group --groups sudo --no-log-init ubuntu && \
+    passwd -d ubuntu && \
     echo "root:root" | chpasswd && \
-    # echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-    mkdir -p /home/ubuntu/.local
+    mkdir -p /home/ubuntu/.local && \
+    useradd --system --create-home --user-group --no-log-init localstack && \
+    passwd -d localstack && \
+    mkdir -p /home/localstack/.local
 
-RUN ls -la /home/test
-RUN ls -la /home/devops
 RUN ls -la /home/ubuntu
-USER test
-RUN ls -la /home/test
-USER devops
-RUN ls -la /home/devops
 USER ubuntu
 RUN ls -la /home/ubuntu
 
 USER root
 
-RUN useradd --system --create-home --user-group --no-log-init localstack && \
-    passwd -d localstack
+RUN 
 
 # RUN useradd --system --create-home --shell /bin/bash --user-group --uid 888 ${LOCALSTACK_UNAME} && \
 #     echo "${LOCALSTACK_UNAME}:${LOCALSTACK_UNAME}" | chpasswd
@@ -431,7 +423,7 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kuberne
     printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
 USER root
-WORKDIR $HOME
+WORKDIR $HOMEDIR
 
 # Additional Metadata
 ARG VERSION=latest
