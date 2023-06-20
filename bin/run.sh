@@ -314,6 +314,7 @@ run_new() {
     [ -d "${PWD}/mount/addons" -a $(count $(ls -1 ${PWD}/mount/addons)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/addons:/tmp/addons")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/init.sh:/usr/local/bin/init.sh")
+    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/crypto.sh:/usr/local/bin/crypto.sh")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/profile:${DOTLOCAL}/profile.d")
     [ -f "${PWD}/mount/home/${DOCKER_USER}/.env" ] && mount_volumes+=(-v "${PWD}/mount/home/${DOCKER_USER}/.env:${DOTLOCAL}/.env")
 

@@ -61,13 +61,13 @@ init_git() {
 
 init_ssh() {
     local last_err=0
-    if [ ! -f $HOME/.ssh/{*.fingerprint,*.pub} ]; then
+    if [ ! -f $HOME/.ssh/.fingerprint -o ! -f $HOME/.ssh/.pub} ]; then
         printf "\033[92;1m>>>\033[94;1m Checking %s \033[92;1m>>>\033[0m\n" "SSH Config"
 
         ssh_config || last_err=$?
-    fi
 
-    [ $last_err -eq 0 -a -f $HOME/.crypto ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "SSH"
+        [ $last_err -eq 0 ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "SSH" || die $last_err
+    fi
 }
 
 exit_code=0
@@ -85,6 +85,7 @@ die() {
 
 do_init() {
     versions
+    crypto.sh
     init_git && init_ssh
     ln -s /data ${HOME}/data
     if [ ${VSCODE_DEBUGPY_PORT:-0} -gt 999 ]; then

@@ -76,6 +76,7 @@ init_aws() {
                 printf "\033[93m>\033[0m Found existing AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.\n"
                 aws-vault add --env "${DEFAULT_VAULT_USER}"
             else
+                printf "foobar\n"
                 aws-vault add "${DEFAULT_VAULT_USER}"
             fi
         fi
