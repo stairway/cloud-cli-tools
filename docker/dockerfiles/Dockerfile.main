@@ -191,7 +191,7 @@ RUN echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash
     echo ". <(kubectl completion bash)" >> $DOTLOCAL/.bashrc_extra && \
     echo "[ -e $DOTLOCAL/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> $DOTLOCAL/.bashrc_extra && \
     echo "[ -e $DOTLOCAL/.istioctl.bash ] && . $DOTLOCAL/.istioctl.bash" >> $DOTLOCAL/.bashrc_extra && \
-    echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > $DOTLOCAL/init.sh && \
+    echo "[ \$# -eq 0 ] && /usr/local/bin/config.sh" > $DOTLOCAL/config.sh && \
     cat > $DOTLOCAL/.bashrc_extra <<EOF
 
 export PATH="${PATH}"
@@ -220,8 +220,8 @@ if [ -d \$DOTLOCAL/profile.d ]; then
     done
 fi
 
-if [ -f \$DOTLOCAL/init.sh ]; then
-    . \$DOTLOCAL/init.sh
+if [ -f \$DOTLOCAL/config.sh ]; then
+    . \$DOTLOCAL/config.sh
 fi
 
 EOF

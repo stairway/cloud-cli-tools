@@ -253,7 +253,7 @@ usage:  run.sh -u <user> -t <team_name> -n <full_name> -m <email> -e <editor>
 |   |       `-- <package-name>.zip
 |   +-- bin/
 |   |   |-- docker-entrypoint.sh
-|   |   |-- init.sh
+|   |   |-- config.sh
 |   |   |-- mytf.sh
 |   |   `-- wtf
 |   +-- conf/
