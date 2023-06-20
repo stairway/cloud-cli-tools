@@ -230,7 +230,9 @@ USER $UNAME
 WORKDIR $HOMEDIR
 
 RUN /usr/local/bin/config.sh
-RUN for d in "$HOMEDIR/.ssh $HOMEDIR/.gnupg $HOMEDIR/.password-store $HOMEDIR/.awsvault"; do [ -d $d ] || mkdir $d; done
+RUN for d in $(echo $HOMEDIR/.ssh $HOMEDIR/.gnupg $HOMEDIR/.password-store $HOMEDIR/.awsvault); do \
+        if [ ! -d $d ]; then mkdir $d; fi; \
+    done
 
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
 
