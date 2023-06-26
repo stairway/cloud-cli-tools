@@ -136,6 +136,17 @@ ARG DOCKER_PKGS="\
 
 WORKDIR $DOWNLOADS
 
+RUN touch $SCRIPTS/add-bash-extra.sh && \
+    chmod +x $SCRIPTS/add-bash-extra.sh && \
+    cat > $SCRIPTS/add-bash-extra.sh <<EOF
+#!/bin/sh -euf
+cat >> \$1 <<BASHEXTRA
+if [ -f \$DOTLOCAL/.bashrc_extra ]; then
+    . \$DOTLOCAL/.bashrc_extra
+fi
+BASHEXTRA
+EOF
+
 RUN touch $SCRIPTS/str-lower.sh && \
     chmod +x $SCRIPTS/str-lower.sh && \
     cat > $SCRIPTS/str-lower.sh <<EOF
@@ -347,7 +358,8 @@ exit \$exit_code
 EOF
 
 RUN mkdir -m 0755 -p /etc/apt/keyrings && \
-    git --version >> /.versions
+    git --version >> /.versions && \
+    $SCRIPTS/add-bash-extra.sh /root/.bashrc
 
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
     chmod a+r /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
@@ -402,6 +414,7 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${AWS_VAULT_VERSION}" "latest" "99desi
     install aws-vault-linux-amd64 /usr/local/bin/aws-vault && \
     printf "aws-vault: %s\n" "$(aws-vault --version 2>&1)" >> /.versions
 
+USER $UNAME
 RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kubernetes/minikube") && \
     status=$($SCRIPTS/download-and-verify-2.sh "https://storage.googleapis.com/minikube/releases" \
         "kubernetes/minikube" "${version}" \
@@ -410,6 +423,7 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kuberne
     install minikube-linux-amd64 /usr/local/bin/minikube && \
     printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
+RUN set -x; printf "HOME=%s" "$HOME"
 USER root
 WORKDIR $HOMEDIR
 

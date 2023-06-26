@@ -74,9 +74,10 @@ init_aws() {
                 while [ ! -f "$HOME/.password-store/.gpg-id" -o ! -f "$HOME/.gnupg/trustdb.gpg" ]; do _waiting; done; echo
             if [ -n "${AWS_ACCESS_KEY_ID}" -a -n "${AWS_SECRET_ACCESS_KEY}" ]; then
                 printf "\033[93m>\033[0m Found existing AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.\n"
+                printf "Adding vault user (%s) with detected env...\n" "${DEFAULT_VAULT_USER}"
                 aws-vault add --env "${DEFAULT_VAULT_USER}"
             else
-                printf "foobar\n"
+                printf "Adding vault user (%s) with detected env...\n" "${DEFAULT_VAULT_USER}"
                 aws-vault add "${DEFAULT_VAULT_USER}"
             fi
         fi
