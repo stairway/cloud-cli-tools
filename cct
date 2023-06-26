@@ -1,6 +1,6 @@
 # Usage:
-# `GH_PAT=<pat> eval "$(<cct)"`
-# `GH_PAT=<pat> RELEASE_VERSION=<tag> eval "$(<cct)"`
+# `GH_PAT='<pat>' eval "$(<cct)"`
+# `GH_PAT='<pat>' RELEASE_VERSION='<tag>' eval "$(<cct)"`
 
 # package:
 # `zip cct.zip cct/cct cct/dpctl-admin-latest.zip cct/dpctl-latest.zip cct/README.md`
