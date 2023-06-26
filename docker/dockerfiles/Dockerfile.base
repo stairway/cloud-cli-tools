@@ -426,7 +426,11 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     aws --version >> /.versions
 
 RUN version=$($SCRIPTS/gh-get-version.sh "${EKSCTL_VERSION}" "latest" "weaveworks/eksctl") && \
-    platform=$($SCRIPTS/get-platform.sh) && \
+    platform=$($SCRIPTS/get-platform.sh) && { \
+        set -x \
+        printf "Command: '%s'\n" "$SCRIPTS/gh-download-and-verify.sh \"weaveworks/eksctl\" \"${version}\" \"eksctl_${platform}.tar.gz\" \"eksctl_checksums.txt\"" \
+        set +x \
+    } && \
     status=$($SCRIPTS/gh-download-and-verify.sh "weaveworks/eksctl" "${version}" \
         "eksctl_${platform}.tar.gz" "eksctl_checksums.txt") && \
     echo $status && \
