@@ -372,7 +372,7 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${EKSCTL_VERSION}" "latest" "weavework
     echo $status && \
     tar -xzf eksctl_${platform}.tar.gz -C ./ && rm eksctl_${platform}.tar.gz && \
     install eksctl /usr/local/bin/eksctl && \
-    printf "eksctl: %s\n" "$(eksctl --version 2>&1)" >> /.versions
+    printf "eksctl: %s\n" "$(eksctl version 2>&1)" >> /.versions
 
 RUN version=$($SCRIPTS/gh-get-version.sh "${AWS_VAULT_VERSION}" "latest" "99designs/aws-vault") && \
     status=$($SCRIPTS/gh-download-and-verify.sh "99designs/aws-vault" "${version}" \
