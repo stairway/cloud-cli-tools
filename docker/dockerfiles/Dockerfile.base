@@ -283,7 +283,7 @@ gh_curl_download_verify() {
     curl -LO "https://github.com/\${1}/releases/download/\${2}/\${3}" && \
 curl -LO "https://github.com/\${1}/releases/download/\${2}/\${4}" && \
 status=\$(cat \${4} | grep --color=never \${3} | sha256sum -c -)
-set +x
+    set +x
     return_code=\$?
     if [ \$return_code -eq 0 -a "\$status" = "\${3}: OK" ]; then
         printf "\033[92;1m%s\033[0m\n" "\$status"
