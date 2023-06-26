@@ -186,7 +186,7 @@ RUN touch $SCRIPTS/gh-auth-status.sh && \
 #!/bin/sh -euf
 gh_auth_status() {
     return_code=\$?
-    gh auth status 2>/dev/null || return_code=\$?
+    gh auth status >/dev/null 2>&1 || return_code=\$?
     if [ \$return_code -ne 0 ]; then
         [ -n "\${GH_CLIENT_TOKEN:-""}" ] && /usr/local/bin/gh-login >/dev/null 2>&1
         return_code=\$?
