@@ -71,6 +71,7 @@ build_base() {
     local created_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
     local git_commit=$(git rev-parse --short HEAD)
     local build_args=("")
+    [ "${DEBUG:-false}" = "true" ] || build_args+=(--build-arg "DEBUG=${DEBUG}")
     [ "${UBUNTU_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "VERSION=${UBUNTU_VERSION}")
     [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg "UNAME=${DOCKER_USER}")
     [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg "HOMEDIR=/home/${DOCKER_USER}")
@@ -121,6 +122,7 @@ build_new() {
         --build-arg "'IMAGE_BASE_NAME=${DOCKER_IMAGE_PARENT}'"
         --build-arg "'VERSION=${DOCKER_IMAGE_PARENT_VERSION}'"
     )
+    [ "${DEBUG:-false}" = "true" ] || build_args+=(--build-arg "DEBUG=${DEBUG}")
     [ "${KUBE_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg "'KUBE_VERSION=${KUBE_VERSION}'")
     [ "${ISTIO_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg "'ISTIO_VERSION=${ISTIO_VERSION}'")
     [ "${TERRAFORM_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg "'TERRAFORM_VERSION=${TERRAFORM_VERSION}'")

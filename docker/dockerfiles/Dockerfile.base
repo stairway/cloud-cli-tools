@@ -3,6 +3,8 @@ ARG VERSION=latest
 FROM --platform=linux/amd64 ubuntu:$VERSION
 LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@liatrio.com>"
 
+ARG DEBUG=false
+
 ARG GH_CLIENT_TOKEN=
 
 ARG AWS_VAULT_VERSION=v6.6.2

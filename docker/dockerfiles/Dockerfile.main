@@ -4,6 +4,8 @@ ARG IMAGE_BASE_NAME=
 FROM ${IMAGE_BASE_NAME}:${VERSION}
 LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@liatrio.com>"
 
+ARG DEBUG=false
+
 ARG GH_CLIENT_TOKEN=
 
 ARG KUBE_VERSION=latest
