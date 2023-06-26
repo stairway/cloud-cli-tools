@@ -4,6 +4,7 @@ FROM --platform=linux/amd64 ubuntu:$VERSION
 LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@liatrio.com>"
 
 ARG DEBUG=false
+ENV DEBUG=${DEBUG}
 
 ARG GH_CLIENT_TOKEN=
 
@@ -441,7 +442,10 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kuberne
     install minikube-linux-amd64 /usr/local/bin/minikube && \
     printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
-RUN set -x; printf "HOME=%s" "$HOME"
+RUN set -x; unset DEBUG; \
+    printf "HOME=%s" "$HOME"; \
+    printf "PATH=%s" "$PATH"
+
 USER root
 WORKDIR $HOMEDIR
 

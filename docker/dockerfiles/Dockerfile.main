@@ -5,6 +5,7 @@ FROM ${IMAGE_BASE_NAME}:${VERSION}
 LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@liatrio.com>"
 
 ARG DEBUG=false
+ENV DEBUG=${DEBUG}
 
 ARG GH_CLIENT_TOKEN=
 
@@ -227,6 +228,10 @@ if [ -f \$DOTLOCAL/config.sh ]; then
 fi
 
 EOF
+
+RUN set -x; unset DEBUG; \
+    printf "HOME=%s" "$HOME"; \
+    printf "PATH=%s" "$PATH"
 
 USER $UNAME
 WORKDIR $HOMEDIR
