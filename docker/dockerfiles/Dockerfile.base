@@ -188,9 +188,7 @@ gh_auth_status() {
     return_code=\$?
     gh auth status 2>/dev/null || return_code=\$?
     if [ \$return_code -ne 0 ]; then
-        [ "$DEBUG" = "true" ] && set -x
         [ -n "\${GH_CLIENT_TOKEN:-""}" ] && /usr/local/bin/gh-login >/dev/null 2>&1
-        set +x
         return_code=\$?
     fi
     return \$return_code
@@ -205,19 +203,16 @@ RUN touch $SCRIPTS/gh-get-latest-release.sh && \
 #!/bin/sh -euf
 # https://docs.github.com/en/rest/overview/resources-in-the-rest-api?apiVersion=2022-11-28#rate-limiting
 gh_curl_latest_release() {
-    [ "$DEBUG" = "true" ] && set -x
     curl --silent "https://api.github.com/repos/\${1}/releases/latest" | \
 grep '\"tag_name\":' | \
 sed -E 's/.*\"([^\"]+)\".*/\1/'
-    set +x
 }
 gh_client_latest_release() {
     return_code=\$?
     $SCRIPTS/gh-auth-status.sh || return_code=\$?
     if [ \$return_code -eq 0 ]; then
-        [ "$DEBUG" = "true" ] && set -x
+        [ "$DEBUG" = "true" ] && printf "Command: '%s'\n" "gh api 'repos/\${1}/releases/latest' --jq '.tag_name'" >&2
         gh api "repos/\${1}/releases/latest" --jq '.tag_name' 2>/dev/null
-        set +x
     fi
     return \$?
 }
@@ -234,7 +229,7 @@ gh_get_version() {
     local return_code=$?
     local version
     [ "\${1:-\$2}" = "\$2" ] && \
-version=\$($SCRIPTS/gh-get-latest-release.sh "\$3") || \
+version=\$($SCRIPTS/gh-get-latest-release.sh "\$3" 2>/dev/null) || \
 version="v\$(echo \$1 | sed s/^v//g)"
     return_code=\$?
     echo "\$version"
@@ -425,10 +420,10 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
         ./aws/install; } && update_in_case_v1_installed && \
     aws --version >> /.versions
 
-RUN version=$($SCRIPTS/gh-get-version.sh "${EKSCTL_VERSION}" "latest" "weaveworks/eksctl") && \
+RUN version=$($SCRIPTS/gh-get-version.sh "${EKSCTL_VERSION}" "latest" "weaveworks/eksctl" 2>/dev/null) && \
     platform=$($SCRIPTS/get-platform.sh) && { \
         set -x; \
-        printf "Command: '%s'\n" "$SCRIPTS/gh-download-and-verify.sh \"weaveworks/eksctl\" \"${version}\" \"eksctl_${platform}.tar.gz\" \"eksctl_checksums.txt\""; \
+        printf "Version: '%s'\nCommand: '%s'\n" "$version" "$SCRIPTS/gh-download-and-verify.sh \"weaveworks/eksctl\" \"${version}\" \"eksctl_${platform}.tar.gz\" \"eksctl_checksums.txt\""; \
         set +x; \
     } && \
     status=$($SCRIPTS/gh-download-and-verify.sh "weaveworks/eksctl" "${version}" \
