@@ -183,7 +183,8 @@ RUN KUBE_PS1_VERSION="v$(echo ${KUBE_PS1_VERSION} | sed s/^v//g)" && \
 
 RUN set -x; [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS
 
-RUN echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi"  >> /etc/bash.bashrc && \
+RUN echo 'cd ~' >> /etc/bash.bashrc && \
+    echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi"  >> /etc/bash.bashrc && \
     echo 'printf "\033[1m\n%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
     ln -s /usr/share/bash-completion/completions/git "${DOTLOCAL}/.git-completion.bash" && \
     echo "complete -C /usr/local/bin/aws_completer aws" >> $DOTLOCAL/.bashrc_extra && \
@@ -224,8 +225,6 @@ fi
 if [ -f \$DOTLOCAL/config.sh ]; then
     . \$DOTLOCAL/config.sh
 fi
-
-cd ~
 
 EOF
 
