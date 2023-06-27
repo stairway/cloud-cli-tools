@@ -98,7 +98,17 @@ do_init() {
 }
 
 keep_alive() {
-    [ "${KEEP_ALIVE:-false}" = "true" ] && tail -f /dev/null
+    if [ "${KEEP_ALIVE:-false}" = "true" ]; then
+        if [ "${1:-0}" = "0" ]; then
+            sleep infinity
+        else
+            if [ "${2:-""}" = "pid" ]; then
+                tail --pid $1 -n0 -F /dev/stdout
+            else
+                tail "$1" -n0 -F /dev/stdout
+            fi
+        fi
+    fi
 }
 
 print_args() {
@@ -110,6 +120,13 @@ print_args() {
 
 trap die INT
 
+touch /opt/.local/bin/bash.bash && \
+chmod +x /opt/.local/bin/bash.bash && \
+cat > /opt/.local/bin/bash.bash <<EOF
+#!/usr/bin/env bash
+bash -l
+EOF
+
 case "$1" in
     docker)
         printf "You must exec into a shell to run the command: %s\n" "$(echo $@)"
@@ -118,21 +135,21 @@ case "$1" in
     describe|help)
         describe
         ;;
-    sh|bash)
-        do_init
-        shift
-        eval "bash -l -c '$@'"
-        bash -l
-        [ $exit_code -eq 0 ] || exit_code=$?
-        keep_alive
-        ;;
+    # sh|bash)
+    #     do_init
+    #     shift
+    #     eval "bash -l -c '$@'"
+    #     bash -l
+    #     [ $exit_code -eq 0 ] || exit_code=$?
+    #     keep_alive
+    #     ;;
     *)
         # [ "${1#ba}" = "sh" ] && do_init && shift
         do_init
-        eval "bash -l -c '$@'"
-        bash -l
+        # eval "bash -l -c '$@'"
+        keep_alive /opt/.local/bin/bash.bash
+        exec "$@"
         [ $exit_code -eq 0 ] || exit_code=$?
-        keep_alive
         ;;
 esac
 

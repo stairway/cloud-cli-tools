@@ -94,7 +94,7 @@ exec_container() {
     EXEC_COMMAND+=(
         -it
         "${short_id}"
-        bash -l
+        bash.bash
     )
 
     printf "\033[93m>\033[0m Accessing %s ...\n" "${short_id}"
@@ -325,6 +325,7 @@ run_new() {
         run_mode+=(
             -d
             "${docker_image}"
+            bash.bash
         )
         KEEP_ALIVE=true
     else
@@ -337,7 +338,7 @@ run_new() {
     fi
 
     local environment_vars=(
-        -e "KEEP_ALIVE=${KEEP_ALIVE}"
+        -e "KEEP_ALIVE=${KEEP_ALIVE:-false}"
         -e "USERNAME=${USERNAME}"
         -e "TEAM_NAME=${TEAM_NAME}"
         -e "AWS_VAULT_USER_REGION=${AWS_VAULT_USER_REGION}"
