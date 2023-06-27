@@ -424,12 +424,13 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${AWS_VAULT_VERSION}" "latest" "99desi
     printf "aws-vault: %s\n" "$(aws-vault --version 2>&1)" >> /.versions
 
 USER $UNAME
+
 RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kubernetes/minikube") && \
     status=$($SCRIPTS/download-and-verify-2.sh "https://storage.googleapis.com/minikube/releases" \
         "kubernetes/minikube" "${version}" \
         "minikube-linux-amd64" "minikube-linux-amd64.sha256") && \
     echo $status && \
-    install minikube-linux-amd64 /usr/local/bin/minikube && \
+    sudo install minikube-linux-amd64 /usr/local/bin/minikube && \
     printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
 USER root
