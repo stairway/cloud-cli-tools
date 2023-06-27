@@ -402,7 +402,7 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${DOCKER_COMPOSE_VERSION}" "latest" "d
 # https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 # *note* --install-dir /usr/local/aws-cli --update as a precaution in case awscli v1 (see above) has already been installed
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-    unzip -o awscliv2.zip && \
+    unzip -qo awscliv2.zip && \
     update_in_case_v1_installed() { [ -f /bin/aws ] && \
         printf "\033[93;1m[WARNING] aws cli version 1 has been detected\033[0m\n" && \
         ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update || \
@@ -425,15 +425,14 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${AWS_VAULT_VERSION}" "latest" "99desi
     install aws-vault-linux-amd64 /usr/local/bin/aws-vault && \
     printf "aws-vault: %s\n" "$(aws-vault --version 2>&1)" >> /.versions
 
-USER $UNAME
-
 RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kubernetes/minikube") && \
     status=$($SCRIPTS/download-and-verify-2.sh "https://storage.googleapis.com/minikube/releases" \
         "kubernetes/minikube" "${version}" \
         "minikube-linux-amd64" "minikube-linux-amd64.sha256") && \
     echo $status && \
-    sudo install minikube-linux-amd64 /usr/local/bin/minikube && \
-    sudo printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
+    install minikube-linux-amd64 /usr/local/bin/minikube
+    # The following creates .minikube in the home (~) folder
+    # sudo printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
 USER root
 WORKDIR $HOMEDIR
