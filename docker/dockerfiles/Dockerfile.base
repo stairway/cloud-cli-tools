@@ -147,6 +147,15 @@ fi
 BASHEXTRA
 EOF
 
+RUN touch $SCRIPTS/child-dirs.sh && \
+    chmod +x $SCRIPTS/child-dirs.sh && \
+    cat > $SCRIPTS/child-dirs.sh <<EOF
+#!/bin/sh -euf
+for d in $(echo "\$@"); do \
+[ -d \$d ] || mkdir \$d; \
+done
+EOF
+
 RUN touch $SCRIPTS/str-lower.sh && \
     chmod +x $SCRIPTS/str-lower.sh && \
     cat > $SCRIPTS/str-lower.sh <<EOF

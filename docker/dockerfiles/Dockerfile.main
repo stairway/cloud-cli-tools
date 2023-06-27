@@ -226,18 +226,16 @@ fi
 
 EOF
 
+RUN set -x; $SCRIPTS/child-dirs.sh /root/.ssh /root/.gnupg /root/.password-store /root/.awsvault
+
 USER $UNAME
 WORKDIR $HOMEDIR
+
+RUN set -x; $SCRIPTS/child-dirs.sh $HOMEDIR/.ssh $HOMEDIR/.gnupg $HOMEDIR/.password-store $HOMEDIR/.awsvault
 
 RUN set -x; \
     printf "HOME=%s" "$HOME"; \
     printf "PATH=%s" "$PATH"
-
-# RUN /usr/local/bin/crypto.sh
-RUN for d in $(echo $HOMEDIR/.ssh $HOMEDIR/.gnupg $HOMEDIR/.password-store $HOMEDIR/.awsvault); do \
-        set -x; \
-        [ -d $d ] || mkdir $d; \
-    done
 
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
 
