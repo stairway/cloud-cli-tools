@@ -2,6 +2,9 @@
 
 set -eo pipefail
 
+CURRENT_USER=$(whoami)
+USER="${USER:-$CURRENT_USER}"
+
 init_gpg() {
     local file_list=0
     file_list=($([ -d $HOME/.gnupg ] && ls $HOME/.gnupg/ 2>/dev/null))
@@ -11,7 +14,7 @@ init_gpg() {
         sudo gpg --quick-gen-key --homedir "${HOME}/.gnupg" --yes --always-trust --batch --passphrase '' aws-vault
 
         ### *Fixes* gpg: WARNING: unsafe permissions on homedir '~/.gnupg'
-        sudo chown -R $UNAME $HOME/.gnupg
+        sudo chown -R $USER $HOME/.gnupg
         sudo chmod 700 $HOME/.gnupg
         #chmod 600 $HOME/.gnupg/*
     fi
@@ -21,7 +24,7 @@ init_pass() {
     # THIS IS WHERE pass IS INITIALIZED
 
     mkdir -p $HOME/.password-store
-    sudo chown -R $UNAME:$UNAME $HOME/.password-store
+    sudo chown -R $USER:$USER $HOME/.password-store
     sudo chmod -R 700 $HOME/.password-store
 
     local file_list=0
@@ -36,11 +39,10 @@ check_crypto() {
     if [ ! -f $HOME/.crypto ]; then
         printf "\033[92;1m>>>\033[94;1m Checking %s \033[92;1m>>>\033[0m\n" "Crypto (gpg, pass)"
 
-        init_gpg && init_pass && date -u +%Y%m%dT%H%M%SZ > $HOME/.crypto || last_err=$?
-
-        # init_ssh && init_gpg && init_pass \
-        #     && date -u +%Y%m%dT%H%M%SZ > /.crypto \
-        #     || last_err=$?
+        date -u +%Y%m%dT%H%M%SZ > $HOME/._crypto \
+            && init_gpg && init_pass \
+            && date -u +%Y%m%dT%H%M%SZ > $HOME/.crypto \
+            || last_err=$?
     fi
 
     [ $last_err -eq 0 -a -f $HOME/.crypto ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "Crypto (gpg, pass)"

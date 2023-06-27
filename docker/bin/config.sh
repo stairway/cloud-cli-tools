@@ -61,11 +61,14 @@ init_dpctl() {
     fi
 }
 
+# TODO: Using >&2 on echo commands meant to log for human consumption keeps stderr available for programmatic consumption
 _waiting() { printf "${1:-.}"; sleep 1; }
 
 init_aws() {
     local last_err=0
     printf "\033[92;1m>>>\033[94;1m Initializing %s \033[92;1m>>>\033[0m\n" "AWS (and dpctl)"
+
+    [ ! -f $HOME/._crypto ] && crypto.sh &>/dev/null &
 
     if [ ! -f $HOME/.initialized ]; then
         local current_vault_user="$(aws-vault list | grep user | awk '{ print $2 }')"
@@ -73,11 +76,11 @@ init_aws() {
             [ ! -f "$HOME/.password-store/.gpg-id" -o ! -f "$HOME/.gnupg/trustdb.gpg" ] && printf "Still Initializing ..." && \
                 while [ ! -f "$HOME/.password-store/.gpg-id" -o ! -f "$HOME/.gnupg/trustdb.gpg" ]; do _waiting; done; echo
             if [ -n "${AWS_ACCESS_KEY_ID}" -a -n "${AWS_SECRET_ACCESS_KEY}" ]; then
-                printf "\033[93m>\033[0m Found existing AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.\n"
-                printf "Adding vault user (%s) with detected env...\n" "${DEFAULT_VAULT_USER}"
+                printf "\033[93m>\033[0m Found existing AWS_ACCESS_KEY_ID (%s) and AWS_SECRET_ACCESS_KEY.\n" "${AWS_ACCESS_KEY_ID}"
+                printf "Adding vault user (%s) with detected env...\n" "${AWS_ACCESS_KEY_ID}"
                 aws-vault add --env "${DEFAULT_VAULT_USER}"
             else
-                printf "Adding vault user (%s) with detected env...\n" "${DEFAULT_VAULT_USER}"
+                printf "Adding vault user (%s) ...\n" "${DEFAULT_VAULT_USER}"
                 aws-vault add "${DEFAULT_VAULT_USER}"
             fi
         fi
@@ -97,7 +100,7 @@ EOF
                 # GNU sed Example -- Replace first match only
                 # sed '0,/pattern/s/pattern/replacement/' filename
                 # https://www.linuxtopia.org/online_books/linux_tool_guides/the_sed_faq/sedfaq4_004.html
-                sed -E -i "0,/^credential_process.+-.+json\s+$DEFAULT_VAULT_USER$/s/(^credential_process.+)\s+(-.+json $DEFAULT_VAULT_USER$)/#\1 \2/" .aws/config && \
+                sed -E -i "0,/^credential_process.+-.+json\s+$DEFAULT_VAULT_USER$/s/(^credential_process.+)\s+(-.+json $DEFAULT_VAULT_USER$)/#\1 \2/" ~/.aws/config && \
                 _adjust_for_reduced_mfa_prompt && \
                 [ $aws_vault_major_version -ge 7 ] && \
                     aws configure set credential_process "aws-vault exec --format=json $DEFAULT_VAULT_USER" --profile "$DEFAULT_VAULT_USER" || \
