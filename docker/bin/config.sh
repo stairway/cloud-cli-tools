@@ -68,6 +68,7 @@ init_aws() {
     local last_err=0
     printf "\033[92;1m>>>\033[94;1m Initializing %s \033[92;1m>>>\033[0m\n" "AWS (and dpctl)"
 
+    # TODO: running in background (command &) could cause stuck process if ctrl^c
     [ ! -f $HOME/._crypto ] && crypto.sh &>/dev/null &
 
     if [ ! -f $HOME/.initialized ]; then
