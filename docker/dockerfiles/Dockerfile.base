@@ -78,7 +78,7 @@ fi
 EOF
 
 RUN cat >> /etc/skel/.profile <<EOF
-cd ~
+[ "\$(pwd)" = "\$HOME" ] || cd ~
 EOF
 
 # TODO: gpg not currently working with non-root user
