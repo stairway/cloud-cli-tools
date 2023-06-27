@@ -138,15 +138,16 @@ ARG DOCKER_PKGS="\
 
 WORKDIR $DOWNLOADS
 
-RUN touch $SCRIPTS/add-bash-extra.sh && \
-    chmod +x $SCRIPTS/add-bash-extra.sh && \
-    cat > $SCRIPTS/add-bash-extra.sh <<EOF
+RUN touch $SCRIPTS/include-file.sh && \
+    chmod +x $SCRIPTS/include-file.sh && \
+    cat > $SCRIPTS/include-file.sh <<EOF
 #!/bin/sh -euf
-cat >> \$1 <<BASHEXTRA
-if [ -f \$DOTLOCAL/.bashrc_extra ]; then
-    . \$DOTLOCAL/.bashrc_extra
+cat >> \$1 <<INCFILE
+
+if [ -f \$2 ]; then
+    . \$2
 fi
-BASHEXTRA
+INCFILE
 EOF
 
 RUN touch $SCRIPTS/child-dirs.sh && \
@@ -370,7 +371,7 @@ EOF
 
 RUN mkdir -m 0755 -p /etc/apt/keyrings && \
     git --version >> /.versions && \
-    $SCRIPTS/add-bash-extra.sh /root/.bashrc
+    set -x; $SCRIPTS/include-file.sh /root/.bashrc $DOTLOCAL/.bashrc_extra
 
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
     chmod a+r /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
@@ -432,14 +433,13 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kuberne
     echo $status && \
     install minikube-linux-amd64 /usr/local/bin/minikube
     # The following creates .minikube in the home (~) folder
-    # sudo printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
+    # printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
-USER root
+USER $UNAME
 WORKDIR $HOMEDIR
 
 RUN set -x; \
-    printf "HOME=%s" "$HOME"; \
-    printf "PATH=%s" "$PATH"
+    printf "HOME=%s\nPATH=%s\n" "$HOME" "$PATH"
 
 # Additional Metadata
 ARG VERSION=latest

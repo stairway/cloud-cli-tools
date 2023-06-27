@@ -23,13 +23,13 @@ ENV FALSE='n|N|no|No|NO|false|False|FALSE|off|Off|OFF|0'
 ENV BOOL="${TRUE}|${FALSE}"
 
 ENV UNAME="${UNAME:-ubuntu}"
-ENV HOMEDIR="${HOMEDIR:-/home/ubuntu}"
+ENV HOMEDIR="${HOMEDIR:-$HOME}"
 ENV DOTLOCAL="${DOTLOCAL:-/opt/.local}"
-ENV PATH="${HOMEDIR}/.local/bin:${DOTLOCAL}/bin:/opt/bin:${PATH}"
+ENV PATH="~/.local/bin:${DOTLOCAL}/bin:/opt/bin:${PATH}"
 ENV DOWNLOADS="${DOWNLOADS:-$DOTLOCAL/downloads}"
 ENV SCRIPTS="${SCRIPTS:-$DOTLOCAL/scripts}"
 ENV ENVFILE="${ENVFILE:-$DOTLOCAL/.env}"
-ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;. "${ENVFILE:-${HOMEDIR}/.local/.env}"; set +a >/dev/null'
+ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;. "${ENVFILE:-${HOME}/.local/.env}"; set +a >/dev/null'
 
 USER root
 WORKDIR $DOWNLOADS
@@ -234,8 +234,8 @@ WORKDIR $HOMEDIR
 RUN set -x; $SCRIPTS/child-dirs.sh $HOMEDIR/.ssh $HOMEDIR/.gnupg $HOMEDIR/.password-store $HOMEDIR/.awsvault
 
 RUN set -x; \
-    printf "HOME=%s" "$HOME"; \
-    printf "PATH=%s" "$PATH"
+    printf "HOME=%s\nPATH=%s\n" "$HOME" "$PATH"; \
+    unset HOMEDIR
 
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
 
