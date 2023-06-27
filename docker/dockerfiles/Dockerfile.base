@@ -84,7 +84,9 @@ RUN useradd --create-home --shell /bin/bash --user-group --groups sudo --no-log-
     passwd -d $UNAME && \
     echo "root:root" | chpasswd && \
     useradd --system --create-home --user-group --no-log-init localstack && \
-    passwd -d localstack
+    passwd -d localstack && \
+    [ -d $DOTLOCAL ] || mkdir -p $DOTLOCAL && \
+    chown -R $UNAME $DOTLOCAL
 
 # Pip install for default python version
 USER localstack
@@ -93,10 +95,8 @@ USER $UNAME
 RUN HOME=$HOMEDIR sudo pip3 install --user pre-commit pytest debugpy
 
 USER $UNAME
-RUN [ -d $DOTLOCAL ] || mkdir -p $DOTLOCAL && \
-    mkdir -p $DOWNLOADS && \
-    mkdir -p $SCRIPTS && \
-    chown -R $UNAME $DOTLOCAL
+RUN mkdir -p $DOWNLOADS && \
+    mkdir -p $SCRIPTS
 
 USER root
 
