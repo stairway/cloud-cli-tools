@@ -49,7 +49,8 @@ RUN for f in $(ls -1 /tmp/addons); do install "/tmp/addons/${f}" "/usr/local/bin
     rm -rf /tmp/addons && \
     chmod +x /opt/bin/describe && \
     mkdir -p $DOTLOCAL/shell_addons.d && \
-    mkdir /data && chown -R $UNAME /data
+    mkdir /data && chown -R $UNAME /data && \
+    ls -la $DOTLOCAL
 
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux
 RUN [ "${KUBE_VERSION:-latest}" = "latest" ] && \
@@ -149,7 +150,7 @@ RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
     echo $status && \
     unzip -o "terraform_${version}_linux_amd64.zip" && \
     install terraform /usr/local/bin/terraform && \
-    printf "Hashicorp %s\n" "$(echo $(terraform version) | awk '{print $1" "$2}')" >> /.versions
+    set -x; printf "Hashicorp %s\n" "$(echo $(terraform version) | awk '{print $1" "$2}')" >> /.versions
 
 RUN version=$($SCRIPTS/gh-get-version.sh "${TERRAGRUNT_VERSION}" "latest" "gruntwork-io/terragrunt") && \
     status=$($SCRIPTS/gh-download-and-verify.sh "gruntwork-io/terragrunt" "${version}" \
@@ -229,15 +230,15 @@ EOF
 RUN set -x; $SCRIPTS/child-dirs.sh /root/.ssh /root/.gnupg /root/.password-store /root/.awsvault
 
 USER $UNAME
-WORKDIR $HOMEDIR
+WORKDIR $HOME
 
-RUN set -x; $SCRIPTS/child-dirs.sh $HOMEDIR/.ssh $HOMEDIR/.gnupg $HOMEDIR/.password-store $HOMEDIR/.awsvault
+RUN set -x; $SCRIPTS/child-dirs.sh $HOME/.ssh $HOME/.gnupg $HOME/.password-store $HOME/.awsvault
 
 RUN set -x; \
     printf "HOME=%s\nPATH=%s\n" "$HOME" "$PATH"; \
     unset HOMEDIR
 
-VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
+VOLUME [ "/data", "$HOME/.ssh", "$HOME/.gnupg", "$HOME/.password-store", "$HOME/.awsvault" ]
 
 ENTRYPOINT [ "/usr/local/bin/docker-entrypoint.sh" ]
 
