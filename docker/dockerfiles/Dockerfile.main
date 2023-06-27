@@ -4,9 +4,6 @@ ARG IMAGE_BASE_NAME=
 FROM ${IMAGE_BASE_NAME}:${VERSION}
 LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@liatrio.com>"
 
-ARG DEBUG=false
-ENV DEBUG=${DEBUG}
-
 ARG GH_CLIENT_TOKEN=
 
 ARG KUBE_VERSION=latest
@@ -229,17 +226,18 @@ fi
 
 EOF
 
-RUN set -x; unset DEBUG; \
-    printf "HOME=%s" "$HOME"; \
-    printf "PATH=%s" "$PATH"
-
 USER $UNAME
 WORKDIR $HOMEDIR
 
+RUN set -x; \
+    printf "HOME=%s" "$HOME"; \
+    printf "PATH=%s" "$PATH"
+
 # RUN /usr/local/bin/crypto.sh
-# RUN for d in $(echo $HOMEDIR/.ssh $HOMEDIR/.gnupg $HOMEDIR/.password-store $HOMEDIR/.awsvault); do \
-#         if [ ! -d $d ]; then mkdir $d; fi; \
-#     done
+RUN for d in $(echo $HOMEDIR/.ssh $HOMEDIR/.gnupg $HOMEDIR/.password-store $HOMEDIR/.awsvault); do \
+        set -x; \
+        [ -d $d ] || mkdir $d; \
+    done
 
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
 
