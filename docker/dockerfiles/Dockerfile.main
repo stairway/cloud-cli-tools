@@ -228,13 +228,6 @@ fi
 
 EOF
 
-RUN touch $DOTLOCAL/bin/bash.bash && \
-chmod +x $DOTLOCAL/bin/bash.bash && \
-cat > $DOTLOCAL/bin/bash.bash <<EOF
-#!/usr/bin/env bash
-bash -l
-EOF
-
 RUN set -x; $SCRIPTS/child-dirs.sh /root/.ssh /root/.gnupg /root/.password-store /root/.awsvault
 
 USER $UNAME

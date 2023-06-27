@@ -87,7 +87,7 @@ do_init() {
     versions
     crypto.sh
     init_git && init_ssh
-    ln -s /data ${HOME}/data
+    [ -e ${HOME}/data ] || ln -s /data ${HOME}/data
     if [ ${VSCODE_DEBUGPY_PORT:-0} -gt 999 ]; then
         if [ ! -d /data/.vscode ]; then
             [ -d $DOTLOCAL/.conf/vscode ] && \
@@ -120,13 +120,6 @@ print_args() {
 
 trap die INT
 
-touch /opt/.local/bin/bash.bash && \
-chmod +x /opt/.local/bin/bash.bash && \
-cat > /opt/.local/bin/bash.bash <<EOF
-#!/usr/bin/env bash
-bash -l
-EOF
-
 case "$1" in
     docker)
         printf "You must exec into a shell to run the command: %s\n" "$(echo $@)"
@@ -146,8 +139,6 @@ case "$1" in
     *)
         # [ "${1#ba}" = "sh" ] && do_init && shift
         do_init
-        # eval "bash -l -c '$@'"
-        keep_alive /opt/.local/bin/bash.bash
         exec "$@"
         [ $exit_code -eq 0 ] || exit_code=$?
         ;;

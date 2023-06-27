@@ -41,6 +41,7 @@ count() { echo $#; }
 check_lockfile() { echo "$(cat ${1})"; }
 get_running_container_by_id() { docker ps -q --filter id="$1"; }
 get_running_container_by_name() { docker ps -q --filter name="$1"; }
+get_all_container_by_name() { docker ps -a -q --filter name="$1"; }
 get_mountpoint() { local mountpoint=$(docker volume inspect "${RANDOMSTR}" | jq .[].Mountpoint --raw-output 2>/dev/null); [ "${mountpoint}" != "[]" ] && echo "${mountpoint}"; }
 
 touch $_CONTAINER_CACHE_FILE
@@ -94,11 +95,24 @@ exec_container() {
     EXEC_COMMAND+=(
         -it
         "${short_id}"
-        bash.bash
+        bash -l
     )
 
     printf "\033[93m>\033[0m Accessing %s ...\n" "${short_id}"
     ${EXEC_COMMAND[@]}
+}
+
+start_container() {
+    local short_id=$(get_all_container_by_name ${1})
+    local START_COMMAND=(docker start)
+    START_COMMAND+=(
+        -a
+        -i
+        "${short_id}"
+    )
+
+    printf "\033[93m>\033[0m Starting up %s ...\n" "${short_id}"
+    ${START_COMMAND[@]}
 }
 
 user_prompt() {
@@ -321,21 +335,28 @@ run_new() {
     local run_mode=("")
     [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && run_mode+=("-p ${VSCODE_DEBUGPY_PORT}:${VSCODE_DEBUGPY_PORT}")
 
-    if [ "${script}" = "true" ]; then
-        run_mode+=(
-            -d
-            "${docker_image}"
-            bash.bash
-        )
-        KEEP_ALIVE=true
-    else
-        run_mode+=(
-            --rm
-            -it
-            "${docker_image}"
-        )
-        KEEP_ALIVE=false
-    fi
+    # if [ "${script}" = "true" ]; then
+    #     run_mode+=(
+    #         -d
+    #         "${docker_image}"
+    #         bash -l
+    #     )
+    #     KEEP_ALIVE=true
+    # else
+    #     run_mode+=(
+    #         --rm
+    #         -it
+    #         "${docker_image}"
+    #     )
+    #     KEEP_ALIVE=false
+    # fi
+
+    run_mode+=(
+        -it
+        "${docker_image}"
+        bash -l
+    )
+    KEEP_ALIVE=true
 
     local environment_vars=(
         -e "KEEP_ALIVE=${KEEP_ALIVE:-false}"
@@ -376,5 +397,6 @@ run_new() {
     [ -n "${CONTAINER_ID}" ] && echo "CONTAINER_ID=${CONTAINER_ID}" >> "${_CONTAINER_CACHE_FILE}"
 }
 
-[ -n "${CONTAINER_NAME}" -a -n "$(get_running_container_by_name ${CONTAINER_NAME})" ] && printf "Found existing\n" || run_new "$@"
-[ "${script}" = "true" ] && exec_container "${CONTAINER_ID}"
+[ -n "${CONTAINER_NAME}" -a -n "$(get_all_container_by_name ${CONTAINER_NAME})" ] && printf "Found existing\n" || run_new "$@"
+# [ "${script}" = "true" ] && exec_container "${CONTAINER_ID}"
+[ "${script}" = "true" ] && start_container "${CONTAINER_NAME}"
