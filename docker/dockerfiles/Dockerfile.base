@@ -84,19 +84,20 @@ RUN useradd --create-home --shell /bin/bash --user-group --groups sudo --no-log-
     passwd -d $UNAME && \
     echo "root:root" | chpasswd && \
     useradd --system --create-home --user-group --no-log-init localstack && \
-    passwd -d localstack && \
-    [ -d $DOTLOCAL ] || mkdir -p $DOTLOCAL && \
+    passwd -d localstack
+
+# Pip install for default python version
+USER localstack
+RUN HOME=/home/localstack python3 -m pip install --user localstack
+USER $UNAME
+RUN HOME=$HOMEDIR sudo pip3 install --user pre-commit pytest debugpy
+
+USER $UNAME
+RUN [ -d $DOTLOCAL ] || mkdir -p $DOTLOCAL && \
     mkdir -p $DOWNLOADS && \
     mkdir -p $SCRIPTS && \
     chown -R $UNAME $DOTLOCAL
 
-# Pip install for default python version
-USER localstack
-RUN echo $HOME
-RUN ls -la $HOME
-RUN HOME=/home/localstack python3 -m pip install --user localstack
-USER $UNAME
-RUN HOME=$HOMEDIR sudo pip3 install --user pre-commit pytest debugpy
 USER root
 
 # Install additional python versions
@@ -119,6 +120,7 @@ RUN HOME=/home/localstack python3 -m pip install --user localstack
 USER $UNAME
 RUN HOME=$HOMEDIR sudo pip3 install --user pre-commit pytest debugpy
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
+
 USER root
 
 ENV LANG en_US.UTF-8
@@ -431,7 +433,7 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kuberne
         "minikube-linux-amd64" "minikube-linux-amd64.sha256") && \
     echo $status && \
     sudo install minikube-linux-amd64 /usr/local/bin/minikube && \
-    printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
+    sudo printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
 USER root
 WORKDIR $HOMEDIR
