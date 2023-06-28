@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 
-set -eo pipefail
+set -o pipefail
 
 USERNAME="${USERNAME:-""}"
 GIT_CONFIG_FULL_NAME="${GIT_CONFIG_FULL_NAME:-""}"
@@ -128,19 +128,13 @@ case "$1" in
     describe|help)
         describe
         ;;
-    # sh|bash)
-    #     do_init
-    #     shift
-    #     eval "bash -l -c '$@'"
-    #     bash -l
-    #     [ $exit_code -eq 0 ] || exit_code=$?
-    #     keep_alive
-    #     ;;
+    sh|bash)
+        do_init || exit_code=$?
+        [ $exit_code -eq 0 ] && exec "$@" || exit_code=$?
+        ;;
     *)
-        # [ "${1#ba}" = "sh" ] && do_init && shift
-        do_init
-        exec "$@"
-        [ $exit_code -eq 0 ] || exit_code=$?
+        [ "${1#ba}" = "sh" ] && do_init || exit_code=$?
+        [ $exit_code -eq 0 ] && exec "$@" || exit_code=$?
         ;;
 esac
 

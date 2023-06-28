@@ -52,7 +52,8 @@ ARG INSTALL_PKGS="\
     python3-pip \
     python3-venv \
     npm \
-    sudo"
+    sudo \
+    rsyslog"
 
 COPY bin/gh-login /usr/local/bin/
 

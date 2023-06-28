@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 DEFAULT_VAULT_USER="${DEFAULT_VAULT_USER:-user}"
 
@@ -14,15 +14,6 @@ _configure_aws_vault_7x_mfa() {
 
 _configure_aws_vault_6x_mfa() {
     aws configure set mfa_serial "arn:aws:iam::${1:-""}:mfa/${USERNAME}" --profile "${DEFAULT_VAULT_USER}"
-}
-
-# TODO: doesn't work with k9s
-_adjust_for_reduced_mfa_prompt() {
-    printf ""
-    # sed -E -i "s/(^credential_process)\s*=\s*(.* -.+json $DEFAULT_VAULT_USER$)/#\1=\2/g" ~/.aws/config && \
-    # sed -E -i "s/(^mfa_serial)\s*=\s*(.*\/$USERNAME$)/#\1=\2/" ~/.aws/config && \
-    # sed -E -i "s/(^source_profile)\s*=\s*($DEFAULT_VAULT_USER$)/include_profile=\2/g" ~/.aws/config
-    # aws configure set source_profile "$DEFAULT_VAULT_USER" --profile "$DEFAULT_VAULT_USER"
 }
 
 iam_verify() {
@@ -102,7 +93,6 @@ EOF
                 # sed '0,/pattern/s/pattern/replacement/' filename
                 # https://www.linuxtopia.org/online_books/linux_tool_guides/the_sed_faq/sedfaq4_004.html
                 sed -E -i "0,/^credential_process.+-.+json\s+$DEFAULT_VAULT_USER$/s/(^credential_process.+)\s+(-.+json $DEFAULT_VAULT_USER$)/#\1 \2/" ~/.aws/config && \
-                _adjust_for_reduced_mfa_prompt && \
                 [ $aws_vault_major_version -ge 7 ] && \
                     aws configure set credential_process "aws-vault exec --format=json $DEFAULT_VAULT_USER" --profile "$DEFAULT_VAULT_USER" || \
                     aws configure set credential_process "aws-vault exec --no-session --json --prompt=pass $DEFAULT_VAULT_USER" --profile "$DEFAULT_VAULT_USER"

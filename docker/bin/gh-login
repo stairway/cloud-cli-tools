@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 
-set -euf
+set -uf
 LC_CTYPE=C
 
 echo
