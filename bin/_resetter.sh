@@ -45,7 +45,12 @@ cleanup_dotfiles() {
     if [ $# -gt 0 ]; then
         for item in $@; do
             item_basename="$(basename ${item})"
-            [ "${item_basename}" = ".aws" -a "${aws_config_restore}" != "true" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
+            if [ "${item_basename}" = ".aws" -a "${aws_config_restore}" != "true" ]; then
+                targeted+=(${WORKING_DIRECTORY}/${item_basename})
+            elif [ "${item_basename}" = ".aws" ]; then
+                targeted+=($(find "${WORKING_DIRECTORY}/${item_basename}" -type f ! -iname 'config*' -print))
+            fi
+            [ "${item_basename}" = ".aws" -a "${aws_config_restore}" != "true" ] &&
             [ "${item_basename}" = ".awsvault" -a "${aws_config_restore}" != "true" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
             [ "${item_basename}" = ".gnupg" -a "${aws_config_restore}" != "true" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
             [ "${item_basename}" = ".password-store" -a "${aws_config_restore}" != "true" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
