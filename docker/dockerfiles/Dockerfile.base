@@ -163,11 +163,13 @@ RUN touch $SCRIPTS/gh-get-latest-release.sh && \
 #!/bin/sh -euf
 # https://docs.github.com/en/rest/overview/resources-in-the-rest-api?apiVersion=2022-11-28#rate-limiting
 gh_curl_latest_release() {
+    set -x
     curl --silent --location "https://api.github.com/repos/\${1}/releases/latest" | \
 grep '\"tag_name\":' | \
 sed -E 's/.*\"([^\"]+)\".*/\1/'
 }
 gh_client_latest_release() {
+    set -x
     $SCRIPTS/gh-auth-status.sh && gh api "repos/\${1}/releases/latest" --jq '.tag_name' 2>/dev/null
     return \$?
 }
@@ -215,6 +217,7 @@ asset_dir_rel="\${1}/\${2}/\$(echo \${3} | awk -F'.' '{print \$1}')"
 mkdir -p "${DOWNLOADS}/\${asset_dir_rel}"
 cd "${DOWNLOADS}/\${asset_dir_rel}"
 gh_client_download_verify() {
+    set -x
     local return_code=\$?
     local status=
     $SCRIPTS/gh-download-release-asset.sh "\${1}" "\${2}" "\${3}" && \
@@ -229,6 +232,7 @@ status=\$(cat \${4} | grep --color=never \${3} | sha256sum -c -)
     fi
 }
 gh_curl_download_verify() {
+    set -x
     local return_code=\$?
     local status=
     curl -LO "https://github.com/\${1}/releases/download/\${2}/\${3}" && \
