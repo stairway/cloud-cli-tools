@@ -163,7 +163,7 @@ RUN touch $SCRIPTS/gh-get-latest-release.sh && \
 #!/bin/sh -euf
 # https://docs.github.com/en/rest/overview/resources-in-the-rest-api?apiVersion=2022-11-28#rate-limiting
 gh_curl_latest_release() {
-    curl --silent "https://api.github.com/repos/\${1}/releases/latest" | \
+    curl --silent --location "https://api.github.com/repos/\${1}/releases/latest" | \
 grep '\"tag_name\":' | \
 sed -E 's/.*\"([^\"]+)\".*/\1/'
 }
