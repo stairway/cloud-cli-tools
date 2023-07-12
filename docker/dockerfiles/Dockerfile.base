@@ -27,7 +27,7 @@ ENV DOWNLOADS=${DOWNLOADS}
 ENV SCRIPTS=${SCRIPTS}
 
 ENV TZ=${TZ}
-ENV TERM=xterm-color
+ENV TERM=xterm
 ENV EDITOR=${EDITOR}
 ENV AWS_VAULT_BACKEND=pass
 
@@ -390,6 +390,12 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kuberne
     printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
 RUN echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi"  >> "${HOME}/.bashrc"
+
+# RUN grep -q -E '#(if ! shopt -oq posix.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(fi)' <<<$(echo $(cat /etc/bash.bashrc)) && \
+#     sed -z -i -E 's/#(if ! shopt -oq posix.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(fi)/\1\2\3\4\5\6\7/' /etc/bash.bashrc
+
+RUN grep -q -E '(case.*in.*\s*)xterm-color(.*\s*esac)' <<<$(echo $(cat "${HOME}/.bashrc")) && \
+    sed -z -i -E 's/(case.*in.*\s*)xterm-color(.*\s*esac)/\1xterm-*color\2/g' "${HOME}/.bashrc"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 USER $USER

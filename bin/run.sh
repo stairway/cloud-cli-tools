@@ -341,6 +341,7 @@ run_new() {
         -e "'GIT_CONFIG_FULL_NAME=${GIT_CONFIG_FULL_NAME}'"
         -e "EDITOR=${FILE_EDITOR}"
         -e "'HISTFILE=${docker_histfile}'"
+        -e "TERM=${TERM}"
     )
     [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && environment_vars+=(-e "VSCODE_DEBUGPY_PORT=${VSCODE_DEBUGPY_PORT}")
     [ -n "${AWS_ACCESS_KEY_ID:-""}" -a -n "${AWS_SECRET_ACCESS_KEY:-""}" ] && \
