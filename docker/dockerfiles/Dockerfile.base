@@ -150,7 +150,7 @@ RUN touch $SCRIPTS/gh-auth-status.sh && \
     cat > $SCRIPTS/gh-auth-status.sh <<EOF
 #!/bin/sh -euf
 gh_auth_status() {
-    gh auth status 2>/dev/null || { [ -n "\${GH_CLIENT_TOKEN:-""}" ] && /usr/local/bin/gh-login >/dev/null 2>&1; }
+    gh auth status >/dev/null 2>&1 || { [ -n "\${GH_CLIENT_TOKEN:-""}" ] && /usr/local/bin/gh-login >/dev/null 2>&1; }
     return \$?
 }
 gh_auth_status
@@ -163,14 +163,12 @@ RUN touch $SCRIPTS/gh-get-latest-release.sh && \
 #!/bin/sh -euf
 # https://docs.github.com/en/rest/overview/resources-in-the-rest-api?apiVersion=2022-11-28#rate-limiting
 gh_curl_latest_release() {
-    set -x
     curl --silent --location "https://api.github.com/repos/\${1}/releases/latest" | \
 grep '\"tag_name\":' | \
 sed -E 's/.*\"([^\"]+)\".*/\1/'
 }
 gh_client_latest_release() {
-    set -x
-    $SCRIPTS/gh-auth-status.sh >/dev/null 2>&1 && gh api "repos/\${1}/releases/latest" --jq '.tag_name' 2>/dev/null
+    $SCRIPTS/gh-auth-status.sh && gh api "repos/\${1}/releases/latest" --jq '.tag_name' 2>/dev/null
     return \$?
 }
 gh_client_latest_release "\$@" || \
@@ -217,7 +215,6 @@ asset_dir_rel="\${1}/\${2}/\$(echo \${3} | awk -F'.' '{print \$1}')"
 mkdir -p "${DOWNLOADS}/\${asset_dir_rel}"
 cd "${DOWNLOADS}/\${asset_dir_rel}"
 gh_client_download_verify() {
-    set -x
     local return_code=\$?
     local status=
     $SCRIPTS/gh-download-release-asset.sh "\${1}" "\${2}" "\${3}" && \
@@ -232,7 +229,6 @@ status=\$(cat \${4} | grep --color=never \${3} | sha256sum -c -)
     fi
 }
 gh_curl_download_verify() {
-    set -x
     local return_code=\$?
     local status=
     curl -LO "https://github.com/\${1}/releases/download/\${2}/\${3}" && \
@@ -393,12 +389,12 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kuberne
     install minikube-linux-amd64 /usr/local/bin/minikube && \
     printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
-RUN echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi"  >> "${HOME}/.bashrc"
+RUN echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi" >> "${HOME}/.bashrc"
 
 # RUN grep -q -E '#(if ! shopt -oq posix.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(fi)' <<<$(echo $(cat /etc/bash.bashrc)) && \
 #     sed -z -i -E 's/#(if ! shopt -oq posix.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(fi)/\1\2\3\4\5\6\7/' /etc/bash.bashrc
 
-RUN grep -q -E '(case.*in.*\s*)xterm-color(.*\s*esac)' <<<$(echo $(cat "${HOME}/.bashrc")) && \
+RUN echo $(cat "${HOME}/.bashrc") | grep -q -E '(case.*in.*\s*)xterm-color(.*\s*esac)' && \
     sed -z -i -E 's/(case.*in.*\s*)xterm-color(.*\s*esac)/\1xterm-*color\2/g' "${HOME}/.bashrc"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
