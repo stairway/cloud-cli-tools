@@ -66,6 +66,7 @@ YES_VALUE="${YES_VALUE:-yes}"
 NO_VALUE="${NO_VALUE:-no}"
 
 DOCKER_HISTFILE_NAME="${DOCKER_HISTFILE_NAME:-.bash_history}"
+[ "${DOCKER_TERM:-xterm}" = "xterm" ] && DOCKER_TERM="${DOCKER_TERM}-color"
 
 init_mountcache() {
     [ -n "$(which uuidgen)" ] && RANDOMSTR=$(uuidgen) || RANDOMSTR="$(openssl rand -hex 16)"
@@ -341,15 +342,22 @@ run_new() {
         -e "'GIT_CONFIG_FULL_NAME=${GIT_CONFIG_FULL_NAME}'"
         -e "EDITOR=${FILE_EDITOR}"
         -e "'HISTFILE=${docker_histfile}'"
-        -e "TERM=${TERM}"
+        -e "TERM=${DOCKER_TERM}"
     )
-    [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && environment_vars+=(-e "VSCODE_DEBUGPY_PORT=${VSCODE_DEBUGPY_PORT}")
+    [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && \
+        environment_vars+=(-e "VSCODE_DEBUGPY_PORT=${VSCODE_DEBUGPY_PORT}")
     [ -n "${AWS_ACCESS_KEY_ID:-""}" -a -n "${AWS_SECRET_ACCESS_KEY:-""}" ] && \
         environment_vars+=(
             -e "'AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}'"
             -e "'AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}'"
         )
-    [ "${DEBUG:-false}" = "true" ] && environment_vars+=(-e "DEBUG=true")
+    [ $(which tput) ] && \
+        environment_vars+=(
+            -e COLUMNS="`tput cols`"
+            -e LINES="`tput lines`"
+        )
+    [ "${DEBUG:-false}" = "true" ] && \
+        environment_vars+=(-e "DEBUG=true")
 
     local run_command=(docker run)
     [ -n "$PLATFORM" ] && run_command+=(--platform "linux/${PLATFORM}")
