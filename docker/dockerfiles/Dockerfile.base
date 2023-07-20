@@ -5,7 +5,8 @@ LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@liatrio.com
 
 ARG GH_CLIENT_TOKEN=
 
-ARG AWS_VAULT_VERSION=v6.6.2
+ARG AWS_VAULT_VERSION=latest
+ARG HASHICORP_VAULT_VERSION=latest
 ARG MINIKUBE_VERSION=latest
 ARG AWS_PYTHON_LAMBDA_RUNTIME_VERSION=3.9
 
@@ -380,6 +381,15 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${AWS_VAULT_VERSION}" "latest" "99desi
     echo $status && \
     install aws-vault-linux-amd64 /usr/local/bin/aws-vault && \
     printf "aws-vault: %s\n" "$(aws-vault --version 2>&1)" >> /.versions
+
+RUN version=$($SCRIPTS/gh-get-version.sh "${HASHICORP_VAULT_VERSION}" "latest" "hashicorp/vault" | sed s/^v//g) && \
+    status=$($SCRIPTS/download-and-verify-1.sh "https://releases.hashicorp.com/vault" \
+        "hashicorp/vault" "${version}" \
+        "vault_${version}_linux_amd64.zip" "vault_${version}_SHA256SUMS") && \
+    echo $status && \
+    unzip -o "vault_${version}_linux_amd64.zip" && \
+    install vault /usr/local/bin/vault && \
+    printf "Hashicorp %s\n" "$(vault --version | awk '{print $1" "$2}')" >> /.versions
 
 RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kubernetes/minikube") && \
     status=$($SCRIPTS/download-and-verify-2.sh "https://storage.googleapis.com/minikube/releases" \

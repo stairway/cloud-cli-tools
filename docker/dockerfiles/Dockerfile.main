@@ -8,7 +8,6 @@ ARG GH_CLIENT_TOKEN=
 
 ARG KUBE_VERSION=latest
 ARG ISTIO_VERSION=latest
-ARG HASHICORP_VAULT_VERSION=latest
 ARG TERRAFORM_VERSION=latest
 ARG TERRAGRUNT_VERSION=latest
 ARG HELM_VERSION=latest
@@ -126,15 +125,6 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${ISTIO_VERSION}" "latest" "istio/isti
     install istio-${version}/bin/istioctl /usr/local/bin/istioctl && \
     cp istio-${version}/tools/istioctl.bash $HOME/.istioctl.bash && \
     printf "istio: %s\n" "$(istioctl version --remote=false --short)" >> /.versions
-
-RUN version=$($SCRIPTS/gh-get-version.sh "${HASHICORP_VAULT_VERSION}" "latest" "hashicorp/vault" | sed s/^v//g) && \
-    status=$($SCRIPTS/download-and-verify-1.sh "https://releases.hashicorp.com/vault" \
-        "hashicorp/vault" "${version}" \
-        "vault_${version}_linux_amd64.zip" "vault_${version}_SHA256SUMS") && \
-    echo $status && \
-    unzip -o "vault_${version}_linux_amd64.zip" && \
-    install vault /usr/local/bin/vault && \
-    printf "Hashicorp %s\n" "$(vault --version | awk '{print $1" "$2}')" >> /.versions
 
 RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
         version=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') || \
