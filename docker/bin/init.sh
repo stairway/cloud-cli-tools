@@ -9,7 +9,6 @@ count() { echo $#; }
 
 _configure_aws_vault_7x_mfa() {
     aws configure set mfa_serial "arn:aws:iam::${1:-""}:mfa/${USERNAME}" --profile "${DEFAULT_PROFILE}"
-    aws configure set mfa_process "pass otp my_aws_mfa"
 }
 
 _configure_aws_vault_6x_mfa() {
