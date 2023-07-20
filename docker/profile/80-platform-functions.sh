@@ -1,30 +1,30 @@
 # Function to always vault exec the kubectl command
 kube() {
-    aws-vault exec "${AWS_DEFAULT_PROFILE:-user}" -- kubectl "$@"
+    aws-vault exec "${AWS_DEFAULT_PROFILE:-$DEFAULT_PROFILE}" -- kubectl "$@"
 }
 
 # Function to use vault exec with aws command
 awv() {
-    aws-vault exec "${AWS_DEFAULT_PROFILE:-user}" -- aws "$@"
+    aws-vault exec "${AWS_DEFAULT_PROFILE:-$DEFAULT_PROFILE}" -- aws "$@"
 }
 
 # Function shorthand for aws-vault exec witcurrent profile
 ve() {
-    aws-vault exec "${AWS_DEFAULT_PROFILE:-user}" -- "$@"
+    aws-vault exec "${AWS_DEFAULT_PROFILE:-$DEFAULT_PROFILE}" -- "$@"
 }
 
 eks() {
-    aws-vault exec "${AWS_DEFAULT_PROFILE:-user}" -- aws eks update-kubeconfig --name $@
+    aws-vault exec "${AWS_DEFAULT_PROFILE:-$DEFAULT_PROFILE}" -- aws eks update-kubeconfig --name $@
 }
 
 # Function to switch kubernetes contexts and make sure the info for that cluster is up to date
 update-kube() {
-    aws-vault exec "${AWS_DEFAULT_PROFILE:-user}" -- aws eks update-kubeconfig --name "di-$1-cluster"
+    aws-vault exec "${AWS_DEFAULT_PROFILE:-$DEFAULT_PROFILE}" -- aws eks update-kubeconfig --name "${CLUSTER_PREFIX}-$1-cluster"
 }
 
 # Function to read secrets from chamber
 rochamber() {
-    aws-vault exec user -- chamber "$@"
+    aws-vault exec "${AWS_DEFAULT_PROFILE:-$DEFAULT_PROFILE}" -- chamber "$@"
 }
 
 # Function to generate semantic version based on a git tag with pattern 'prefix/major.minor'
@@ -59,7 +59,7 @@ pip_login() {
 }
 
 codeartifact_auth_token() {
-    aws-vault exec "${AWS_DEFAULT_PROFILE:-user}" -- aws codeartifact get-authorization-token --region us-east-2 --domain grainger --query authorizationToken --output text
+    aws-vault exec "${AWS_DEFAULT_PROFILE:-$DEFAULT_PROFILE}" -- aws codeartifact get-authorization-token --region us-east-2 --domain grainger --query authorizationToken --output text
 }
 
 # Function to get a token for kiali url access

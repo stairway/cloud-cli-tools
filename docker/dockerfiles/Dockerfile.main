@@ -179,12 +179,6 @@ RUN echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash
     echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > $HOME/.local/init.sh && \
     cat >> "${HOME}/.bashrc" <<EOF
 
-export EDITOR="${EDITOR}"
-export VISUAL="${EDITOR}"
-export GIT_EDITOR="${EDITOR}"
-export KUBE_EDITOR="${EDITOR}"
-export CLUSTER_PREFIX="${CLUSTER_PREFIX:-di}"
-
 if [ -f $ENVFILE ]; then
     set -o allexport
     . $ENVFILE

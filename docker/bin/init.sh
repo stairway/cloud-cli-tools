@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DEFAULT_VAULT_USER="${DEFAULT_VAULT_USER:-user}"
+# AWS_DEFAULT_PROFILE="${AWS_DEFAULT_PROFILE:-$DEFAULT_PROFILE}"
 
 aws_vault_version=$(aws-vault --version 2>&1 | sed 's/^v//g')
 aws_vault_major_version=$(echo "${aws_vault_version}" | awk -F'.' '{print $1}')
@@ -8,12 +8,12 @@ aws_vault_major_version=$(echo "${aws_vault_version}" | awk -F'.' '{print $1}')
 count() { echo $#; }
 
 _configure_aws_vault_7x_mfa() {
-    aws configure set mfa_serial "arn:aws:iam::${1:-""}:mfa/${USERNAME}" --profile "${DEFAULT_VAULT_USER}"
+    aws configure set mfa_serial "arn:aws:iam::${1:-""}:mfa/${USERNAME}" --profile "${DEFAULT_PROFILE}"
     aws configure set mfa_process "pass otp my_aws_mfa"
 }
 
 _configure_aws_vault_6x_mfa() {
-    aws configure set mfa_serial "arn:aws:iam::${1:-""}:mfa/${USERNAME}" --profile "${DEFAULT_VAULT_USER}"
+    aws configure set mfa_serial "arn:aws:iam::${1:-""}:mfa/${USERNAME}" --profile "${DEFAULT_PROFILE}"
 }
 
 iam_verify() {
@@ -21,9 +21,9 @@ iam_verify() {
     local cluster="${2:-nonprod}"
 
     sleep 1
-    printf "\033[93m>\033[0m Testing IAM with '%s' ...\n" "${DEFAULT_VAULT_USER}"
-    printf "\033[96;1m%s\033[0m\n" "aws-vault exec ${DEFAULT_VAULT_USER} -- aws sts get-caller-identity"
-    local aws_user_account=$(aws-vault exec "${DEFAULT_VAULT_USER}" -- aws sts get-caller-identity)
+    printf "\033[93m>\033[0m Testing IAM with '%s' ...\n" "${DEFAULT_PROFILE}"
+    printf "\033[96;1m%s\033[0m\n" "aws-vault exec ${DEFAULT_PROFILE} -- aws sts get-caller-identity"
+    local aws_user_account=$(aws-vault exec "${DEFAULT_PROFILE}" -- aws sts get-caller-identity)
     local aws_user_account_id=$(echo "${aws_user_account}" | jq -r .Account)
     local aws_user_account_arn=$(echo "${aws_user_account}" | jq -r .Arn)
     echo $aws_user_account | jq .
@@ -60,19 +60,19 @@ init_aws() {
 
     if [ ! -f /.initialized ]; then
         local current_vault_user="$(aws-vault list | grep user | awk '{ print $2 }')"
-        if [ "${current_vault_user}" != "${DEFAULT_VAULT_USER}" ]; then
+        if [ "${current_vault_user}" != "${DEFAULT_PROFILE}" ]; then
             [ ! -f "$HOME/.password-store/.gpg-id" -o ! -f "$HOME/.gnupg/trustdb.gpg" ] && printf "Still Initializing ..." && \
                 while [ ! -f "$HOME/.password-store/.gpg-id" -o ! -f "$HOME/.gnupg/trustdb.gpg" ]; do _waiting; done; echo
             if [ -n "${AWS_ACCESS_KEY_ID}" -a -n "${AWS_SECRET_ACCESS_KEY}" ]; then
                 printf "\033[93m>\033[0m Found existing AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.\n"
-                aws-vault add --env "${DEFAULT_VAULT_USER}"
+                aws-vault add --env "${DEFAULT_PROFILE}"
             else
-                aws-vault add "${DEFAULT_VAULT_USER}"
+                aws-vault add "${DEFAULT_PROFILE}"
             fi
         fi
 
         cat > ~/.aws/config_restore <<EOF
-[profile ${DEFAULT_VAULT_USER}]
+[profile ${DEFAULT_PROFILE}]
 region=${AWS_VAULT_USER_REGION}
 EOF
 
@@ -81,15 +81,15 @@ EOF
         fi
 
         # Check for 'credential_process' line in user profile, originally added by dpctl
-        grep -q -E -i "(^credential_process)\s*=\s*(.* -.+json $DEFAULT_VAULT_USER$)" ~/.aws/config >/dev/null && \
+        grep -q -E -i "(^credential_process)\s*=\s*(.* -.+json $DEFAULT_PROFILE$)" ~/.aws/config >/dev/null && \
             {
                 # GNU sed Example -- Replace first match only
                 # sed '0,/pattern/s/pattern/replacement/' filename
                 # https://www.linuxtopia.org/online_books/linux_tool_guides/the_sed_faq/sedfaq4_004.html
-                sed -E -i "0,/^credential_process.+-.+json\s+$DEFAULT_VAULT_USER$/s/(^credential_process.+)\s+(-.+json $DEFAULT_VAULT_USER$)/#\1 \2/" .aws/config && \
+                sed -E -i "0,/^credential_process.+-.+json\s+$DEFAULT_PROFILE$/s/(^credential_process.+)\s+(-.+json $DEFAULT_PROFILE$)/#\1 \2/" .aws/config && \
                 [ $aws_vault_major_version -ge 7 ] && \
-                    aws configure set credential_process "aws-vault exec --format=json $DEFAULT_VAULT_USER" --profile "$DEFAULT_VAULT_USER" || \
-                    aws configure set credential_process "aws-vault exec --no-session --json --prompt=pass $DEFAULT_VAULT_USER" --profile "$DEFAULT_VAULT_USER"
+                    aws configure set credential_process "aws-vault exec --format=json $DEFAULT_PROFILE" --profile "$DEFAULT_PROFILE" || \
+                    aws configure set credential_process "aws-vault exec --no-session --json --prompt=pass $DEFAULT_PROFILE" --profile "$DEFAULT_PROFILE"
             }
 
         iam_verify "${TEAM_NAME}" "nonprod" \
