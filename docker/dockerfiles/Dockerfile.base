@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@liatrio.com
 
 ARG GH_CLIENT_TOKEN=
 
-ARG AWS_VAULT_VERSION=latest
+ARG AWS_VAULT_VERSION=v6.6.2
 ARG HASHICORP_VAULT_VERSION=latest
 ARG MINIKUBE_VERSION=latest
 ARG AWS_PYTHON_LAMBDA_RUNTIME_VERSION=3.9
