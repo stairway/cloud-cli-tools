@@ -339,7 +339,7 @@ run_new() {
         -e "KEEP_ALIVE=${KEEP_ALIVE}"
         -e "USERNAME=${USERNAME}"
         -e "TEAM_NAME=${TEAM_NAME}"
-        -e "CLUSTER_PREFIX="${CLUSTER_PREFIX}"
+        -e "CLUSTER_PREFIX=${CLUSTER_PREFIX}"
         -e "EDITOR=${FILE_EDITOR}"
         -e "VISUAL=${FILE_EDITOR}"
         -e "GIT_EDITOR=${FILE_EDITOR}"
