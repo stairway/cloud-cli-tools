@@ -405,8 +405,7 @@ RUN echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_
 #     sed -z -i -E 's/#(if ! shopt -oq posix.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(fi)/\1\2\3\4\5\6\7/' /etc/bash.bashrc
 
 RUN echo $(cat "${HOME}/.bashrc") | grep -q -E '(case.*in.*\s*)xterm-color(.*\s*esac)' && \
-    sed -z -i -E 's/(case.*in.*\s*)xterm-color(.*\s*esac)/\1xterm-*color\2/g' "${HOME}/.bashrc"; \
-    echo $(cat "${HOME}/.bashrc") | grep -E '(case.*in.*\s*)xterm-\*?color(.*\s*esac)'
+    sed -z -i -E 's/(case.*in.*\s*)xterm-color(.*\s*esac)/\1xterm-*color\2/g' "${HOME}/.bashrc"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 USER $USER
