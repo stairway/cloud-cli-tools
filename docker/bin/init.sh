@@ -27,9 +27,11 @@ iam_verify() {
     local aws_user_account_arn=$(echo "${aws_user_account}" | jq -r .Arn)
     echo $aws_user_account | jq .
 
-    [ $aws_vault_major_version -ge 7 ] && \
-        _configure_aws_vault_7x_mfa "$aws_user_account_id" || \
+    if [ $aws_vault_major_version -ge 7 ]; then
+        _configure_aws_vault_7x_mfa "$aws_user_account_id"
+    else
         _configure_aws_vault_6x_mfa "$aws_user_account_id"
+    fi
 
     echo "mfa_serial=${aws_user_account_arn}" >> ~/.aws/config_restore
 
