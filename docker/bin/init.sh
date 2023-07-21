@@ -16,7 +16,7 @@ _configure_aws_vault_6x_mfa() {
 }
 
 _configure_aws_vault_7x_credproc() {
-    aws configure set credential_process "aws-vault exec --no-session --json --prompt=pass $DEFAULT_PROFILE" --profile "$DEFAULT_PROFILE"
+    aws configure set credential_process "aws-vault exec --no-session --json $DEFAULT_PROFILE" --profile "$DEFAULT_PROFILE"
 }
 
 _configure_aws_vault_6x_credproc() {
