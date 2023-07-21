@@ -179,14 +179,14 @@ RUN echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash
     echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > $HOME/.local/profile.d/init.sh && \
     cat >> "${HOME}/.bashrc" <<EOF
 
-if [ -r $ENVFILE ]; then
+if [ -r \$ENVFILE ]; then
     set -o allexport
-    . $ENVFILE
+    . \$ENVFILE
     set +o allexport
 fi
 
-if [ -d $HOME/.local/plugins.d ]; then
-    for f in $HOME/.local/plugins.d/*.sh; do
+if [ -d ~/.local/plugins.d ]; then
+    for f in ~/.local/plugins.d/*.sh; do
         if [ -r \$f ]; then
             . \$f
         fi
@@ -194,8 +194,8 @@ if [ -d $HOME/.local/plugins.d ]; then
     unset f
 fi
 
-if [ -d $HOME/.local/profile.d ]; then
-    for f in $HOME/.local/profile.d/*.sh; do
+if [ -d ~/.local/profile.d ]; then
+    for f in ~/.local/profile.d/*.sh; do
         if [ -r \$f ]; then
             . \$f
         fi
