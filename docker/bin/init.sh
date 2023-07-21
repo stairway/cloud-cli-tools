@@ -15,6 +15,14 @@ _configure_aws_vault_6x_mfa() {
     aws configure set mfa_serial "arn:aws:iam::${1:-""}:mfa/${USERNAME}" --profile "${DEFAULT_PROFILE}"
 }
 
+_configure_aws_vault_7x_credproc() {
+    aws configure set credential_process "aws-vault exec --no-session --json --prompt=pass $DEFAULT_PROFILE" --profile "$DEFAULT_PROFILE"
+}
+
+_configure_aws_vault_6x_credproc() {
+    aws configure set credential_process "aws-vault exec --no-session --json --prompt=pass $DEFAULT_PROFILE" --profile "$DEFAULT_PROFILE"
+}
+
 iam_verify() {
     local team="${1:-$TEAM_NAME}"
     local cluster="${2:-nonprod}"
@@ -27,11 +35,9 @@ iam_verify() {
     local aws_user_account_arn=$(echo "${aws_user_account}" | jq -r .Arn)
     echo $aws_user_account | jq .
 
-    if [ $aws_vault_major_version -ge 7 ]; then
-        _configure_aws_vault_7x_mfa "$aws_user_account_id"
-    else
+    [ $aws_vault_major_version -ge 7 ] && \
+        _configure_aws_vault_7x_mfa "$aws_user_account_id" || \
         _configure_aws_vault_6x_mfa "$aws_user_account_id"
-    fi
 
     echo "mfa_serial=${aws_user_account_arn}" >> ~/.aws/config_restore
 
@@ -89,8 +95,8 @@ EOF
                 # https://www.linuxtopia.org/online_books/linux_tool_guides/the_sed_faq/sedfaq4_004.html
                 sed -E -i "0,/^credential_process.+-.+json\s+$DEFAULT_PROFILE$/s/(^credential_process.+)\s+(-.+json $DEFAULT_PROFILE$)/#\1 \2/" .aws/config && \
                 [ $aws_vault_major_version -ge 7 ] && \
-                    aws configure set credential_process "aws-vault exec --format=json $DEFAULT_PROFILE" --profile "$DEFAULT_PROFILE" || \
-                    aws configure set credential_process "aws-vault exec --no-session --json --prompt=pass $DEFAULT_PROFILE" --profile "$DEFAULT_PROFILE"
+                    _configure_aws_vault_7x_credproc || \
+                    _configure_aws_vault_6x_credproc
             }
 
         iam_verify "${TEAM_NAME}" "nonprod" \
