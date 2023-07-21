@@ -195,7 +195,7 @@ if [ -d $HOME/.local/plugins.d ]; then
 fi
 
 if [ -d $HOME/.local/profile.d ]; then
-    for f in HOME/.local/profile.d/*.sh; do
+    for f in $HOME/.local/profile.d/*.sh; do
         if [ -r \$f ]; then
             . \$f
         fi
