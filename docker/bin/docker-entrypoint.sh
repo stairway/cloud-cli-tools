@@ -128,6 +128,9 @@ do_init() {
 
 trap die INT
 
+com_tty=(exec)
+com=("bash")
+
 case "$1" in
     docker)
         printf "You must exec into a shell to run the command: %s\n" "$(echo $@)"
@@ -138,39 +141,35 @@ case "$1" in
         ;;
     sh|bash)
         do_init
-        [ "${DEBUG:-false}" = "true" ] && set -x
-        if $(is_tty) ; then
-            exec "$@"
-        else
-            bash -l -c "$@"
-            [ $exit_code -eq 0 ] || exit_code=$?
-            keep_alive
-        fi
+        is_tty && \
+            com_tty+=("$@") || \
+            com+=("-l" "-c" "$@")
         ;;
     *)
         # [ "${1#ba}" = "sh" ] && do_init && shift
         do_init
         if [ $# -gt 0 ]; then
-            [ "${DEBUG:-false}" = "true" ] && set -x
-            if $(is_tty) ; then
-                bash -l -c "$@"
-                [ $exit_code -eq 0 ] || exit_code=$?
-                exec bash -l
-            else
-                bash -l -c "$@"
-                [ $exit_code -eq 0 ] || exit_code=$?
-                keep_alive
-            fi
+            is_tty && \
+                bash -l -c "$@" && \
+                    { [ $exit_code -eq 0 ] || exit_code=$?; } && \
+                    com_tty+=("bash" "-l") || \
+                com+=("-l" "-c" "$@")
         else
-            [ "${DEBUG:-false}" = "true" ] && set -x
-            if $(is_tty) ; then
-                exec bash -l
-            else
-                keep_alive
-            fi
+            is_tty && \
+                com_tty+=("bash" "-l") || \
+                com=("")
         fi
         ;;
 esac
+
+[ "${DEBUG:-false}" = "true" ] && set -x
+if $(is_tty) ; then
+    ${com_tty[@]}
+else
+    ${com[@]}
+    [ $exit_code -eq 0 ] || exit_code=$?
+    keep_alive
+fi
 
 [ $exit_code -eq 0 ] || die
 unset exit_code
