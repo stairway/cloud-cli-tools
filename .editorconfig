@@ -14,9 +14,12 @@ insert_final_newline = true
 [{Dockerfile,Dockerfile.*}]
 trim_trailing_whitespace = false
 
-[*.yml]
+[*.{yml,yaml}]
 indent_size = 2
 
 [*.md]
 indent_size = 2
 trim_trailing_whitespace = false
+
+[*.{tf,tfvars,tpl}]
+indent_size = 2

@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 
-set -eo pipefail
+set -o pipefail
 
 USERNAME="${USERNAME:-""}"
 GIT_CONFIG_FULL_NAME="${GIT_CONFIG_FULL_NAME:-""}"
@@ -112,7 +112,7 @@ die() {
 do_init() {
     versions
     init_git && check_crypto
-    ln -s /data ${HOME}/data
+    [ -e ~/data ] || ln -s /data ~/data
     if [ ${VSCODE_DEBUGPY_PORT:-0} -gt 999 ]; then
         if [ ! -d /data/.vscode ]; then
             [ -d ~/.conf/vscode ] && \

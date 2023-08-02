@@ -37,7 +37,7 @@ cleanup_dotfiles() {
         printf "\033[93m>\033[0m Restoring '%s' ...\n" "${WORKING_DIRECTORY}/.aws/config"
         cp "${WORKING_DIRECTORY}/.aws/config_restore" "${WORKING_DIRECTORY}/.aws/config"
         if [ -d "${WORKING_DIRECTORY}/.aws" ]; then
-            targeted+=($(find "${WORKING_DIRECTORY}/.aws" -type d -mindepth 1 -print))
+            targeted+=($(find "${WORKING_DIRECTORY}/.aws" -mindepth 1 -type d -print))
         fi
         aws_config_restore=true
     fi

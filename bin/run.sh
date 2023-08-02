@@ -5,9 +5,9 @@ LC_CTYPE=C
 
 check_dependencies() {
     # check for other required dependencies on host machine
-    local needs_jq=$([ -n "$(which jq})" -a -f "$(which jq})" ] && echo true || echo false)
-    local needs_openssl=$([ -n "$(which openssl})" -a -f "$(which openssl})" ] && echo true || echo false)
-    local needs_uuidgen=$([ -n "$(which uuidgen})" -a -f "$(which uuidgen})" ] && echo true || echo false)
+    local needs_jq=$([ -n "$(which jq)" -a -e "$(which jq)" ] && echo false || echo true)
+    local needs_openssl=$([ -n "$(which openssl)" -a -e "$(which openssl)" ] && echo false || echo true)
+    local needs_uuidgen=$([ -n "$(which uuidgen)" -a -e "$(which uuidgen)" ] && echo false || echo true)
 
     if [ "$needs_jq" = "true" ] ; then printf "Please make sure '%s' is properly installed (%s).\nExiting ...\n" "jq" "https://stedolan.github.io/jq/download/" >&2 ; return 1 ; fi
     if [ "$needs_openssl" = "true" -a "$needs_uuidgen" = true ] ; then printf "Please make sure either '%s' or '%s' are properly installed. Exiting ...\n" "openssl" "uuidgen" >&2; return 1 ; fi
