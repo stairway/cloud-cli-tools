@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -euf
-LC_CTYPE=C
+# LC_CTYPE=C
 
 check_dependencies() {
     # check for other required dependencies on host machine
@@ -22,6 +22,8 @@ else
     SCRIPT_DIR="$(pwd)/bin"
     script=false
 fi
+
+# DOCKER_RUN_DETACHED="${DOCKER_RUN_DETACHED:-$script}"
 
 echo
 printf "\033[92;1m>>>\033[94;1m %s: %s\033[92;1m <<<\033[0m\n" "cloud-cli-tools" "Run Script"
@@ -348,17 +350,18 @@ run_new() {
     local run_mode=("")
     [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && run_mode+=("-p ${VSCODE_DEBUGPY_PORT}:${VSCODE_DEBUGPY_PORT}")
 
-    if [ "${script}" = "true" ]; then
+    if [ "${DOCKER_RUN_DETACHED:-false}" = "true" ]; then
         run_mode+=(
             -d
             "${docker_image}"
+            # \'printf \"Current Time: %s\\n\" "\$(date -u +%Y%m%dT%H%M%SZ)"\'
         )
         KEEP_ALIVE=true
     else
         run_mode+=(
-            --rm
             -it
             "${docker_image}"
+            # \'printf \"Current Time: %s\\n\" "\$(date -u +%Y%m%dT%H%M%SZ)"\'
         )
         KEEP_ALIVE=false
     fi
@@ -414,6 +417,23 @@ run_new() {
     [ -n "${CONTAINER_ID}" ] && echo "CONTAINER_ID=${CONTAINER_ID}" >> "${_CONTAINER_CACHE_FILE}"
 }
 
-[ -n "${CONTAINER_NAME}" -a -n "$(get_running_container_by_name ${CONTAINER_NAME})" ] && printf "Found existing\n" || run_new "$@"
-[ "${script}" = "true" ] && exec_container "${CONTAINER_NAME:-""}"
+active=false
+if [ -n "${CONTAINER_NAME}" -a -n "$(get_running_container_by_name ${CONTAINER_NAME})" ]; then
+    printf "Found existing running: %s\n" "${CONTAINER_NAME}"
+    active=true
+elif [ -n "${CONTAINER_NAME}" -a -n "$(get_all_container_by_name ${CONTAINER_NAME})" ]; then
+    printf "Found existing: %s\n" "${CONTAINER_NAME}"
+    start_container "${CONTAINER_NAME:-""}"
+else
+    run_new "$@"
+fi
+
+if [ "${active}" = "true" -o "${DOCKER_RUN_DETACHED:-false}" = "true" ] ; then
+    exec_container "${CONTAINER_NAME:-""}"
+    # attach_container "${CONTAINER_ID:-""}"
+fi
+unset active
+
+# [ -n "${CONTAINER_NAME}" -a -n "$(get_running_container_by_name ${CONTAINER_NAME})" ] && printf "Found existing\n" || run_new "$@"
+# [ "${script}" = "true" ] && exec_container "${CONTAINER_NAME:-""}"
 

@@ -9,6 +9,9 @@ EDITOR="${EDITOR:-""}"
 GIT_DEFAULT_BRANCH="${GIT_DEFAULT_BRANCH:-main}"
 INPUT_SHELL=""
 
+is_tty() { tty >/dev/null 2>&1 && return $? || return $?; }
+keep_alive() { [ "${KEEP_ALIVE:-false}" = "true" ] && tail -f /dev/null; }
+
 git_config() {
     git config --global user.name "${GIT_CONFIG_FULL_NAME}"
     GIT_CONFIG_EMAIL_DEFAULT="$(echo ${GIT_CONFIG_FULL_NAME} | awk -v domain_var="$CONSUMER_DOMAIN" '{ print tolower($1"."$2"@"domain_var) }')"
@@ -122,10 +125,6 @@ do_init() {
     fi
 }
 
-keep_alive() {
-    [ "${KEEP_ALIVE:-false}" = "true" ] && tail -f /dev/null
-}
-
 print_args() {
     for arg in $@; do
         printf "arg: ${arg}\n"
@@ -145,19 +144,38 @@ case "$1" in
         ;;
     sh|bash)
         do_init
-        shift
-        eval "bash -l -c '$@'"
-        bash -l
-        [ $exit_code -eq 0 ] || exit_code=$?
-        keep_alive
+        [ "${DEBUG:-false}" = "true" ] && set -x
+        if $(is_tty) ; then
+            exec "$@"
+        else
+            eval "bash -l -c '$@'"
+            [ $exit_code -eq 0 ] || exit_code=$?
+            keep_alive
+        fi
         ;;
     *)
         # [ "${1#ba}" = "sh" ] && do_init && shift
         do_init
-        eval "bash -l -c '$@'"
-        bash -l
-        [ $exit_code -eq 0 ] || exit_code=$?
-        keep_alive
+        if [ $# -gt 0 ]; then
+            com=("bash" "-c" "$@")
+            [ "${DEBUG:-false}" = "true" ] && set -x
+            if $(is_tty) ; then
+                bash -l -c "$@"
+                [ $exit_code -eq 0 ] || exit_code=$?
+                exec bash -l
+            else
+                bash -l -c "$@"
+                [ $exit_code -eq 0 ] || exit_code=$?
+                keep_alive
+            fi
+        else
+            [ "${DEBUG:-false}" = "true" ] && set -x
+            if $(is_tty) ; then
+                exec bash -l
+            else
+                keep_alive
+            fi
+        fi
         ;;
 esac
 
