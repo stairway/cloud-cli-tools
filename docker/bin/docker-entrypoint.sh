@@ -7,10 +7,27 @@ GIT_CONFIG_FULL_NAME="${GIT_CONFIG_FULL_NAME:-""}"
 GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-""}"
 EDITOR="${EDITOR:-""}"
 GIT_DEFAULT_BRANCH="${GIT_DEFAULT_BRANCH:-main}"
-INPUT_SHELL=""
+exit_code=0
 
+print_args() { for arg in $@; do printf "arg: ${arg}\n"; done; }
 is_tty() { tty >/dev/null 2>&1 && return $? || return $?; }
+
 keep_alive() { [ "${KEEP_ALIVE:-false}" = "true" ] && tail -f /dev/null; }
+waiting() { printf "${1:-.}"; sleep 1; }
+die() {
+    local color=0
+    local exit_code=${1:-$?}
+    local msg="${2:-""}"
+    [ -n "${msg}" ] && printf "%s\n" "$2"
+    [ $exit_code -eq 0 ] && color=92 || color=91
+    printf "\n\033[%d;1mExiting with code %d " $color $exit_code
+    for i in {1..3}; do waiting; done
+    printf "\033[0m\n"
+}
+versions() {
+    uname -a
+    cat /.versions || { printf "Versions file '%s' not found. Exiting ...\n" "/.versions" >&2; return 1; }
+}
 
 git_config() {
     git config --global user.name "${GIT_CONFIG_FULL_NAME}"
@@ -70,11 +87,6 @@ init_pass() {
     fi
 }
 
-versions() {
-    uname -a
-    cat /.versions || { printf "Versions file '%s' not found. Exiting ...\n" "/.versions" >&2; return 1; }
-}
-
 init_git() {
     local last_err=0
     if [ ! -f "${HOME}/.gitconfig" ]; then
@@ -99,19 +111,6 @@ check_crypto() {
     [ $last_err -eq 0 -a -f /.crypto ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "Crypto (ssh, gpg, pass)"
 }
 
-exit_code=0
-waiting() { printf "${1:-.}"; sleep 1; }
-die() {
-    local color=0
-    local exit_code=${1:-$?}
-    local msg="${2:-""}"
-    [ -n "${msg}" ] && printf "%s\n" "$2"
-    [ $exit_code -eq 0 ] && color=92 || color=91
-    printf "\n\033[%d;1mExiting with code %d " $color $exit_code
-    for i in {1..3}; do waiting; done
-    printf "\033[0m\n"
-}
-
 do_init() {
     versions
     init_git && check_crypto
@@ -125,11 +124,6 @@ do_init() {
     fi
 }
 
-print_args() {
-    for arg in $@; do
-        printf "arg: ${arg}\n"
-    done
-}
 [ "${DEBUG:-false}" = "true" ] && print_args
 
 trap die INT
@@ -148,7 +142,7 @@ case "$1" in
         if $(is_tty) ; then
             exec "$@"
         else
-            eval "bash -l -c '$@'"
+            bash -l -c "$@"
             [ $exit_code -eq 0 ] || exit_code=$?
             keep_alive
         fi
@@ -157,7 +151,6 @@ case "$1" in
         # [ "${1#ba}" = "sh" ] && do_init && shift
         do_init
         if [ $# -gt 0 ]; then
-            com=("bash" "-c" "$@")
             [ "${DEBUG:-false}" = "true" ] && set -x
             if $(is_tty) ; then
                 bash -l -c "$@"
@@ -180,3 +173,4 @@ case "$1" in
 esac
 
 [ $exit_code -eq 0 ] || die
+unset exit_code
