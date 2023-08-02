@@ -38,10 +38,17 @@ cd "${SCRIPT_DIR}/../"
 . conf/main/docker.env
 
 count() { echo $#; }
-check_lockfile() { echo "$(cat ${1})"; }
-get_running_container_by_id() { docker ps -q --filter id="$1"; }
-get_running_container_by_name() { docker ps -q --filter name="$1"; }
+check_lockfile() { echo "$(cat ${1:-""})"; }
+get_running_container_by_id() { docker ps -q --filter id="${1:-""}"; }
+get_running_container_by_name() { docker ps -q --filter name="${1:-""}"; }
+get_all_container_by_name() { docker ps -a -q --filter name="${1:-""}"; }
 get_mountpoint() { local mountpoint=$(docker volume inspect "${RANDOMSTR}" | jq .[].Mountpoint --raw-output 2>/dev/null); [ "${mountpoint}" != "[]" ] && echo "${mountpoint}"; }
+
+container_exists() {
+    [ -n "${1}" -a -n "$(get_running_container_by_name ${1})" ] && return 0
+    [ -n "${1}" -a -n "$(get_all_container_by_name ${1})" ] && return 0
+    return 1
+}
 
 touch $_CONTAINER_CACHE_FILE
 touch $_MOUNT_CACHE_FILE
@@ -90,16 +97,37 @@ EOF
 }
 
 exec_container() {
-    local short_id=$(get_running_container_by_id ${1})
-    local EXEC_COMMAND=(docker exec)
-    EXEC_COMMAND+=(
-        -it
-        "${short_id}"
-        bash -l
-    )
+    local container="${1:-$(get_running_container_by_id ${CONTAINER_ID})}"
+    [ -n "${container:-""}" ] || return $?
+    local com=(docker exec -it)
+    com+=("${container}")
+    com+=(bash -l)
 
-    printf "\033[93m>\033[0m Accessing %s ...\n" "${short_id}"
-    ${EXEC_COMMAND[@]}
+    printf "\033[93m>\033[0m Accessing %s ...\n\033[96;1m%s\033[0m\n" "${container}" "$(echo ${com[@]})"
+    ${com[@]}
+}
+
+attach_container() {
+    local container="${1:-$(get_running_container_by_id ${CONTAINER_ID})}"
+    [ -n "${container:-""}" ] || return $?
+    local com=(docker attach)
+    com+=("${container}")
+
+    printf "\033[93m>\033[0m Accessing %s ...\n\033[96;1m%s\033[0m\n" "${container}" "$(echo ${com[@]})"
+    ${com[@]}
+}
+
+start_container() {
+    local container="${1:-$(get_all_container_by_name ${CONTAINER_NAME})}"
+    [ -n "${CONTAINER_NAME:-""}" ] || return $?
+    local com=(docker start)
+    com+=(
+        -a
+        -i
+        "${container}"
+    )
+    printf "\033[93m>\033[0m Starting up %s ...\n\033[96;1m%s\033[0m\n" "${container}" "$(echo ${com[@]})"
+    ${com[@]}
 }
 
 user_prompt() {
@@ -387,4 +415,5 @@ run_new() {
 }
 
 [ -n "${CONTAINER_NAME}" -a -n "$(get_running_container_by_name ${CONTAINER_NAME})" ] && printf "Found existing\n" || run_new "$@"
-[ "${script}" = "true" ] && exec_container "${CONTAINER_ID}"
+[ "${script}" = "true" ] && exec_container "${CONTAINER_NAME:-""}"
+
