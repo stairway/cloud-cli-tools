@@ -47,6 +47,9 @@ ARG INSTALL_PKGS="\
     nano \
     vim \
     jq \
+    yq \
+    mlr \
+    gojq \
     zip \
     locales \
     tzdata \
