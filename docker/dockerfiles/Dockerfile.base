@@ -47,7 +47,8 @@ ARG INSTALL_PKGS="\
     nano \
     vim \
     jq \
-    yq \
+    # TODO: Install from Github: https://github.com/mikefarah/yq
+    # yq \
     miller \
     gojq \
     zip \
