@@ -48,7 +48,7 @@ ARG INSTALL_PKGS="\
     vim \
     jq \
     yq \
-    mlr \
+    miller \
     gojq \
     zip \
     locales \
