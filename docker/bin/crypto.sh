@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 
-set -eo pipefail
+set -o pipefail
 
 CURRENT_USER=$(whoami)
 USER="${USER:-$CURRENT_USER}"
