@@ -362,6 +362,7 @@ run_new() {
         run_mode+=(
             -it
             "${docker_image}"
+            # bash -l
             # \'printf \"Current Time: %s\\n\" "\$(date -u +%Y%m%dT%H%M%SZ)"\'
         )
         KEEP_ALIVE=false
@@ -433,8 +434,9 @@ if [ "${active}" = "true" -o "${DOCKER_RUN_DETACHED:-false}" = "true" ] ; then
     exec_container "${CONTAINER_NAME:-""}"
     # attach_container "${CONTAINER_ID:-""}"
 fi
-unset active
 
 # [ -n "${CONTAINER_NAME}" -a -n "$(get_running_container_by_name ${CONTAINER_NAME})" ] && printf "Found existing\n" || run_new "$@"
 # [ "${script}" = "true" ] && exec_container "${CONTAINER_NAME:-""}"
+# [ "${script}" = "true" ] && start_container "${CONTAINER_NAME}"
 
+unset active script
