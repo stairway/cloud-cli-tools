@@ -23,7 +23,7 @@ ENV BOOL="${TRUE}|${FALSE}"
 
 ENV USER="${USER:-root}"
 ENV HOME="${HOME:-/root}"
-ENV PATH="${HOME}/.local/bin:/opt/bin:${PATH}"
+ENV PATH="${HOME}/.local/bin:/opt/bin:${PATH}:${HOME}/.tfenv/bin"
 ENV DOWNLOADS="${DOWNLOADS:-${HOME}/.local/downloads}"
 ENV SCRIPTS="${SCRIPTS:-${HOME}/.local/scripts}"
 ENV ENVFILE="${ENVFILE:-${HOME}/.local/.env}"
@@ -126,17 +126,25 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${ISTIO_VERSION}" "latest" "istio/isti
     cp istio-${version}/tools/istioctl.bash $HOME/.istioctl.bash && \
     printf "istio: %s\n" "$(istioctl version --remote=false --short)" >> /.versions
 
+# RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
+#         version=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') || \
+#         version="$(echo ${TERRAFORM_VERSION} | sed s/^v//g)" && \
+#     status=$($SCRIPTS/download-and-verify-1.sh "https://releases.hashicorp.com/terraform" \
+#         "hashicorp/terraform" "${version}" \
+#         "terraform_${version}_linux_amd64.zip" "terraform_${version}_SHA256SUMS") && \
+#     echo $status && \
+#     unzip -o "terraform_${version}_linux_amd64.zip" && \
+#     install terraform /usr/bin/terraform && \
+#     printf "Hashicorp %s\n" "$(echo $(terraform version) | awk '{print $1" "$2}')" >> /.versions && \
+#     terraform -install-autocomplete
+
 RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
         version=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') || \
         version="$(echo ${TERRAFORM_VERSION} | sed s/^v//g)" && \
-    status=$($SCRIPTS/download-and-verify-1.sh "https://releases.hashicorp.com/terraform" \
-        "hashicorp/terraform" "${version}" \
-        "terraform_${version}_linux_amd64.zip" "terraform_${version}_SHA256SUMS") && \
-    echo $status && \
-    unzip -o "terraform_${version}_linux_amd64.zip" && \
-    install terraform /usr/local/bin/terraform && \
-    printf "Hashicorp %s\n" "$(echo $(terraform version) | awk '{print $1" "$2}')" >> /.versions && \
-    terraform -install-autocomplete
+    git clone --depth=1 https://github.com/tfutils/tfenv.git ${HOME}/.tfenv && \
+    ln -s $HOME/.tfenv/bin/* /usr/local/bin && \
+    tfenv install $version && \
+    tfenv use $version
 
 RUN version=$($SCRIPTS/gh-get-version.sh "${TERRAGRUNT_VERSION}" "latest" "gruntwork-io/terragrunt") && \
     status=$($SCRIPTS/gh-download-and-verify.sh "gruntwork-io/terragrunt" "${version}" \
