@@ -146,8 +146,8 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${ISTIO_VERSION}" "latest" "istio/isti
 RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
         version=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') || \
         version="$(echo ${TERRAFORM_VERSION} | sed s/^v//g)" && \
-    git clone --depth=1 https://github.com/tfutils/tfenv.git $HOMELOCAL/.tfenv && \
-    ln -s $HOMELOCAL/.tfenv/bin/* $HOMELOCAL/bin && \
+    git clone --depth=1 https://github.com/tfutils/tfenv.git $HOME/.tfenv && \
+    ln -s $HOME/.tfenv/bin/* $DOTLOCAL/bin && \
     tfenv install $version && \
     tfenv use $version
 
