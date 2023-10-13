@@ -15,18 +15,22 @@ ARG TZ=America/Chicago
 ARG EDITOR=nano
 
 # default values
+# ARG UNAME=root
+# ARG HOMEDIR=/root
 ARG USER=root
 ARG HOME=/root
-ARG DOWNLOADS=${HOME}/.local/downloads
-ARG SCRIPTS=${HOME}/.local/scripts
+ARG DOTLOCAL=/opt/.local
+
+ENV DOWNLOADS=${DOTLOCAL}/downloads
+ENV SCRIPTS=${DOTLOCAL}/scripts
 
 # only used if HOME != root
 ARG UID=1001
 
-ENV USER=${USER}
-ENV HOME=${HOME}
-ENV DOWNLOADS=${DOWNLOADS}
-ENV SCRIPTS=${SCRIPTS}
+# ENV USER=${USER}
+# ENV HOME=${HOME}
+ENV DOWNLOADS=${DOTLOCAL}/downloads
+ENV SCRIPTS=${DOTLOCAL}/scripts
 
 ENV TZ=${TZ}
 ENV TERM=xterm
@@ -35,7 +39,10 @@ ENV AWS_VAULT_BACKEND=pass
 
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y apt-utils && \
-    apt-get clean -y
+    apt-get clean -y && \
+    mkdir -p $DOTLOCAL/bin && \
+    mkdir -p $DOWNLOADS && \
+    mkdir -p $SCRIPTS
 
 ARG INSTALL_PKGS="\
     coreutils \
@@ -69,17 +76,7 @@ ARG PIP_PKGS="\
     pytest \
     debugpy"
 
-COPY bin/gh-login /usr/local/bin/
-
-# TODO: gpg not currently working with non-root user
-RUN [ "${USER:-root}" = "root" ] || { \
-        INSTALL_PKGS="${INSTALL_PKGS} sudo" && \
-        # useradd -rm -d ${HOME} -s /bin/bash -g root -G sudo -u ${UID} ${USER} && \
-        useradd --system --create-home --home-dir ${HOME} --shell /bin/bash --gid root --groups sudo --uid ${UID:-1001} ${USER} && \
-        echo "${USER}:${USER}" | chpasswd && \
-        echo 'root:root' | chpasswd; } && \
-    mkdir -p $DOWNLOADS && \
-    mkdir -p $SCRIPTS
+COPY bin/gh-login $DOTLOCAL/bin/
 
 # Install packages
 RUN apt-get update -y && \
@@ -96,6 +93,27 @@ RUN apt-get update -y && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
+RUN cat >> /etc/skel/.bashrc <<EOF
+if [ -f $DOTLOCAL/.bashrc_extra ]; then
+    . $DOTLOCAL/.bashrc_extra
+fi
+EOF
+
+RUN cat >> /etc/skel/.profile <<EOF
+[ "\$(pwd)" = "\$HOME" ] || cd ~
+EOF
+
+# TODO: gpg not currently working with non-root user
+# (alternative to `--groups sudu` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
+# (to add password, use `-p "$(openssl passwd -1 <password>)"`)
+# RUN useradd --create-home --shell /bin/bash --user-group --groups sudo --no-log-init $UNAME && \
+#     passwd -d $UNAME && \
+#     echo "root:root" | chpasswd && \
+#     useradd --system --create-home --user-group --no-log-init localstack && \
+#     passwd -d localstack && \
+#     [ -d $DOTLOCAL ] || mkdir -p $DOTLOCAL && \
+#     chown -R $UNAME $DOTLOCAL
+
 # Install additional python versions
 RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -F'.' '{print $1"."$2}') && \
     apt-get update -y && \
@@ -106,19 +124,19 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
         update-alternatives --install /usr/bin/python3 python3 "/usr/bin/python${PYTHON_DEFAULT_VERSION}" 99 && \
         update-alternatives --install /usr/bin/python3 python3 "/usr/bin/python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" 98 && \
         update-alternatives --set python3 $(update-alternatives --list python3 | grep "python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}") && \
-        python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION} -m pip install $PIP_PKGS; } && \
-    python${PYTHON_DEFAULT_VERSION} -m pip install $PIP_PKGS && \
+        HOME=$DOTLOCAL python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION} -m pip install $PIP_PKGS; } && \
+    HOME=$DOTLOCAL python${PYTHON_DEFAULT_VERSION} -m pip install $PIP_PKGS && \
     priority=0 && \
     { for python_version in $(echo $ADDITIONAL_PYTHON_VERSIONS); do \
         [ "${python_version}" != "${PYTHON_DEFAULT_VERSION}" -a "${python_version}" != "${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" ] && \
             priority=$((priority+1)) && \
             DEBIAN_FRONTEND=noninteractive apt-get install -y "python${python_version}" "python${python_version}-distutils" && \
             update-alternatives --install /usr/bin/python3 python3 "/usr/bin/python${python_version}" $priority && \
-            python${python_version} -m pip install $PIP_PKGS; \
+            HOME=$DOTLOCAL python${python_version} -m pip install $PIP_PKGS; \
     done; } && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y python-is-python3 && \
     apt-get clean -y && \
-    curl -sSL https://install.python-poetry.org | python3 -
+    curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -134,6 +152,27 @@ ARG DOCKER_PKGS="\
     docker-compose-plugin"
 
 WORKDIR $DOWNLOADS
+
+RUN touch $SCRIPTS/include-file.sh && \
+    chmod +x $SCRIPTS/include-file.sh && \
+    cat > $SCRIPTS/include-file.sh <<EOF
+#!/bin/sh -euf
+cat >> \$1 <<INCFILE
+
+if [ -f \$2 ]; then
+    . \$2
+fi
+INCFILE
+EOF
+
+RUN touch $SCRIPTS/child-dirs.sh && \
+    chmod +x $SCRIPTS/child-dirs.sh && \
+    cat > $SCRIPTS/child-dirs.sh <<EOF
+#!/bin/sh -euf
+for d in $(echo "\$@"); do \
+[ -d \$d ] || mkdir \$d; \
+done
+EOF
 
 RUN touch $SCRIPTS/str-lower.sh && \
     chmod +x $SCRIPTS/str-lower.sh && \
@@ -346,7 +385,8 @@ exit \$exit_code
 EOF
 
 RUN mkdir -m 0755 -p /etc/apt/keyrings && \
-    git --version >> /.versions
+    git --version >> /.versions && \
+    set -x; $SCRIPTS/include-file.sh /root/.bashrc $DOTLOCAL/.bashrc_extra
 
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
     chmod a+r /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
@@ -426,7 +466,7 @@ RUN echo $(cat "${HOME}/.bashrc") | grep --color=never -q -E '(case.*in.*\s*)xte
     sed -z -i -E 's/(case.*in.*\s*)xterm-color(.*\s*esac)/\1xterm-*color\2/g' "${HOME}/.bashrc"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-USER $USER
+# USER $USER
 WORKDIR $HOME
 
 # Additional Metadata
