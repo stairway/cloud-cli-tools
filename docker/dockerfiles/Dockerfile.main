@@ -6,6 +6,8 @@ LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@liatrio.com
 
 ARG GH_CLIENT_TOKEN=
 
+ARG USER=root
+ARG HOME=/root
 ARG DOTLOCAL=/opt/.local
 
 ARG KUBE_VERSION=latest
