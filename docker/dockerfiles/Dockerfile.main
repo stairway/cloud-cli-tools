@@ -7,7 +7,6 @@ LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@liatrio.com
 ARG GH_CLIENT_TOKEN=
 
 ARG DOTLOCAL=/opt/.local
-ARG HOMELOCAL=$HOME/.local
 
 ARG KUBE_VERSION=latest
 ARG ISTIO_VERSION=latest
@@ -30,7 +29,7 @@ ENV PATH="${HOME}/.local/bin:${DOTLOCAL}/bin:/opt/bin:${PATH}"
 ENV PLUGINS="${PLUGINS:-${DOTLOCAL}/plugins.d}"
 ENV DOWNLOADS="${DOWNLOADS:-${DOTLOCAL}/downloads}"
 ENV SCRIPTS="${SCRIPTS:-${DOTLOCAL}/scripts}"
-ENV ENVFILE="${ENVFILE:-${HOMELOCAL}/.env}"
+ENV ENVFILE="${ENVFILE:-${HOME}/.local/.env}"
 ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;. "${ENVFILE:-~/.local/.env}"; set +a >/dev/null'
 
 USER root
@@ -40,7 +39,7 @@ COPY docs/* /docs/
 COPY opt/* /opt/bin/
 COPY bin/* /usr/local/bin/
 
-COPY profile/* $HOMELOCAL/profile.d/
+COPY profile/* $HOME/.local/profile.d/
 COPY conf $DOTLOCAL/.conf
 
 ADD addons/**/*.tgz /tmp/addons/
@@ -189,12 +188,10 @@ RUN echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash
     echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> "${HOME}/.bashrc" && \
-    echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > $HOMELOCAL/profile.d/init.sh && \
-    cat > $HOMELOCAL/.bashrc_extra <<EOF
+    echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > $HOME/.local/profile.d/init.sh && \
+    cat > $HOME/.local/.bashrc_extra <<EOF
 
-export USER=$(whoami)
-export DOTLOCAL=${DOTLOCAL}
-export HOMELOCAL=${HOMELOCAL}
+export USER=\$(whoami)
 export PATH="${PATH}:${HOMELOCAL}/.tfenv/bin"
 export EDITOR="\${EDITOR:-$EDITOR}"
 export VISUAL="\${EDITOR:-$EDITOR}"
