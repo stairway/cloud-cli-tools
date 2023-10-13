@@ -40,7 +40,7 @@ ENV AWS_VAULT_BACKEND=pass
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y apt-utils && \
     apt-get clean -y && \
-    mkdir -p $DOTLOCAL/bin $DOWNLOADS && $SCRIPTS
+    mkdir -p $DOTLOCAL/bin $DOWNLOADS $SCRIPTS
 
 ARG INSTALL_PKGS="\
     coreutils \
