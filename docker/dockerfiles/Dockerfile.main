@@ -40,7 +40,7 @@ WORKDIR $DOWNLOADS
 
 COPY docs/* /docs/
 COPY opt/* /opt/bin/
-COPY bin/* /usr/local/bin/
+COPY bin/* $DOTLOCAL/bin/
 
 COPY profile/* $DOTLOCAL/profile.d/
 COPY conf $DOTLOCAL/.conf
@@ -186,6 +186,7 @@ RUN KUBE_PS1_VERSION="v$(echo ${KUBE_PS1_VERSION} | sed s/^v//g)" && \
 RUN set -x; [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS
 
 RUN echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
+    ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
     ln -s /usr/share/bash-completion/completions/git ~/.git-completion.bash && \
     echo "complete -C /usr/local/bin/aws_completer aws" >> "${HOME}/.bashrc" && \
     echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
