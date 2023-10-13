@@ -147,8 +147,8 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${ISTIO_VERSION}" "latest" "istio/isti
 RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
         version=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') || \
         version="$(echo ${TERRAFORM_VERSION} | sed s/^v//g)" && \
-    git clone --depth=1 https://github.com/tfutils/tfenv.git $HOME/.tfenv && \
-    ln -s $HOME/.tfenv/bin/* $DOTLOCAL/bin && \
+    git clone --depth=1 https://github.com/tfutils/tfenv.git $DOTLOCAL/.tfenv && \
+    ln -s $DOTLOCAL/.tfenv/bin/* $HOMELOCAL/bin && \
     tfenv install $version && \
     tfenv use $version
 
@@ -190,11 +190,11 @@ RUN echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash
     echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> "${HOME}/.bashrc" && \
-    echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > $HOME/.local/profile.d/init.sh && \
-    cat > $HOME/.local/.bashrc_extra <<EOF
+    echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
+    cat > $DOTLOCAL/.bashrc_extra <<EOF
 
 export USER=\$(whoami)
-export PATH="${PATH}:${HOMELOCAL}/.tfenv/bin"
+export PATH="\${PATH}:${HOMELOCAL}/.tfenv/bin"
 export EDITOR="\${EDITOR:-$EDITOR}"
 export VISUAL="\${EDITOR:-$EDITOR}"
 export GIT_EDITOR="\${EDITOR:-$EDITOR}"
