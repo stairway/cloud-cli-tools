@@ -9,6 +9,7 @@ ARG GH_CLIENT_TOKEN=
 ARG USER=root
 ARG HOME=/root
 ARG DOTLOCAL=/opt/.local
+ARG HOMELOCAL=$HOME/.local
 
 ARG KUBE_VERSION=latest
 ARG ISTIO_VERSION=latest
@@ -27,11 +28,11 @@ ENV BOOL="${TRUE}|${FALSE}"
 
 # ENV USER="${USER:-root}"
 # ENV HOME="${HOME:-/root}"
-ENV PATH="${HOME}/.local/bin:${DOTLOCAL}/bin:/opt/bin:${PATH}"
+ENV PATH="${HOMELOCAL}/bin:${DOTLOCAL}/bin:/opt/bin:${PATH}"
 ENV PLUGINS="${PLUGINS:-${DOTLOCAL}/plugins.d}"
 ENV DOWNLOADS="${DOWNLOADS:-${DOTLOCAL}/downloads}"
 ENV SCRIPTS="${SCRIPTS:-${DOTLOCAL}/scripts}"
-ENV ENVFILE="${ENVFILE:-${HOME}/.local/.env}"
+ENV ENVFILE="${ENVFILE:-${HOMELOCAL}/.env}"
 ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;. "${ENVFILE:-~/.local/.env}"; set +a >/dev/null'
 
 USER root
@@ -41,7 +42,7 @@ COPY docs/* /docs/
 COPY opt/* /opt/bin/
 COPY bin/* /usr/local/bin/
 
-COPY profile/* $HOME/.local/profile.d/
+COPY profile/* $DOTLOCAL/profile.d/
 COPY conf $DOTLOCAL/.conf
 
 ADD addons/**/*.tgz /tmp/addons/
