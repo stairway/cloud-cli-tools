@@ -344,10 +344,10 @@ run_new() {
         # --mount "type=volume,src='${RANDOMSTR}',dst=${docker_user_home}/.local"
     )
     [ -d "${PWD}/mount/addons" -a $(count $(ls -1 ${PWD}/mount/addons)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/addons:/tmp/addons")
-    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh")
-    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/crypto.sh:/usr/local/bin/crypto.sh")
-    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/init.sh:/usr/local/bin/init.sh")
-    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/profile:${docker_user_home}/.local/profile.d")
+    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/docker-entrypoint.sh:/opt/local/bin/docker-entrypoint.sh")
+    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/crypto.sh:/opt/local/bin/crypto.sh")
+    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/init.sh:/opt/local/bin/init.sh")
+    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/profile:/opt/local/profile.d")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}:/data/$(basename $(pwd))")
 
     local run_mode=("")

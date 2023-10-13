@@ -235,7 +235,7 @@ WORKDIR $HOME
 VOLUME [ "/data", "$HOME/.ssh", "$HOME/.gnupg", "$HOME/.password-store", "$HOME/.awsvault" ]
 
 SHELL [ "/bin/bash", "-o", "pipefail", "-c" ]
-ENTRYPOINT [ "/usr/local/bin/docker-entrypoint.sh" ]
+ENTRYPOINT [ "/opt/local/bin/docker-entrypoint.sh" ]
 
 # Additional Metadata
 ARG VERSION=base-latest
