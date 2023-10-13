@@ -192,7 +192,7 @@ RUN echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash
     echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> "${HOME}/.bashrc" && \
-    echo "[ \$# -eq 0 ] && /usr/local/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
+    echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
     cat > $DOTLOCAL/.bashrc_extra <<EOF
 
 export USER=\$(whoami)
