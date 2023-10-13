@@ -8,7 +8,7 @@ ARG GH_CLIENT_TOKEN=
 
 ARG USER=root
 ARG HOME=/root
-ARG DOTLOCAL=/opt/.local
+ARG DOTLOCAL=/opt/local
 ARG HOMELOCAL=$HOME/.local
 
 ARG KUBE_VERSION=latest
