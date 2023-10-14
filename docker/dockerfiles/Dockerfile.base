@@ -21,9 +21,6 @@ ARG USER=root
 ARG HOME=/root
 ARG DOTLOCAL=/opt/local
 
-ENV DOWNLOADS=${DOTLOCAL}/downloads
-ENV SCRIPTS=${DOTLOCAL}/scripts
-
 # only used if HOME != root
 ARG UID=1001
 
