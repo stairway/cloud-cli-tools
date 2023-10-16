@@ -252,6 +252,7 @@ usage:  run.sh -u <user> -t <team_name> -n <full_name> -m <email> -e <editor>
 |   |   +-- <package-group>/
 |   |       `-- <package-name>.zip
 |   +-- bin/
+|   |   |-- describe
 |   |   |-- docker-entrypoint.sh
 |   |   |-- init.sh
 |   |   |-- mytf.sh
@@ -264,8 +265,6 @@ usage:  run.sh -u <user> -t <team_name> -n <full_name> -m <email> -e <editor>
 |   |   `-- Dockerfile.main
 |   +-- docs/
 |   |   `-- README.md
-|   +-- opt/
-|   |   `-- describe
 |   +-- profile/
 |   |   |-- 10-colors.sh
 |   |   |-- 20-aws-prompt.sh

@@ -37,11 +37,11 @@ ENV DOCS="${DOCS:-${DOTLOCAL}/docs}"
 ENV ENVFILE="${ENVFILE:-${HOMELOCAL}/.env}"
 ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;. "${ENVFILE:-~/.local/.env}"; set +a >/dev/null'
 ENV BASHRC_EXTRA="${BASHRC_EXTRA:-${DOTLOCAL}/bash.bashrc_extra}"
+ENV DESCRIBE="${DESCRIBE:-${DOTLOCAL}/bin/describe}"
 
 USER root
 WORKDIR $DOWNLOADS
 
-COPY opt/* $DOTLOCAL/bin/
 COPY bin/* $DOTLOCAL/bin/
 COPY profile/* $DOTLOCAL/profile.d/
 COPY conf $DOTLOCAL/conf
@@ -50,7 +50,7 @@ ADD addons/**/*.tgz /tmp/addons/
 
 RUN for f in $(ls -1 /tmp/addons); do install "/tmp/addons/${f}" "/usr/local/bin/${f}"; done && \
     rm -rf /tmp/addons && \
-    chmod +x $DOTLOCAL/describe && \
+    chmod +x $DESCRIBE $DOTLOCAL/bin/* && \
     mkdir -p $HOMELOCAL/bin $PLUGINS $DOCS $LOCALSHARE
 
 COPY docs/* $DOCS

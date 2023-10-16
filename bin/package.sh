@@ -24,8 +24,8 @@ create_tar() {
     tar_command=(
         tar
         ${exclude[@]}
-        -czvf 
-        "${ARCHIVE_NAME}.tgz" 
+        -czvf
+        "${ARCHIVE_NAME}.tgz"
         "${INCLUDES[@]}"
     )
 
@@ -35,7 +35,7 @@ create_tar() {
 
 create_zip() {
     printf "\033[93m>\033[0m Creating '%s' ...\n" "${ARCHIVE_NAME}.zip"
-    
+
     local exclude=("")
     for e in ${EXCLUDES[@]}; do
         exclude+=("-x ${e}")
