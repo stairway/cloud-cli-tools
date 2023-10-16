@@ -35,8 +35,6 @@ ENV TERM=xterm
 ENV EDITOR=${EDITOR}
 ENV AWS_VAULT_BACKEND=pass
 
-COPY opt/* /opt/bin/
-
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y apt-utils && \
     apt-get clean -y && \
@@ -133,8 +131,7 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
             HOME=$DOTLOCAL python${python_version} -m pip install $PIP_PKGS; \
     done; } && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y python-is-python3 && \
-    apt-get clean -y && \
-    curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
+    apt-get clean -y
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en

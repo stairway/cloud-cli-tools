@@ -1,5 +1,5 @@
-#!/usr/bin/env sh
+#!/bin/sh -e
 
 echo
-cat /docs/README.md
+cat $DOCS/README.md
 echo
