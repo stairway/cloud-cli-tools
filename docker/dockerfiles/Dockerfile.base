@@ -92,12 +92,14 @@ RUN apt-get update -y && \
     . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
 RUN cat >> /etc/skel/.bashrc <<EOF
+
 if [ -f $BASHRC_EXTRA ]; then
     . $BASHRC_EXTRA
 fi
 EOF
 
 RUN cat >> /etc/skel/.profile <<EOF
+
 [ "\$(pwd)" = "\$HOME" ] || cd ~
 EOF
 

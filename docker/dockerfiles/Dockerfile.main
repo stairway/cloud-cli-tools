@@ -214,26 +214,26 @@ export KUBE_EDITOR="\${EDITOR:-$EDITOR}"
 export CLUSTER_PREFIX="\${CLUSTER_PREFIX:-di}"
 # export PATH="\${PATH}:$LOCALSHARE/tfenv/bin"
 
-if [ -f $ENVFILE ]; then
+if [ -f "\${ENVFILE:-$ENVFILE}" ]; then
     set -o allexport
-    . $ENVFILE
+    . "\${ENVFILE:-$ENVFILE}"
     set +o allexport
 fi
 
-if [ -d $PLUGINS ]; then
-    for f in \$(find $PLUGINS -mindepth 1 -type f -name '*.sh' | sort -u); do
+if [ -d "\${PLUGINS:-$PLUGINS}" ]; then
+    for f in \$(find "\${PLUGINS:-$PLUGINS}" -mindepth 1 -type f -name '*.sh' | sort -u); do
         . \$f
     done
 fi
 
-if [ -d $DOTLOCAL/profile.d ]; then
-    for f in \$(find $DOTLOCAL/profile.d -mindepth 1 -type f -name '*.sh' | sort -u); do
+if [ -d "\${DOTLOCAL:-$DOTLOCAL}/profile.d" ]; then
+    for f in \$(find "\${DOTLOCAL:-$DOTLOCAL}/profile.d" -mindepth 1 -type f -name '*.sh' | sort -u); do
         . \$f
     done
 fi
 
-if [ -f $DOTLOCAL/init.sh ]; then
-    . $DOTLOCAL/init.sh
+if [ -f "\${DOTLOCAL:-$DOTLOCAL}/init.sh" ]; then
+    . "\${DOTLOCAL:-$DOTLOCAL}/init.sh"
 fi
 
 EOF
