@@ -26,6 +26,7 @@ ARG UID=1001
 
 # ENV USER=${USER}
 # ENV HOME=${HOME}
+ENV PATH="${DOTLOCAL}/bin:/opt/bin:${PATH}"
 ENV DOWNLOADS=${DOTLOCAL}/downloads
 ENV SCRIPTS=${DOTLOCAL}/scripts
 
@@ -33,6 +34,8 @@ ENV TZ=${TZ}
 ENV TERM=xterm
 ENV EDITOR=${EDITOR}
 ENV AWS_VAULT_BACKEND=pass
+
+COPY opt/* /opt/bin/
 
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y apt-utils && \
@@ -89,8 +92,8 @@ RUN apt-get update -y && \
     . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
 RUN cat >> /etc/skel/.bashrc <<EOF
-if [ -f $DOTLOCAL/.bashrc_extra ]; then
-    . $DOTLOCAL/.bashrc_extra
+if [ -f $DOTLOCAL/bashrc_extra ]; then
+    . $DOTLOCAL/bashrc_extra
 fi
 EOF
 
@@ -131,7 +134,7 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
     done; } && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y python-is-python3 && \
     apt-get clean -y && \
-    curl -sSL https://install.python-poetry.org | POETRY_HOME="${HOME}/.local" python3 -
+    curl -sSL https://install.python-poetry.org | POETRY_HOME="${DOTLOCAL}" python3 -
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -381,7 +384,8 @@ EOF
 
 RUN mkdir -m 0755 -p /etc/apt/keyrings && \
     git --version >> /.versions && \
-    set -x; $SCRIPTS/include-file.sh /root/.bashrc $DOTLOCAL/.bashrc_extra
+    chmod +x /opt/bin/describe && \
+    set -x; $SCRIPTS/include-file.sh /root/.bashrc $DOTLOCAL/bashrc_extra
 
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
     chmod a+r /etc/apt/keyrings/githubcli-archive-keyring.gpg && \

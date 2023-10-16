@@ -90,8 +90,8 @@ do_init() {
     [ -e ${HOME}/data ] || ln -s /data ${HOME}/data
     if [ ${VSCODE_DEBUGPY_PORT:-0} -gt 999 ]; then
         if [ ! -d /data/.vscode ]; then
-            [ -d $DOTLOCAL/.conf/vscode ] && \
-                cp -r $DOTLOCAL/.conf/vscode /data/.vscode && \
+            [ -d $DOTLOCAL/conf/vscode ] && \
+                cp -r $DOTLOCAL/conf/vscode /data/.vscode && \
                 sed -i -r "s/(\"port\"):\s*(\"\\$\{VSCODE_DEBUGPY_PORT\}\")$/\1: ${VSCODE_DEBUGPY_PORT}/g" /data/.vscode/launch.json
         fi
     fi

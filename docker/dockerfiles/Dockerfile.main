@@ -28,29 +28,28 @@ ENV BOOL="${TRUE}|${FALSE}"
 
 # ENV USER="${USER:-root}"
 # ENV HOME="${HOME:-/root}"
-ENV PATH="${HOMELOCAL}/bin:${DOTLOCAL}/bin:/opt/bin:${PATH}"
+ENV PATH="${HOMELOCAL}/bin:${PATH}"
 ENV PLUGINS="${PLUGINS:-${DOTLOCAL}/plugins.d}"
 ENV DOWNLOADS="${DOWNLOADS:-${DOTLOCAL}/downloads}"
 ENV SCRIPTS="${SCRIPTS:-${DOTLOCAL}/scripts}"
+ENV DOCS="${DOCS:-${DOTLOCAL}/docs}"
 ENV ENVFILE="${ENVFILE:-${HOMELOCAL}/.env}"
 ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;. "${ENVFILE:-~/.local/.env}"; set +a >/dev/null'
 
 USER root
 WORKDIR $DOWNLOADS
 
-COPY docs/* /docs/
-COPY opt/* /opt/bin/
 COPY bin/* $DOTLOCAL/bin/
-
 COPY profile/* $DOTLOCAL/profile.d/
-COPY conf $DOTLOCAL/.conf
+COPY conf $DOTLOCAL/conf
 
 ADD addons/**/*.tgz /tmp/addons/
 
 RUN for f in $(ls -1 /tmp/addons); do install "/tmp/addons/${f}" "/usr/local/bin/${f}"; done && \
     rm -rf /tmp/addons && \
-    chmod +x /opt/bin/describe && \
-    mkdir -p $HOMELOCAL/bin $PLUGINS
+    mkdir -p $HOMELOCAL/bin $PLUGINS $DOCS
+
+COPY docs/* $DOCS
 
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux
 RUN [ "${KUBE_VERSION:-latest}" = "latest" ] && \
@@ -186,17 +185,16 @@ RUN KUBE_PS1_VERSION="v$(echo ${KUBE_PS1_VERSION} | sed s/^v//g)" && \
 RUN set -x; [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS
 
 RUN echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
-    ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
     ln -s /usr/share/bash-completion/completions/git ~/.git-completion.bash && \
     echo "complete -C /usr/local/bin/aws_completer aws" >> "${HOME}/.bashrc" && \
     echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> "${HOME}/.bashrc" && \
     echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
-    cat > $DOTLOCAL/.bashrc_extra <<EOF
+    cat > $DOTLOCAL/bashrc_extra <<EOF
 
 export USER=\$(whoami)
-export PATH="\${PATH}:${HOMELOCAL}/.tfenv/bin"
+export PATH="\${PATH}:${DOTLOCAL}/.tfenv/bin"
 export EDITOR="\${EDITOR:-$EDITOR}"
 export VISUAL="\${EDITOR:-$EDITOR}"
 export GIT_EDITOR="\${EDITOR:-$EDITOR}"
@@ -227,7 +225,8 @@ fi
 
 EOF
 
-RUN set -x; $SCRIPTS/child-dirs.sh $HOME/.ssh $HOME/.gnupg $HOME/.password-store $HOME/.awsvault
+RUN ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
+    set -x; $SCRIPTS/child-dirs.sh $HOME/.ssh $HOME/.gnupg $HOME/.password-store $HOME/.awsvault
 
 USER $USER
 WORKDIR $HOME
