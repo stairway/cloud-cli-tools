@@ -9,8 +9,6 @@ ARG GH_CLIENT_TOKEN=
 ARG USER=root
 ARG HOME=/root
 ARG HOMELOCAL=$HOME/.local
-# ARG SHARED=$HOME/.local/share
-ARG SHARED=/opt
 
 ARG KUBE_VERSION=latest
 ARG ISTIO_VERSION=latest
@@ -30,6 +28,7 @@ ENV BOOL="${TRUE}|${FALSE}"
 # ENV USER="${USER:-root}"
 # ENV HOME="${HOME:-/root}"
 ENV PATH="${HOMELOCAL}/bin:${PATH}"
+ENV SHARED="${SHARED:-${HOME}/.local/share}"
 ENV DOTLOCAL="${DOTLOCAL:-/opt/local}"
 ENV PLUGINS="${PLUGINS:-${DOTLOCAL}/plugins.d}"
 ENV DOWNLOADS="${DOWNLOADS:-${DOTLOCAL}/downloads}"

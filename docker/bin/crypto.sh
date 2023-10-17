@@ -36,16 +36,15 @@ init_pass() {
 
 check_crypto() {
     local last_err=0
-    if [ ! -f $HOME/.crypto ]; then
+    if [ ! -f $HOME/._crypto ]; then
         printf "\033[92;1m>>>\033[94;1m Checking %s \033[92;1m>>>\033[0m\n" "Crypto (gpg, pass)"
 
-        date -u +%Y%m%dT%H%M%SZ > $HOME/._crypto \
-            && init_gpg && init_pass \
-            && date -u +%Y%m%dT%H%M%SZ > $HOME/.crypto \
+        init_gpg && init_pass \
+            && date -u +%Y%m%dT%H%M%SZ > $HOME/._crypto \
             || last_err=$?
     fi
 
-    [ $last_err -eq 0 -a -f $HOME/.crypto ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "Crypto (gpg, pass)"
+    [ $last_err -eq 0 -a -f $HOME/._crypto ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "Crypto (gpg, pass)"
 }
 
 check_crypto
