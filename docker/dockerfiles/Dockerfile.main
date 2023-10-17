@@ -203,6 +203,7 @@ RUN echo 'printf "\n\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/ba
     echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> "${HOME}/.bashrc" && \
     poetry_path=$(command -v poetry 2>/dev/null || [ -f "${SHARED}/poetry/bin/poetry" ] && echo "${SHARED}/poetry/bin/poetry") && \
     { [ -n "$poetry_path" ] && $poetry_path completions bash >> ${HOME}/.bash_completion; } && \
+    ln -s $poetry_path $HOMELOCAL/bin && \
     echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
     cat > $BASHRC_EXTRA <<EOF
 
