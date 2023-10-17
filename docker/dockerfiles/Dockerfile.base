@@ -89,7 +89,14 @@ RUN apt-get update -y && \
     touch /usr/share/locale/locale.alias && \
     locale-gen && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
-    . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
+    . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions && \
+    # check: `pip config list -v`
+    # test:  `pip cache dir`
+    cat >> /etc/pip.conf <<EOF
+
+[global]
+cache-dir=$DOTLOCAL/.cache
+EOF
 
 RUN cat >> /etc/skel/.bashrc <<EOF
 
@@ -115,6 +122,7 @@ EOF
 #     chown -R $UNAME $DOTLOCAL
 
 # Install additional python versions
+# PIP_CACHE_DIR=$DOTLOCAL python${python_version} -m pip install $PIP_PKGS
 RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -F'.' '{print $1"."$2}') && \
     apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common && \
@@ -124,15 +132,15 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
         update-alternatives --install /usr/bin/python3 python3 "/usr/bin/python${PYTHON_DEFAULT_VERSION}" 99 && \
         update-alternatives --install /usr/bin/python3 python3 "/usr/bin/python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" 98 && \
         update-alternatives --set python3 $(update-alternatives --list python3 | grep "python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}") && \
-        HOME=$DOTLOCAL python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION} -m pip install $PIP_PKGS; } && \
-    HOME=$DOTLOCAL python${PYTHON_DEFAULT_VERSION} -m pip install $PIP_PKGS && \
+        python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION} -m pip install $PIP_PKGS; } && \
+    python${PYTHON_DEFAULT_VERSION} -m pip install $PIP_PKGS && \
     priority=0 && \
     { for python_version in $(echo $ADDITIONAL_PYTHON_VERSIONS); do \
         [ "${python_version}" != "${PYTHON_DEFAULT_VERSION}" -a "${python_version}" != "${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" ] && \
             priority=$((priority+1)) && \
             DEBIAN_FRONTEND=noninteractive apt-get install -y "python${python_version}" "python${python_version}-distutils" && \
             update-alternatives --install /usr/bin/python3 python3 "/usr/bin/python${python_version}" $priority && \
-            HOME=$DOTLOCAL python${python_version} -m pip install $PIP_PKGS; \
+            python${python_version} -m pip install $PIP_PKGS; \
     done; } && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y python-is-python3 && \
     apt-get clean -y
