@@ -9,7 +9,8 @@ ARG GH_CLIENT_TOKEN=
 ARG USER=root
 ARG HOME=/root
 ARG HOMELOCAL=$HOME/.local
-ARG LOCALSHARE=/opt
+# ARG SHARED=$HOME/.local/share
+ARG SHARED=/opt
 
 ARG KUBE_VERSION=latest
 ARG ISTIO_VERSION=latest
@@ -51,7 +52,7 @@ ADD addons/**/*.tgz /tmp/addons/
 RUN for f in $(ls -1 /tmp/addons); do install "/tmp/addons/${f}" "/usr/local/bin/${f}"; done && \
     rm -rf /tmp/addons && \
     chmod +x $DESCRIBE $DOTLOCAL/bin/* && \
-    mkdir -p $HOMELOCAL/bin $PLUGINS $DOCS $LOCALSHARE
+    mkdir -p $HOMELOCAL/bin $PLUGINS $DOCS $SHARED
 
 COPY docs/* $DOCS
 
@@ -103,7 +104,7 @@ RUN curl -sSL https://git.io/install-kubent | sh -
 # https://python-poetry.org/docs/
 # POETRY_HOME default : ~/.local/share/pypoetry
 # To override: `curl -sSL https://install.python-poetry.org | POETRY_HOME=/etc/poetry python3 -`
-RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=$LOCALSHARE/poetry python3 -
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=$SHARED/poetry python3 -
 
 # Install kubectx and kubens
 # https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
@@ -158,9 +159,9 @@ RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
         version=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') || \
         version="$(echo ${TERRAFORM_VERSION} | sed s/^v//g)" && \
         latest_version=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') && \
-    mkdir $LOCALSHARE/tfenv && \
-    git clone --depth=1 https://github.com/tfutils/tfenv.git $LOCALSHARE/tfenv && \
-    ln -s $LOCALSHARE/tfenv/bin/* $HOMELOCAL/bin && \
+    mkdir $SHARED/tfenv && \
+    git clone --depth=1 https://github.com/tfutils/tfenv.git $SHARED/tfenv && \
+    ln -s $SHARED/tfenv/bin/* $HOMELOCAL/bin && \
     tfenv install $version && \
     tfenv use $version && \
     [ "$version" != "$latest_version" ] && tfenv install $latest_version
@@ -195,17 +196,15 @@ RUN KUBE_PS1_VERSION="v$(echo ${KUBE_PS1_VERSION} | sed s/^v//g)" && \
     printf "Installing '%s' to '%s' ...\n" "${unzip_dir}/kube-ps1.sh" "$PLUGINS/kube-ps1.sh" && \
     mv ${unzip_dir}/kube-ps1.sh $PLUGINS/
 
-RUN set -x; [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS
-
-RUN poetry_path=$(command -v poetry 2>/dev/null || [ -f "${LOCALSHARE}/poetry/bin/poetry" ] && echo "${LOCALSHARE}/poetry/bin/poetry") && \
-    [ -n "$poetry_path" ] && $poetry_path completions bash >> ${HOME}/.bash_completion
-
-RUN echo 'printf "\n\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
+RUN set -x; [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS && \
+    echo 'printf "\n\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
     ln -s /usr/share/bash-completion/completions/git ~/.git-completion.bash && \
     echo "complete -C /usr/local/bin/aws_completer aws" >> "${HOME}/.bashrc" && \
     echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> "${HOME}/.bashrc" && \
+    poetry_path=$(command -v poetry 2>/dev/null || [ -f "${SHARED}/poetry/bin/poetry" ] && echo "${SHARED}/poetry/bin/poetry") && \
+    { [ -n "$poetry_path" ] && $poetry_path completions bash >> ${HOME}/.bash_completion; } && \
     echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
     cat > $BASHRC_EXTRA <<EOF
 
@@ -215,7 +214,7 @@ export VISUAL="\${EDITOR:-$EDITOR}"
 export GIT_EDITOR="\${EDITOR:-$EDITOR}"
 export KUBE_EDITOR="\${EDITOR:-$EDITOR}"
 export CLUSTER_PREFIX="\${CLUSTER_PREFIX:-di}"
-# export PATH="\${PATH}:$LOCALSHARE/tfenv/bin"
+# export PATH="\${PATH}:$SHARED/tfenv/bin"
 
 if [ -f "\${ENVFILE:-$ENVFILE}" ]; then
     set -o allexport
