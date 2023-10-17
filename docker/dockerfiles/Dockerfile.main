@@ -203,7 +203,7 @@ RUN echo 'printf "\n\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/ba
     echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> "${HOME}/.bashrc" && \
-    { command -v poetry >/dev/null && poetry completions bash >> ${HOME}/.bash_completion; } && \
+    { command -v poetry >/dev/null && $(command -v poetry) completions bash >> ${HOME}/.bash_completion; } && \
     echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
     cat > $BASHRC_EXTRA <<EOF
 
