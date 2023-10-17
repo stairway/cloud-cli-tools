@@ -25,21 +25,21 @@ git_config() {
 
 ssh_config() {
     local file_list=0
-    file_list=($([ -d $HOME/.ssh ] && ls $HOME/.ssh 2>/dev/null))
+    file_list=($([ -d ~/.ssh ] && ls ~/.ssh 2>/dev/null))
     local gen_date=$(date -u +%Y%m%dT%H%M%SZ)
     local key_count=0
-    key_count=$(ls -1 $HOME/.ssh | grep --color=never -o id_ed25519.fingerprint | wc -l)
+    key_count=$(ls -1 ~/.ssh | grep --color=never -o id_ed25519.fingerprint | wc -l)
     if [ ${key_count} -lt 1 ]; then
         printf "\033[93m>\033[0m Generating ssh ed25519 keypair with empty password ...\n\033[96;1m%s\033[0m\n" "ssh-keygen -t ed25519 -C '${USERNAME}' -f '${HOME}/.ssh/id_ed25519' -N ''"
-        ssh-keygen -t ed25519 -C "${USERNAME}" -f "${HOME}/.ssh/id_ed25519" -N "" > "${HOME}/.ssh/${gen_date}.id_ed25519.fingerprint" \
-            && cat "${HOME}/.ssh/id_ed25519.pub"
+        ssh-keygen -t ed25519 -C "${USERNAME}" -f ~/.ssh/id_ed25519 -N "" > ~/.ssh/${gen_date}.id_ed25519.fingerprint \
+            && cat ~/.ssh/id_ed25519.pub
     fi
     key_count=0
-    key_count=$(ls -1 $HOME/.ssh | grep --color=never -o id_rsa.fingerprint | wc -l)
+    key_count=$(ls -1 ~/.ssh | grep --color=never -o id_rsa.fingerprint | wc -l)
     if [ ${key_count} -lt 1 ]; then
         printf "\033[93m>\033[0m Generating ssh rsa keypair with empty password ...\n\033[96;1m%s\033[0m\n" "ssh-keygen -t rsa -b 4096 -C '${USERNAME}' -f '${HOME}/.ssh/id_rsa' -N ''"
-        ssh-keygen -t rsa -b 4096 -C "${USERNAME}" -f "${HOME}/.ssh/id_rsa" -N "" > "${HOME}/.ssh/${gen_date}.id_rsa.fingerprint" \
-            && cat "${HOME}/.ssh/id_rsa.pub"
+        ssh-keygen -t rsa -b 4096 -C "${USERNAME}" -f ~/.ssh/id_rsa -N "" > ~/.ssh/${gen_date}.id_rsa.fingerprint \
+            && cat ~/.ssh/id_rsa.pub
     fi
 }
 
@@ -50,18 +50,18 @@ versions() {
 
 init_git() {
     local last_err=0
-    if [ ! -f $HOME/.gitconfig ]; then
+    if [ ! -f ~/.gitconfig ]; then
         printf "\033[92;1m>>>\033[94;1m Initializing %s \033[92;1m>>>\033[0m\n" "Git"
 
         git_config || last_err=$?
     fi
 
-    [ $last_err -eq 0 -a -f $HOME/.gitconfig ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "Git"
+    [ $last_err -eq 0 -a -f ~/.gitconfig ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "Git"
 }
 
 init_ssh() {
     local last_err=0
-    if [ ! -f $HOME/.ssh/.fingerprint -o ! -f $HOME/.ssh/.pub} ]; then
+    if [ ! -f ~/.ssh/.fingerprint -o ! -f ~/.ssh/.pub} ]; then
         printf "\033[92;1m>>>\033[94;1m Checking %s \033[92;1m>>>\033[0m\n" "SSH Config"
 
         ssh_config || last_err=$?
@@ -87,7 +87,7 @@ do_init() {
     versions
     crypto.sh
     init_git && init_ssh
-    [ -e ${HOME}/data ] || ln -s /data ${HOME}/data
+    [ -e ~/data ] || ln -s /data ~/data
     if [ ${VSCODE_DEBUGPY_PORT:-0} -gt 999 ]; then
         if [ ! -d /data/.vscode ]; then
             [ -d $DOTLOCAL/conf/vscode ] && \

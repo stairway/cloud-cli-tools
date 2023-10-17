@@ -54,9 +54,7 @@ init_dpctl() {
     dpctl configure --team-name=${TEAM_NAME}
     dpctl workstation awsconfig ${TEAM_NAME} --user-name=${USERNAME}
 
-    if [ -f ~/.aws/config_new ]; then
-        mv ~/.aws/config_new ~/.aws/config >/dev/null 2>&1
-    fi
+    [ -f ~/.aws/config_new ] && mv ~/.aws/config_new ~/.aws/config >/dev/null 2>&1
 }
 
 _waiting() { printf "${1:-.}"; sleep 1; }
@@ -65,11 +63,11 @@ init_aws() {
     local last_err=0
     printf "\033[92;1m>>>\033[94;1m Initializing %s \033[92;1m>>>\033[0m\n" "AWS (and dpctl)"
 
-    if [ ! -f /.initialized ]; then
+    if [ ! -f ~/._initialized ]; then
         local current_vault_user="$(aws-vault list | grep user | awk '{ print $2 }')"
         if [ "${current_vault_user}" != "${DEFAULT_PROFILE}" ]; then
-            [ ! -f "$HOME/.password-store/.gpg-id" -o ! -f "$HOME/.gnupg/trustdb.gpg" ] && printf "Still Initializing ..." && \
-                while [ ! -f "$HOME/.password-store/.gpg-id" -o ! -f "$HOME/.gnupg/trustdb.gpg" ]; do _waiting; done; echo
+            [ ! -f ~/.password-store/.gpg-id -o ! -f ~/.gnupg/trustdb.gpg ] && printf "Still Initializing ..." && \
+                while [ ! -f ~/.password-store/.gpg-id -o ! -f ~/.gnupg/trustdb.gpg ]; do _waiting; done; echo
             if [ -n "${AWS_ACCESS_KEY_ID}" -a -n "${AWS_SECRET_ACCESS_KEY}" ]; then
                 printf "\033[93m>\033[0m Found existing AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.\n"
                 aws-vault add --env "${DEFAULT_PROFILE}"
@@ -83,9 +81,7 @@ init_aws() {
 region=${AWS_VAULT_USER_REGION}
 EOF
 
-        if [ ! -d "${HOME}/.dpctl" -o ! -f "${HOME}/.dpctl/config.yaml" ]; then
-            init_dpctl
-        fi
+        [ ! -d ~/.dpctl -o ! -f ~/.dpctl/config.yaml ] && init_dpctl
 
         # Check for 'credential_process' line in user profile, originally added by dpctl
         grep -q -E -i "(^credential_process)\s*=\s*(.* -.+json $DEFAULT_PROFILE$)" ~/.aws/config >/dev/null && \
@@ -100,11 +96,11 @@ EOF
             }
 
         iam_verify "${TEAM_NAME}" "nonprod" \
-            && date -u +%Y%m%dT%H%M%SZ > /.initialized \
+            && date -u +%Y%m%dT%H%M%SZ > ~/._initialized \
             || last_err=$?
     fi
 
-    [ $last_err -eq 0 -a -f /.initialized ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "AWS (and dpctl)"
+    [ $last_err -eq 0 -a -f ~/._initialized ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "AWS (and dpctl)"
 }
 
 if [ -d /tmp/addons ]; then
