@@ -397,7 +397,7 @@ EOF
 
 RUN mkdir -m 0755 -p /etc/apt/keyrings && \
     git --version >> /.versions && \
-    set -x; $SCRIPTS/include-file.sh /root/.bashrc $BASHRC_EXTRA
+    { set -x; $SCRIPTS/include-file.sh /root/.bashrc $BASHRC_EXTRA; }
 
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
     chmod a+r /etc/apt/keyrings/githubcli-archive-keyring.gpg && \

@@ -195,8 +195,7 @@ RUN KUBE_PS1_VERSION="v$(echo ${KUBE_PS1_VERSION} | sed s/^v//g)" && \
     printf "Installing '%s' to '%s' ...\n" "${unzip_dir}/kube-ps1.sh" "$PLUGINS/kube-ps1.sh" && \
     mv ${unzip_dir}/kube-ps1.sh $PLUGINS/
 
-RUN set -x; [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS && \
-    echo 'printf "\n\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
+RUN echo 'printf "\n\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
     ln -s /usr/share/bash-completion/completions/git ~/.git-completion.bash && \
     echo "complete -C /usr/local/bin/aws_completer aws" >> "${HOME}/.bashrc" && \
     echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
@@ -240,7 +239,8 @@ fi
 EOF
 
 RUN ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
-    set -x; $SCRIPTS/child-dirs.sh $HOME/.ssh $HOME/.gnupg $HOME/.password-store $HOME/.awsvault
+    { set -x; $SCRIPTS/child-dirs.sh $HOME/.ssh $HOME/.gnupg $HOME/.password-store $HOME/.awsvault; } && \
+    { [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS; }
 
 USER $USER
 WORKDIR $HOME
