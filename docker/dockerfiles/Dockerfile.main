@@ -103,8 +103,7 @@ RUN curl -sSL https://git.io/install-kubent | sh -
 # https://python-poetry.org/docs/
 # POETRY_HOME default : ~/.local/share/pypoetry
 # To override: `curl -sSL https://install.python-poetry.org | POETRY_HOME=/etc/poetry python3 -`
-RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=$LOCALSHARE/poetry python3 - && \
-    poetry completions bash >> ~/.bash_completion
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=$LOCALSHARE/poetry python3 -
 
 # Install kubectx and kubens
 # https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
@@ -204,6 +203,7 @@ RUN echo 'printf "\n\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/ba
     echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> "${HOME}/.bashrc" && \
+    command -v poetry && poetry completions bash >> ~/.bash_completion && \
     echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
     cat > $BASHRC_EXTRA <<EOF
 
