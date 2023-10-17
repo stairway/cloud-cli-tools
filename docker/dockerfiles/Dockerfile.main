@@ -9,7 +9,7 @@ ARG GH_CLIENT_TOKEN=
 ARG USER=root
 ARG HOME=/root
 ARG HOMELOCAL=$HOME/.local
-ARG LOCALSHARE=$HOMELOCAL/share
+ARG LOCALSHARE=/opt
 
 ARG KUBE_VERSION=latest
 ARG ISTIO_VERSION=latest
@@ -103,7 +103,8 @@ RUN curl -sSL https://git.io/install-kubent | sh -
 # https://python-poetry.org/docs/
 # POETRY_HOME default : ~/.local/share/pypoetry
 # To override: `curl -sSL https://install.python-poetry.org | POETRY_HOME=/etc/poetry python3 -`
-RUN curl -sSL https://install.python-poetry.org | python3 -
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=$LOCALSHARE/poetry python3 - && \
+    poetry completions bash >> ~/.bash_completion
 
 # Install kubectx and kubens
 # https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
