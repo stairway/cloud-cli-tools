@@ -222,13 +222,13 @@ if [ -f "\${ENVFILE:-$ENVFILE}" ]; then
 fi
 
 if [ -d "\${PLUGINS:-$PLUGINS}" ]; then
-    for f in \$(find "\${PLUGINS:-$PLUGINS}" -mindepth 1 -type f -name '*.sh' | sort -u); do
+    for f in \$(find "\${PLUGINS:-$PLUGINS}" -mindepth 1 -type f -name '*.sh' -exec {} \; | sort -u); do
         . \$f
     done
 fi
 
 if [ -d "\${DOTLOCAL:-$DOTLOCAL}/profile.d" ]; then
-    for f in \$(find "\${DOTLOCAL:-$DOTLOCAL}/profile.d" -mindepth 1 -type f -name '*.sh' | sort -u); do
+    for f in \$(find "\${DOTLOCAL:-$DOTLOCAL}/profile.d" -mindepth 1 -type f -regextype posix-egrep -regex "\${DOTLOCAL:-$DOTLOCAL}/profile\.d\/[0-9]+.+\.sh" -exec echo {} \; | sort -u); do
         . \$f
     done
 fi
