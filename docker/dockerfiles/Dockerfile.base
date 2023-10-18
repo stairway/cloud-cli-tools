@@ -43,7 +43,14 @@ ENV AWS_VAULT_BACKEND=pass
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y apt-utils && \
     apt-get clean -y && \
-    mkdir -p $DOTLOCAL/bin $DOWNLOADS $SCRIPTS
+    mkdir -p $DOTLOCAL/bin $DOWNLOADS $SCRIPTS && \
+    # check: `pip config list -v`
+        # test:  `pip cache dir`
+    cat >> /etc/pip.conf <<EOF
+
+[global]
+cache-dir=$SHARED/.cache
+EOF
 
 ARG INSTALL_PKGS="\
     coreutils \
@@ -92,14 +99,7 @@ RUN apt-get update -y && \
     touch /usr/share/locale/locale.alias && \
     locale-gen && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
-    . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions && \
-    # check: `pip config list -v`
-    # test:  `pip cache dir`
-    cat >> /etc/pip.conf <<EOF
-
-[global]
-cache-dir=$SHARED/.cache
-EOF
+    . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
 RUN cat >> /etc/skel/.bashrc <<EOF
 
