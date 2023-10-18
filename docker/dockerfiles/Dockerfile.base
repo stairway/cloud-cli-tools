@@ -181,7 +181,7 @@ RUN touch $SCRIPTS/child-dirs.sh && \
     cat > $SCRIPTS/child-dirs.sh <<EOF
 #!/bin/sh -euf
 for d in $(echo "\$@"); do \
-[ -d \$d ] || mkdir \$d; \
+[ -d \$d ] || mkdir -p \$d; \
 done
 EOF
 
