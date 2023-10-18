@@ -62,6 +62,11 @@
 # RUN \
     curl -sSL https://install.python-poetry.org | POETRY_HOME=$SHARED/poetry python3 -
 
+# RUN \
+    poetry_bin_path=$(command -v poetry >/dev/null && command -v poetry | xargs dirname | xargs dirname || { [ -d "${SHARED}/poetry/bin" ] && echo "${SHARED}/poetry/bin"; }) && \
+    [ -n "$poetry_bin_path" ] && ln -s $poetry_bin_path/* $HOMELOCAL/bin && \
+    "${poetry_bin_path}/poetry" completions bash >> ${HOME}/.bash_completion
+
 # Install kubectx and kubens
 # https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
 # RUN \
@@ -168,9 +173,6 @@
     echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> "${HOME}/.bashrc" && \
-    poetry_path=$(command -v poetry 2>/dev/null || [ -d "${SHARED}/poetry/bin" ] && echo "${SHARED}/poetry/bin") && \
-    { [ -n "$poetry_path" ] && "${poetry_path}/poetry" completions bash >> ${HOME}/.bash_completion; } && \
-    ln -s $poetry_path/bin/* $HOMELOCAL/bin && \
     ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
     echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
     cat > $BASHRC_EXTRA <<EOF
