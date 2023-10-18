@@ -111,7 +111,8 @@ build_new() {
     # https://docs.docker.com/engine/reference/commandline/buildx_build/#push
     local build_opts=(
         --push
-        --platform=linux/amd64,linux/arm64,linux/arm/v7
+        --platform=linux/amd64,linux/arm64
+        # --platform=linux/amd64,linux/arm64,linux/arm/v7
     )
     [ "${DOCKER_BUILD_NO_CACHE:-false}" = "true" ] && build_opts+=(--no-cache)
 
