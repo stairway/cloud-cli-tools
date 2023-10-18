@@ -45,7 +45,7 @@ RUN apt-get update -y && \
     apt-get clean -y && \
     mkdir -p $DOTLOCAL/bin $DOWNLOADS $SCRIPTS && \
     # check: `pip config list -v`
-        # test:  `pip cache dir`
+    # test:  `pip cache dir`
     cat >> /etc/pip.conf <<EOF
 
 [global]
