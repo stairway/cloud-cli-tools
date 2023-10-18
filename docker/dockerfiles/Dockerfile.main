@@ -222,7 +222,7 @@ if [ -f "\${ENVFILE:-$ENVFILE}" ]; then
 fi
 
 if [ -d "\${PLUGINS:-$PLUGINS}" ]; then
-    for f in \$(find "\${PLUGINS:-$PLUGINS}" -mindepth 1 -type f -name '*.sh' -exec {} \; | sort -u); do
+    for f in \$(find "\${PLUGINS:-$PLUGINS}" -mindepth 1 -type f -name '*.sh' -exec echo {} \; | sort -u); do
         . \$f
     done
 fi
