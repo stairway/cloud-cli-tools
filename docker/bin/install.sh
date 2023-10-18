@@ -168,9 +168,10 @@
     echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> "${HOME}/.bashrc" && \
     echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> "${HOME}/.bashrc" && \
-    poetry_path=$(command -v poetry 2>/dev/null || [ -f "${SHARED}/poetry/bin/poetry" ] && echo "${SHARED}/poetry/bin/poetry") && \
-    { [ -n "$poetry_path" ] && $poetry_path completions bash >> ${HOME}/.bash_completion; } && \
-    ln -s $poetry_path $HOMELOCAL/bin && \
+    poetry_path=$(command -v poetry 2>/dev/null || [ -d "${SHARED}/poetry/bin" ] && echo "${SHARED}/poetry/bin") && \
+    { [ -n "$poetry_path" ] && "${poetry_path}/poetry" completions bash >> ${HOME}/.bash_completion; } && \
+    ln -s $poetry_path/bin/* $HOMELOCAL/bin && \
+    ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
     echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
     cat > $BASHRC_EXTRA <<EOF
 
@@ -207,5 +208,4 @@ fi
 EOF
 
 # RUN \
-    ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
     { set -x; $SCRIPTS/child-dirs.sh $HOME/.ssh $HOME/.gnupg $HOME/.password-store $HOME/.awsvault; }
