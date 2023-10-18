@@ -203,8 +203,8 @@ if [ -d "\${DOTLOCAL:-$DOTLOCAL}/profile.d" ]; then
     done
 fi
 
-if [ -f "\${DOTLOCAL:-$DOTLOCAL}/init.sh" ]; then
-    . "\${DOTLOCAL:-$DOTLOCAL}/init.sh"
+if [ -f "\${DOTLOCAL:-$DOTLOCAL}/bin/init.sh" ]; then
+    . "\${DOTLOCAL:-$DOTLOCAL}/bin/init.sh"
 fi
 
 EOF
