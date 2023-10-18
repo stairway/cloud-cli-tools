@@ -233,7 +233,7 @@ RUN touch $SCRIPTS/gh-get-latest-release.sh && \
 #!/bin/sh -euf
 # https://docs.github.com/en/rest/overview/resources-in-the-rest-api?apiVersion=2022-11-28#rate-limiting
 gh_curl_latest_release() {
-    curl --silent --location "https://api.github.com/repos/\${1}/releases/latest" | \
+    curl --silent --show-error --location "https://api.github.com/repos/\${1}/releases/latest" | \
 grep '\"tag_name\":' | \
 sed -E 's/.*\"([^\"]+)\".*/\1/'
 }
@@ -301,8 +301,8 @@ status=\$(cat \${4} | grep --color=never \${3} | sha256sum -c -)
 gh_curl_download_verify() {
     local return_code=\$?
     local status=
-    curl -LO "https://github.com/\${1}/releases/download/\${2}/\${3}" && \
-curl -LO "https://github.com/\${1}/releases/download/\${2}/\${4}" && \
+    curl -sSLO "https://github.com/\${1}/releases/download/\${2}/\${3}" && \
+curl -sSLO "https://github.com/\${1}/releases/download/\${2}/\${4}" && \
 status=\$(cat \${4} | grep --color=never \${3} | sha256sum -c -)
     return_code=\$?
     if [ \$return_code -eq 0 -a "\$status" = "\${3}: OK" ]; then
@@ -340,8 +340,8 @@ download_verify_1() {
         asset_uri="\${asset_base}/\${4}"
         checksum_uri="\${asset_base}/\${5}"
     fi
-    curl -LO "\${asset_uri}" && \
-curl -LO "\${checksum_uri}" && \
+    curl -sSLO "\${asset_uri}" && \
+curl -sSLO "\${checksum_uri}" && \
 status=\$(cat \${5} | grep --color=never \${4} | sha256sum -c -)
     return_code=\$?
     if [ \$return_code -eq 0 -a "\$status" = "\${4}: OK" ]; then
@@ -378,8 +378,8 @@ download_verify_2() {
         asset_uri="\${asset_base}/\${4}"
         checksum_uri="\${asset_base}/\${5}"
     fi
-    curl -LO "\${asset_uri}" && \
-curl -LO "\${checksum_uri}" && \
+    curl -sSLO "\${asset_uri}" && \
+curl -sSLO "\${checksum_uri}" && \
 status=\$(echo "\$(cat \${5})  \${4}" | sha256sum --check)
     return_code=\$?
     if [ \$return_code -eq 0 -a "\$status" = "\${4}: OK" ]; then
@@ -428,7 +428,7 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${DOCKER_COMPOSE_VERSION}" "latest" "d
 
 # https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 # *note* --install-dir /usr/local/aws-cli --update as a precaution in case awscli v1 (see above) has already been installed
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+RUN curl -sSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip -o awscliv2.zip && \
     update_in_case_v1_installed() { [ -f /bin/aws ] && \
         printf "\033[93;1m[WARNING] aws cli version 1 has been detected\033[0m\n" && \

@@ -9,7 +9,7 @@
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux
 # RUN \
     [ "${KUBE_VERSION:-latest}" = "latest" ] && \
-        version=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
+        version=$(curl -sSL https://dl.k8s.io/release/stable.txt) || \
         version="v$(echo ${KUBE_VERSION} | sed s/^v//g)" && \
     status=$($SCRIPTS/download-and-verify-2.sh "https://dl.k8s.io/release" \
         "kubernetes/kubectl" "${version}" \
@@ -33,7 +33,7 @@
 ##################################################
 # RUN \
     [ "${KUBECTL_CONVERT_VERSION:-latest}" = "latest" ] && \
-        version=$(curl -L -s https://dl.k8s.io/release/stable.txt) || \
+        version=$(curl -sSL https://dl.k8s.io/release/stable.txt) || \
         version="v$(echo ${KUBECTL_CONVERT_VERSION} | sed s/^v//g)" && \
     status=$($SCRIPTS/download-and-verify-2.sh "https://dl.k8s.io/release" \
         "kubernetes/kubectl-convert" "${version}" \
@@ -116,9 +116,9 @@
 # Example: `git clone --depth=1 https://github.com/tfutils/tfenv.git ~/.tfenv && ln -s ~/.tfenv/bin/* /usr/local/bin`
 # RUN \
     [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
-        version=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') || \
+        version=$(curl -sSL https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') || \
         version="$(echo ${TERRAFORM_VERSION} | sed s/^v//g)" && \
-        latest_version=$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') && \
+        latest_version=$(curl -sSL https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') && \
     mkdir $SHARED/tfenv && \
     git clone --depth=1 https://github.com/tfutils/tfenv.git $SHARED/tfenv && \
     ln -s $SHARED/tfenv/bin/* $HOMELOCAL/bin && \
@@ -148,9 +148,9 @@
 # (https://docs.github.com/en/rest/git/tags?apiVersion=2022-11-28#get-a-tag)
 # RUN \
     KUBE_PS1_VERSION="v$(echo ${KUBE_PS1_VERSION} | sed s/^v//g)" && \
-    status_code=$(curl -sLI -o /dev/null -w "%{http_code}" "https://github.com/jonmosco/kube-ps1/archive/refs/tags/${KUBE_PS1_VERSION}.zip") && \
+    status_code=$(curl -sSLI -o /dev/null -w "%{http_code}" "https://github.com/jonmosco/kube-ps1/archive/refs/tags/${KUBE_PS1_VERSION}.zip") && \
     [ $status_code -eq 200 ] && \
-    curl -LO "https://github.com/jonmosco/kube-ps1/archive/refs/tags/${KUBE_PS1_VERSION}.zip" && \
+    curl -sSLO "https://github.com/jonmosco/kube-ps1/archive/refs/tags/${KUBE_PS1_VERSION}.zip" && \
     unzip_result="$(unzip -o ${KUBE_PS1_VERSION}.zip)" && \
     echo $unzip_result | grep -q -i creating && \
     unzip_dir="$(echo $unzip_result | awk '{print $5}' | tr -d '/')" && \
