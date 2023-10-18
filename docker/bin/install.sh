@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RUN \
+# RUN \
     for f in $(ls -1 /tmp/addons); do install "/tmp/addons/${f}" "/usr/local/bin/${f}"; done && \
     rm -rf /tmp/addons && \
     chmod +x $DESCRIBE $DOTLOCAL/bin/* && \
@@ -161,7 +161,7 @@ RUN \
 
 [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS
 
-RUN \
+# RUN \
     echo 'printf "\n\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
     ln -s /usr/share/bash-completion/completions/git ~/.git-completion.bash && \
     echo "complete -C /usr/local/bin/aws_completer aws" >> "${HOME}/.bashrc" && \
@@ -206,6 +206,6 @@ fi
 
 EOF
 
-RUN \
+# RUN \
     ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
     { set -x; $SCRIPTS/child-dirs.sh $HOME/.ssh $HOME/.gnupg $HOME/.password-store $HOME/.awsvault; }
