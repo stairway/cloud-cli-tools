@@ -8,8 +8,8 @@ ARG GH_CLIENT_TOKEN=
 
 ARG UNAME=root
 ARG HOMEDIR=/root
-ARG HOMELOCAL=$HOMEDIR/.local
-ARG ENVFILE=$HOMELOCAL/.env
+# ARG HOMELOCAL=$HOMEDIR/.local
+# ARG ENVFILE=$HOMELOCAL/.env
 
 ARG KUBE_VERSION=latest
 ARG ISTIO_VERSION=latest
@@ -28,12 +28,13 @@ ENV BOOL="${TRUE}|${FALSE}"
 
 # ENV UNAME="${UNAME:-root}"
 # ENV HOMEDIR="${HOMEDIR:-/root}"
-ENV PATH="${HOMELOCAL}/bin:${PATH}"
+# ENV PATH="${HOMELOCAL}/bin:${PATH}"
 ENV SHARED="${SHARED:-${HOMEDIR}/.local/share}"
 ENV PLUGINS="${PLUGINS:-${DOTLOCAL}/plugins.d}"
 ENV DOWNLOADS="${DOWNLOADS:-${DOTLOCAL}/downloads}"
 ENV SCRIPTS="${SCRIPTS:-${DOTLOCAL}/scripts}"
 ENV DOCS="${DOCS:-${DOTLOCAL}/docs}"
+ENV ENVFILE="${ENVFILE:-${HOMELOCAL}/.env}"
 ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;. "${ENVFILE:-~/.local/.env}"; set +a >/dev/null'
 ENV BASHRC_EXTRA="${BASHRC_EXTRA:-${DOTLOCAL}/bash.bashrc_extra}"
 ENV DESCRIBE="${DESCRIBE:-${DOTLOCAL}/bin/describe}"
@@ -51,11 +52,11 @@ ADD addons/**/*.tgz /tmp/addons/
 
 RUN HOME=$HOMEDIR \
     USER=$UNAME $DOTLOCAL \
-    HOMELOCAL=$HOMELOCAL \
-    ENVFILE=$ENVFILE \
+    HOMELOCAL=$HOMEDIR/.local \
     /bin/install.sh && \
-    chmod -R g+w $DOTLOCAL && \
-    { [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS; }
+    chmod -R g+w $DOTLOCAL
+
+RUN [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS
 
 # USER $UNAME
 WORKDIR $HOMEDIR

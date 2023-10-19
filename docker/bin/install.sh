@@ -184,6 +184,10 @@ export CLUSTER_PREFIX="\${CLUSTER_PREFIX:-di}"
 # export PATH="\${PATH}:$SHARED/tfenv/bin"
 export ENVFILE="\${ENVFILE:-$ENVFILE}"
 
+if [ -d \$HOME/.local/bin ]; then
+    export PATH="\$HOME/.local/bin:\${PATH}"
+fi
+
 if [ -f "\${ENVFILE:-$ENVFILE}" ]; then
     set -o allexport
     . "\${ENVFILE:-$ENVFILE}"
