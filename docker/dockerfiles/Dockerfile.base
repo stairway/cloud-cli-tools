@@ -76,6 +76,7 @@ ARG INSTALL_PKGS="\
     python3-pip \
     python3-venv \
     npm \
+    sudo \
     telnet \
     iputils-ping"
 
@@ -114,7 +115,7 @@ RUN cat >> /etc/skel/.profile <<EOF
 EOF
 
 # TODO: gpg not currently working with non-root user
-# (alternative to `--groups sudu` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
+# (alternative to `--groups sudo` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
 # (to add password, use `-p "$(openssl passwd -1 <password>)"`)
 # RUN useradd --create-home --shell /bin/bash --user-group --groups sudo --no-log-init $UNAME && \
 #     passwd -d $UNAME && \

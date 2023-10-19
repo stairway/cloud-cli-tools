@@ -8,7 +8,7 @@ awv() {
     aws-vault exec "${AWS_DEFAULT_PROFILE:-$DEFAULT_PROFILE}" -- aws "$@"
 }
 
-# Function shorthand for aws-vault exec witcurrent profile
+# Function shorthand for aws-vault exec with current profile
 ve() {
     aws-vault exec "${AWS_DEFAULT_PROFILE:-$DEFAULT_PROFILE}" -- "$@"
 }
@@ -23,7 +23,7 @@ update-kube() {
 }
 
 # Function to read secrets from chamber
-rochamber() {
+vechamber() {
     aws-vault exec "${AWS_DEFAULT_PROFILE:-$DEFAULT_PROFILE}" -- chamber "$@"
 }
 
