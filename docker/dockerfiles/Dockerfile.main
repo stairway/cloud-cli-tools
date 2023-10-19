@@ -9,6 +9,7 @@ ARG GH_CLIENT_TOKEN=
 ARG UNAME=root
 ARG HOMEDIR=/root
 ARG HOMELOCAL=$HOMEDIR/.local
+ARG ENVFILE=$HOMELOCAL}/.env
 
 ARG KUBE_VERSION=latest
 ARG ISTIO_VERSION=latest
@@ -51,10 +52,10 @@ ADD addons/**/*.tgz /tmp/addons/
 RUN HOME=$HOMEDIR \
     USER=$UNAME $DOTLOCAL \
     HOMELOCAL=$HOMELOCAL \
-    ENVFILE="${HOMELOCAL}/.env" \
+    ENVFILE=$ENVFILE \
     /bin/install.sh && \
     chmod -R g+w $DOTLOCAL && \
-    [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS
+    { [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS; }
 
 # USER $UNAME
 WORKDIR $HOMEDIR
