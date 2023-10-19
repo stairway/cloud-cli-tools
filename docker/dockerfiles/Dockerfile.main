@@ -6,9 +6,9 @@ LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@liatrio.com
 
 ARG GH_CLIENT_TOKEN=
 
-ARG USER=root
-ARG HOME=/root
-ARG HOMELOCAL=$HOME/.local
+ARG UNAME=root
+ARG HOMEDIR=/root
+ARG HOMELOCAL=$HOMEDIR/.local
 
 ARG KUBE_VERSION=latest
 ARG ISTIO_VERSION=latest
@@ -25,10 +25,10 @@ ENV TRUE='y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1'
 ENV FALSE='n|N|no|No|NO|false|False|FALSE|off|Off|OFF|0'
 ENV BOOL="${TRUE}|${FALSE}"
 
-# ENV USER="${USER:-root}"
-# ENV HOME="${HOME:-/root}"
+# ENV UNAME="${UNAME:-root}"
+# ENV HOMEDIR="${HOMEDIR:-/root}"
 ENV PATH="${HOMELOCAL}/bin:${PATH}"
-ENV SHARED="${SHARED:-${HOME}/.local/share}"
+ENV SHARED="${SHARED:-${HOMEDIR}/.local/share}"
 ENV PLUGINS="${PLUGINS:-${DOTLOCAL}/plugins.d}"
 ENV DOWNLOADS="${DOWNLOADS:-${DOTLOCAL}/downloads}"
 ENV SCRIPTS="${SCRIPTS:-${DOTLOCAL}/scripts}"
@@ -38,7 +38,7 @@ ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;. "${ENVFILE:-~/.loc
 ENV BASHRC_EXTRA="${BASHRC_EXTRA:-${DOTLOCAL}/bash.bashrc_extra}"
 ENV DESCRIBE="${DESCRIBE:-${DOTLOCAL}/bin/describe}"
 ENV DOTLOCAL="${DOTLOCAL:-/opt/local}"
-ENV HOMELOCAL="${HOMELOCAL:-${HOME}/.local}"
+ENV HOMELOCAL="${HOMELOCAL:-${HOMEDIR}/.local}"
 
 USER root
 WORKDIR $DOWNLOADS
@@ -50,12 +50,12 @@ COPY docs $DOCS
 
 ADD addons/**/*.tgz /tmp/addons/
 
-RUN $DOTLOCAL/bin/install.sh
+RUN HOME=$HOMEDIR USER=$UNAME $DOTLOCAL/bin/install.sh
 
-USER $USER
-WORKDIR $HOME
+# USER $UNAME
+WORKDIR $HOMEDIR
 
-VOLUME [ "/data", "$HOME/.ssh", "$HOME/.gnupg", "$HOME/.password-store", "$HOME/.awsvault" ]
+VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
 
 SHELL [ "/bin/bash", "-o", "pipefail", "-c" ]
 ENTRYPOINT [ "/opt/local/bin/docker-entrypoint.sh" ]

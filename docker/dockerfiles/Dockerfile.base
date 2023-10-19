@@ -15,19 +15,19 @@ ARG TZ=America/Chicago
 ARG EDITOR=nano
 
 # default values
-# ARG UNAME=root
-# ARG HOMEDIR=/root
-ARG USER=root
-ARG HOME=/root
-# ARG SHARED=$HOME/.local/share
+ARG UNAME=root
+ARG HOMEDIR=/root
+# ARG USER=root
+# ARG HOME=/root
+# ARG SHARED=$HOMEDIR/.local/share
 ARG SHARED=/opt
 ARG DOTLOCAL=/opt/local
 
 # only used if HOME != root
 ARG UID=1001
 
-# ENV USER=${USER}
-# ENV HOME=${HOME}
+ENV UNAME=${UNAME}
+ENV HOMEDIR=${HOMEDIR}
 ENV PATH="${DOTLOCAL}/bin:/opt/bin:${PATH}"
 ENV DOWNLOADS=${DOTLOCAL}/downloads
 ENV SCRIPTS=${DOTLOCAL}/scripts
@@ -110,7 +110,7 @@ EOF
 
 RUN cat >> /etc/skel/.profile <<EOF
 
-[ "\$(pwd)" = "\$HOME" ] || cd ~
+[ "\$(pwd)" = "\$HOMEDIR" ] || cd ~
 EOF
 
 # TODO: gpg not currently working with non-root user
@@ -146,7 +146,8 @@ RUN export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -
             python${python_version} -m pip install $PIP_PKGS --no-cache-dir; \
     done; } && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y python-is-python3 && \
-    apt-get clean -y
+    apt-get clean -y && \
+    pip cache purge
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -471,14 +472,14 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kuberne
 
 RUN echo $(cat /etc/bash.bashrc) | grep --color=never -q -E '#(if ! shopt -oq posix.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(fi)' && \
     sed -z -i -E 's/#(if ! shopt -oq posix.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(fi)/\1\2\3\4\5\6\7/' /etc/bash.bashrc || \
-    echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi" >> "${HOME}/.bashrc"
+    echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi" >> "${HOMEDIR}/.bashrc"
 
-RUN echo $(cat "${HOME}/.bashrc") | grep --color=never -q -E '(case.*in.*\s*)xterm-color(.*\s*esac)' && \
-    sed -z -i -E 's/(case.*in.*\s*)xterm-color(.*\s*esac)/\1xterm-*color\2/g' "${HOME}/.bashrc"
+RUN echo $(cat "${HOMEDIR}/.bashrc") | grep --color=never -q -E '(case.*in.*\s*)xterm-color(.*\s*esac)' && \
+    sed -z -i -E 's/(case.*in.*\s*)xterm-color(.*\s*esac)/\1xterm-*color\2/g' "${HOMEDIR}/.bashrc"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-# USER $USER
-WORKDIR $HOME
+# USER $UNAME
+WORKDIR $HOMEDIR
 
 # Additional Metadata
 ARG VERSION=latest
