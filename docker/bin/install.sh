@@ -238,4 +238,6 @@ $match
 EOF
 
 # RUN \
-    { set -x; $SCRIPTS/child-dirs.sh $HOME/.ssh $HOME/.gnupg $HOME/.password-store $HOME/.awsvault; }
+    chmod -R g+w $DOTLOCAL && \
+    { set -x; $SCRIPTS/child-dirs.sh $HOME/.ssh $HOME/.gnupg $HOME/.password-store $HOME/.awsvault; } && \
+    { [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS; }
