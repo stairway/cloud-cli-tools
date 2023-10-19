@@ -175,6 +175,7 @@
     echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
     cat > $BASHRC_EXTRA <<EOF
 
+export PWD=\$(pwd)
 export USER=\$(whoami)
 export EDITOR="\${EDITOR:-$EDITOR}"
 export VISUAL="\${EDITOR:-$EDITOR}"
@@ -182,16 +183,16 @@ export GIT_EDITOR="\${EDITOR:-$EDITOR}"
 export KUBE_EDITOR="\${EDITOR:-$EDITOR}"
 export CLUSTER_PREFIX="\${CLUSTER_PREFIX:-di}"
 # export PATH="\${PATH}:$SHARED/tfenv/bin"
-export ENVFILE=${ENVFILE}
-export HISTFILE=${HOME}/.bash_history
+export ENVFILE=$ENVFILE
+export HISTFILE="\${HOME}/.bash_history"
 
 if [ -d "\${HOME}/.local/bin" ]; then
-    export PATH="\$HOME/.local/bin:\${PATH}"
+    export PATH="\${HOME}/.local/bin:\${PATH}"
 fi
 
-if [ -f "\${ENVFILE:-$ENVFILE}" ]; then
+if [ -f "$ENVFILE" ]; then
     set -o allexport
-    . "\${ENVFILE:-$ENVFILE}"
+    . "$ENVFILE"
     set +o allexport
 fi
 
@@ -211,6 +212,24 @@ if [ -f "\${DOTLOCAL:-$DOTLOCAL}/bin/init.sh" ]; then
     . "\${DOTLOCAL:-$DOTLOCAL}/bin/init.sh"
 fi
 
+EOF
+
+# RUN \
+    [ "$USER" = "root" ] && \
+        match=$(grep -E -i "^(mesg\s+n.+true)$" $HOME/.profile) && \
+        sed "s@$match@@" $HOME/.profile && \
+        cat >> $HOME/.profile <<EOF
+# set PATH so it includes user's private bin if it exists
+if [ -d "\$HOME/bin" ] ; then
+    PATH="\$HOME/bin:$PATH"
+fi
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "\$HOME/.local/bin" ] ; then
+    PATH="\$HOME/.local/bin:\$PATH"
+fi
+
+$match
 EOF
 
 # RUN \
