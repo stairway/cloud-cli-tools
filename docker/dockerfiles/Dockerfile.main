@@ -33,12 +33,10 @@ ENV PLUGINS="${PLUGINS:-${DOTLOCAL}/plugins.d}"
 ENV DOWNLOADS="${DOWNLOADS:-${DOTLOCAL}/downloads}"
 ENV SCRIPTS="${SCRIPTS:-${DOTLOCAL}/scripts}"
 ENV DOCS="${DOCS:-${DOTLOCAL}/docs}"
-ENV ENVFILE="${ENVFILE:-${HOMELOCAL}/.env}"
 ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;. "${ENVFILE:-~/.local/.env}"; set +a >/dev/null'
 ENV BASHRC_EXTRA="${BASHRC_EXTRA:-${DOTLOCAL}/bash.bashrc_extra}"
 ENV DESCRIBE="${DESCRIBE:-${DOTLOCAL}/bin/describe}"
 ENV DOTLOCAL="${DOTLOCAL:-/opt/local}"
-ENV HOMELOCAL="${HOMELOCAL:-${HOMEDIR}/.local}"
 
 USER root
 WORKDIR $DOWNLOADS
@@ -50,7 +48,13 @@ COPY docs $DOCS
 
 ADD addons/**/*.tgz /tmp/addons/
 
-RUN HOME=$HOMEDIR USER=$UNAME $DOTLOCAL/bin/install.sh
+RUN HOME=$HOMEDIR \
+    USER=$UNAME $DOTLOCAL \
+    HOMELOCAL=$HOMELOCAL \
+    ENVFILE="${HOMELOCAL}/.env" \
+    /bin/install.sh && \
+    chmod -R g+w $DOTLOCAL && \
+    [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS
 
 # USER $UNAME
 WORKDIR $HOMEDIR

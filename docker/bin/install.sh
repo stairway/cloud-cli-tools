@@ -164,8 +164,6 @@
     printf "Installing '%s' to '%s' ...\n" "${unzip_dir}/kube-ps1.sh" "$PLUGINS/kube-ps1.sh" && \
     mv ${unzip_dir}/kube-ps1.sh $PLUGINS/
 
-[ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS
-
 # RUN \
     echo 'printf "\n\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
     ln -s /usr/share/bash-completion/completions/git ~/.git-completion.bash && \
@@ -184,6 +182,7 @@ export GIT_EDITOR="\${EDITOR:-$EDITOR}"
 export KUBE_EDITOR="\${EDITOR:-$EDITOR}"
 export CLUSTER_PREFIX="\${CLUSTER_PREFIX:-di}"
 # export PATH="\${PATH}:$SHARED/tfenv/bin"
+export ENVFILE="\${ENVFILE:-$ENVFILE}"
 
 if [ -f "\${ENVFILE:-$ENVFILE}" ]; then
     set -o allexport
