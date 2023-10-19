@@ -186,9 +186,10 @@ export CLUSTER_PREFIX="\${CLUSTER_PREFIX:-di}"
 export ENVFILE=$ENVFILE
 export HISTFILE="\${HOME}/.bash_history"
 
-if [ -d "\${HOME}/.local/bin" ]; then
-    export PATH="\${HOME}/.local/bin:\${PATH}"
-fi
+# This is in .profile
+# if [ -d "\${HOME}/.local/bin" ]; then
+#     export PATH="\${HOME}/.local/bin:\${PATH}"
+# fi
 
 if [ -f "$ENVFILE" ]; then
     set -o allexport
@@ -206,6 +207,10 @@ if [ -d "\${DOTLOCAL:-$DOTLOCAL}/profile.d" ]; then
     for f in \$(find "\${DOTLOCAL:-$DOTLOCAL}/profile.d" -mindepth 1 -type f -regextype posix-egrep -regex "\${DOTLOCAL:-$DOTLOCAL}/profile\.d\/[0-9]+.+\.sh" -exec echo {} \; | sort -u); do
         . \$f
     done
+fi
+
+if [ -f "\${DOTLOCAL:-$DOTLOCAL}/bin/crypto.sh" ]; then
+    . "\${DOTLOCAL:-$DOTLOCAL}/bin/crypto.sh"
 fi
 
 if [ -f "\${DOTLOCAL:-$DOTLOCAL}/bin/init.sh" ]; then

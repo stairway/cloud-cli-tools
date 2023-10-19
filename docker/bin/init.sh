@@ -65,7 +65,7 @@ init_aws() {
 
     if [ ! -f ~/._initialized ]; then
         local current_vault_user="$(aws-vault list | grep user | awk '{ print $2 }')"
-        if [ "${current_vault_user}" != "${DEFAULT_PROFILE}" ]; then
+        if [ "${current_vault_user}x" != "${DEFAULT_PROFILE}x" ]; then
             [ ! -f ~/.password-store/.gpg-id -o ! -f ~/.gnupg/trustdb.gpg ] && printf "Still Initializing ..." && \
                 while [ ! -f ~/.password-store/.gpg-id -o ! -f ~/.gnupg/trustdb.gpg ]; do _waiting; done; echo
             if [ -n "${AWS_ACCESS_KEY_ID}" -a -n "${AWS_SECRET_ACCESS_KEY}" ]; then

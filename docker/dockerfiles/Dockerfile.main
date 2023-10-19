@@ -55,6 +55,7 @@ RUN HOME=$HOMEDIR \
     ENVFILE='${HOME}/.local/.env' \
     $DOTLOCAL/bin/install.sh && \
     chmod -R g+w $DOTLOCAL && \
+    chmod -R g+w /tmp/addons && \
     { [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS; }
 
 # USER $UNAME
