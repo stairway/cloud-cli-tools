@@ -52,7 +52,7 @@ ADD addons/**/*.tgz /tmp/addons/
 RUN HOME=$HOMEDIR \
     USER=$UNAME \
     HOMELOCAL=$HOMELOCAL \
-    ENVFILE='\${HOME}/.local/.env' \
+    ENVFILE='${HOME}/.local/.env' \
     $DOTLOCAL/bin/install.sh && \
     chmod -R g+w $DOTLOCAL && \
     { [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS; }

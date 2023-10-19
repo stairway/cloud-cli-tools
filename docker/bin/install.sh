@@ -217,7 +217,7 @@ EOF
 # RUN \
     [ "$USER" = "root" ] && \
         match=$(grep -E -i "^(mesg\s+n.+true)$" $HOME/.profile) && \
-        sed "s@$match@@" $HOME/.profile && \
+        sed -i "s@$match@@" $HOME/.profile && \
         cat >> $HOME/.profile <<EOF
 # set PATH so it includes user's private bin if it exists
 if [ -d "\$HOME/bin" ] ; then
