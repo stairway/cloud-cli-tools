@@ -104,14 +104,11 @@ RUN apt-get update -y && \
 
 RUN cat >> /etc/skel/.bashrc <<EOF
 
+[ "\$(pwd)" = "\$HOME" ] || cd ~
+
 if [ -f "\${BASHRC_EXTRA:-$BASHRC_EXTRA}" ]; then
     . "\${BASHRC_EXTRA:-$BASHRC_EXTRA}"
 fi
-EOF
-
-RUN cat >> /etc/skel/.profile <<EOF
-
-[ "\$(pwd)" = "\$HOME" ] || cd ~
 EOF
 
 # TODO: gpg not currently working with non-root user
