@@ -182,9 +182,10 @@ export GIT_EDITOR="\${EDITOR:-$EDITOR}"
 export KUBE_EDITOR="\${EDITOR:-$EDITOR}"
 export CLUSTER_PREFIX="\${CLUSTER_PREFIX:-di}"
 # export PATH="\${PATH}:$SHARED/tfenv/bin"
-export ENVFILE="\${ENVFILE:-$ENVFILE}"
+export ENVFILE=${ENVFILE}
+export HISTFILE=${HOME}/.bash_history
 
-if [ -d \$HOME/.local/bin ]; then
+if [ -d "\${HOME}/.local/bin" ]; then
     export PATH="\$HOME/.local/bin:\${PATH}"
 fi
 
