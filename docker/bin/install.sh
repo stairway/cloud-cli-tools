@@ -64,8 +64,8 @@
 
 # RUN \
     poetry_bin_path=$(command -v poetry >/dev/null && command -v poetry | xargs dirname | xargs dirname || { [ -d "${SHARED}/poetry/bin" ] && echo "${SHARED}/poetry/bin"; }) && \
-    [ -n "$poetry_bin_path" ] && ln -s $poetry_bin_path/* $HOMELOCAL/bin && \
-    "${poetry_bin_path}/poetry" completions bash >> ${HOME}/.bash_completion
+    [ -n "$poetry_bin_path" ] && ln -s $poetry_bin_path/* $DOTLOCAL/bin && \
+    "${poetry_bin_path}/poetry" completions bash >> $DOTLOCAL/.bash_completion
 
 # Install kubectx and kubens
 # https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
@@ -102,7 +102,7 @@
     echo $status && \
     tar -xvzf istio-${version}-linux-amd64.tar.gz && \
     install istio-${version}/bin/istioctl /usr/local/bin/istioctl && \
-    cp istio-${version}/tools/istioctl.bash $HOME/.istioctl.bash && \
+    cp istio-${version}/tools/istioctl.bash $DOTLOCAL/.istioctl.bash && \
     printf "istio: %s\n" "$(istioctl version --remote=false --short)" >> /.versions
 
 # RUN [ "${TERRAFORM_VERSION:-latest}" = "latest" ] && \
@@ -126,7 +126,7 @@
         latest_version=$(curl -sSL https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') && \
     mkdir $SHARED/tfenv && \
     git clone --depth=1 https://github.com/tfutils/tfenv.git $SHARED/tfenv && \
-    ln -s $SHARED/tfenv/bin/* $HOMELOCAL/bin && \
+    ln -s $SHARED/tfenv/bin/* $DOTLOCAL/bin && \
     tfenv install $version && \
     tfenv use $version && \
     [ "$version" != "$latest_version" ] && tfenv install $latest_version
@@ -165,13 +165,10 @@
     mv ${unzip_dir}/kube-ps1.sh $PLUGINS/
 
 # RUN \
-    echo '' >> /etc/bash.bashrc && \
+    echo '' >>  /etc/bash.bashrc && \
+    echo '' >> "${HOME}/.bashrc" && \
     echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
-    ln -s /usr/share/bash-completion/completions/git ~/.git-completion.bash && \
-    echo "complete -C /usr/local/bin/aws_completer aws" >> "${HOME}/.bashrc" && \
-    echo ". <(kubectl completion bash)" >> "${HOME}/.bashrc" && \
-    echo "[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git" >> "${HOME}/.bashrc" && \
-    echo "[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash" >> "${HOME}/.bashrc" && \
+    ln -s /usr/share/bash-completion/completions/git $DOTLOCAL/.git-completion.bash && \
     ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
     echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
     cat > $BASHRC_EXTRA <<EOF
@@ -219,10 +216,15 @@ if [ -f "\${DOTLOCAL:-$DOTLOCAL}/bin/init.sh" ]; then
     . "\${DOTLOCAL:-$DOTLOCAL}/bin/init.sh"
 fi
 
+complete -C /usr/local/bin/aws_completer aws
+. <(kubectl completion bash)
+[ -e ~/.git-completion.bash ] && . /usr/share/bash-completion/completions/git
+[ -e ~/.istioctl.bash ] && . ~/.istioctl.bash
+
 EOF
 
 # RUN \
-    [ "$USER" = "root" ] && \
+    [ "$USER" != "root" ] || \
         match=$(grep -E -i "^(mesg\s+n.+true)$" $HOME/.profile) && \
         sed -i "s@$match@@" $HOME/.profile && \
         cat >> $HOME/.profile <<EOF
