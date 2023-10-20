@@ -5,7 +5,7 @@ set -o pipefail
 CURRENT_USER=$(whoami)
 USER="${USER:-$CURRENT_USER}"
 
-init_gpg() {
+_init_gpg() {
     local file_list=0
     file_list=($([ -d ~/.gnupg ] && ls ~/.gnupg/ 2>/dev/null))
     if [ ${#file_list[@]} -lt 9 ]; then
@@ -20,7 +20,7 @@ init_gpg() {
     fi
 }
 
-init_pass() {
+_init_pass() {
     # THIS IS WHERE pass IS INITIALIZED
 
     mkdir -p ~/.password-store
@@ -36,15 +36,13 @@ init_pass() {
 
 check_crypto() {
     local last_err=0
-    if [ ! -f ~/._crypto ]; then
-        printf "\033[92;1m>>>\033[94;1m Checking %s \033[92;1m>>>\033[0m\n" "Crypto (gpg, pass)"
+    printf "\033[92;1m>>>\033[94;1m Checking %s \033[92;1m>>>\033[0m\n" "Crypto (gpg, pass)"
 
-        init_gpg && init_pass \
-            && date -u +%Y%m%dT%H%M%SZ > ~/._crypto \
-            || last_err=$?
-    fi
+    _init_gpg && _init_pass \
+        && date -u +%Y%m%dT%H%M%SZ > ~/._crypto \
+        || last_err=$?
 
-    [ $last_err -eq 0 -a -f ~/._crypto ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "Crypto (gpg, pass)"
+    [ $last_err -eq 0 ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "Crypto (gpg, pass)"
 }
 
-check_crypto
+[ -f ~/._crypto ] || check_crypto
