@@ -26,9 +26,6 @@ ENV TRUE='y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1'
 ENV FALSE='n|N|no|No|NO|false|False|FALSE|off|Off|OFF|0'
 ENV BOOL="${TRUE}|${FALSE}"
 
-# ENV UNAME="${UNAME:-root}"
-# ENV HOMEDIR="${HOMEDIR:-/root}"
-# ENV PATH="${HOMELOCAL}/bin:${PATH}"
 ENV SHARED="${SHARED:-${HOMEDIR}/.local/share}"
 ENV PLUGINS="${PLUGINS:-${DOTLOCAL}/plugins.d}"
 ENV DOWNLOADS="${DOWNLOADS:-${DOTLOCAL}/downloads}"
@@ -57,7 +54,7 @@ RUN HOME=$HOMEDIR \
 
 # (alternative to `--groups sudo` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
 # (to add password, use `-p "$(openssl passwd -1 <password>)"`)
-RUN [ "$UNAME" != "root" ] && \
+RUN [ "$UNAME" = "root" ] || \
         useradd \
             --shell /bin/bash \
             --create-home \
