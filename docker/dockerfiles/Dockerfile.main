@@ -50,7 +50,7 @@ RUN HOME=$HOMEDIR \
     USER=$UNAME \
     HOMELOCAL=$HOMELOCAL \
     ENVFILE='${HOME}/.local/.env' \
-    MYPATH='${DOTLOCAL}/bin:/opt/bin:${PATH}' \
+    MYPATH="${DOTLOCAL}"'/bin:/opt/bin:${PATH}' \
     $DOTLOCAL/bin/install.sh
 
 # (alternative to `--groups sudo` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
