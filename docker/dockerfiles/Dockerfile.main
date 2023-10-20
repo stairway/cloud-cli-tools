@@ -50,6 +50,7 @@ RUN HOME=$HOMEDIR \
     USER=$UNAME \
     HOMELOCAL=$HOMELOCAL \
     ENVFILE='${HOME}/.local/.env' \
+    PATH='${DOTLOCAL}/bin:/opt/bin:${PATH}' \
     $DOTLOCAL/bin/install.sh
 
 # (alternative to `--groups sudo` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
@@ -72,7 +73,7 @@ WORKDIR $HOMEDIR
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
 
 SHELL [ "/bin/bash", "-o", "pipefail", "-c" ]
-ENTRYPOINT [ "/opt/local/bin/docker-entrypoint.sh" ]
+ENTRYPOINT [ "PATH='${DOTLOCAL}/bin:/opt/bin:${PATH}'", "/opt/local/bin/docker-entrypoint.sh" ]
 
 # Additional Metadata
 ARG VERSION=base-latest
