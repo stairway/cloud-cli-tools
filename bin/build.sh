@@ -72,9 +72,6 @@ build_base() {
     local git_commit=$(git rev-parse --short HEAD)
     local build_args=("")
     [ "${UBUNTU_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "VERSION=${UBUNTU_VERSION}")
-    [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg "USER=${DOCKER_USER}")
-    [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg "HOME=/home/${DOCKER_USER}")
-    [ "${UBUNTU_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "VERSION=${UBUNTU_VERSION}")
     [ "${AWS_VAULT_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "AWS_VAULT_VERSION=${AWS_VAULT_VERSION}")
     [ "${MINIKUBE_VERSION:-latest}" = "latest" ] || build_args+=(--build-arg "MINIKUBE_VERSION=${MINIKUBE_VERSION}")
     [ -z "${GH_CLIENT_TOKEN}" ] || build_args+=(--build-arg "GH_CLIENT_TOKEN=${GH_CLIENT_TOKEN}")
@@ -122,6 +119,8 @@ build_new() {
         --build-arg "'IMAGE_BASE_NAME=${DOCKER_IMAGE_PARENT}'"
         --build-arg "'VERSION=${DOCKER_IMAGE_PARENT_VERSION}'"
     )
+    [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg "UNAME=${DOCKER_USER}")
+    [ "${DOCKER_USER:-root}" = "root" ] || build_args+=(--build-arg "HOMEDIR=/home/${DOCKER_USER}")
     [ "${KUBE_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg "'KUBE_VERSION=${KUBE_VERSION}'")
     [ "${ISTIO_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg "'ISTIO_VERSION=${ISTIO_VERSION}'")
     [ "${TERRAFORM_VERSION:-latest}" != "latest" ] && build_args+=(--build-arg "'TERRAFORM_VERSION=${TERRAFORM_VERSION}'")

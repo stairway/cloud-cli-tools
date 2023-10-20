@@ -15,10 +15,8 @@ ARG TZ=America/Chicago
 ARG EDITOR=nano
 
 # default values
-ARG UNAME=root
-ARG HOMEDIR=/root
-# ARG USER=root
-# ARG HOME=/root
+# ARG UNAME=root
+# ARG HOMEDIR=/root
 # ARG SHARED=$HOMEDIR/.local/share
 ARG SHARED=/opt
 ARG DOTLOCAL=/opt/local
@@ -26,9 +24,7 @@ ARG DOTLOCAL=/opt/local
 # only used if HOME != root
 ARG UID=1001
 
-# ENV UNAME=${UNAME}
-# ENV HOMEDIR=${HOMEDIR}
-ENV PATH="${DOTLOCAL}/bin:/opt/bin:${PATH}"
+# ENV PATH="${DOTLOCAL}/bin:/opt/bin:${PATH}"
 ENV DOWNLOADS=${DOTLOCAL}/downloads
 ENV SCRIPTS=${DOTLOCAL}/scripts
 ENV BASHRC_EXTRA="${DOTLOCAL}/bash.bashrc_extra"
@@ -110,17 +106,6 @@ if [ -f "\${BASHRC_EXTRA:-$BASHRC_EXTRA}" ]; then
     . "\${BASHRC_EXTRA:-$BASHRC_EXTRA}"
 fi
 EOF
-
-# TODO: gpg not currently working with non-root user
-# (alternative to `--groups sudo` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
-# (to add password, use `-p "$(openssl passwd -1 <password>)"`)
-# RUN useradd --create-home --shell /bin/bash --user-group --groups sudo --no-log-init $UNAME && \
-#     passwd -d $UNAME && \
-#     echo "root:root" | chpasswd && \
-#     useradd --system --create-home --user-group --no-log-init localstack && \
-#     passwd -d localstack && \
-#     [ -d $DOTLOCAL ] || mkdir -p $DOTLOCAL && \
-#     chown -R $UNAME $DOTLOCAL
 
 # Install additional python versions
 # PIP_CACHE_DIR=$DOTLOCAL python${python_version} -m pip install $PIP_PKGS
@@ -470,14 +455,14 @@ RUN version=$($SCRIPTS/gh-get-version.sh "${MINIKUBE_VERSION}" "latest" "kuberne
 
 RUN echo $(cat /etc/bash.bashrc) | grep --color=never -q -E '#(if ! shopt -oq posix.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(fi)' && \
     sed -z -i -E 's/#(if ! shopt -oq posix.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(fi)/\1\2\3\4\5\6\7/' /etc/bash.bashrc || \
-    echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi" >> "${HOMEDIR}/.bashrc"
+    echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi" >> "/root/.bashrc"
 
-RUN echo $(cat "${HOMEDIR}/.bashrc") | grep --color=never -q -E '(case.*in.*\s*)xterm-color(.*\s*esac)' && \
-    sed -z -i -E 's/(case.*in.*\s*)xterm-color(.*\s*esac)/\1xterm-*color\2/g' "${HOMEDIR}/.bashrc"
+RUN echo $(cat "/root/.bashrc") | grep --color=never -q -E '(case.*in.*\s*)xterm-color(.*\s*esac)' && \
+    sed -z -i -E 's/(case.*in.*\s*)xterm-color(.*\s*esac)/\1xterm-*color\2/g' "/root/.bashrc"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # USER $UNAME
-WORKDIR $HOMEDIR
+WORKDIR /root
 
 # Additional Metadata
 ARG VERSION=latest

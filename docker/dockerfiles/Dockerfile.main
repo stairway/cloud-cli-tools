@@ -54,7 +54,7 @@ RUN HOME=$HOMEDIR \
 
 # (alternative to `--groups sudo` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
 # (to add password, use `-p "$(openssl passwd -1 <password>)"`)
-RUN [ "$UNAME" = "root" ] || \
+RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
         useradd \
             --shell /bin/bash \
             --create-home \
@@ -62,9 +62,9 @@ RUN [ "$UNAME" = "root" ] || \
             --comment "Default User" \
             --groups sudo,root \
             --no-log-init \
-            $UNAME && \
-        passwd -d $UNAME && \
-        echo "${UNAME}:${UNAME}" | chpasswd
+            $NEWU && \
+        passwd -d $NEWU && \
+        echo "${NEWU}:${NEWU}" | chpasswd
 
 # USER $UNAME
 WORKDIR $HOMEDIR
