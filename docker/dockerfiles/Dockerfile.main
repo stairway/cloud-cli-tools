@@ -65,7 +65,8 @@ RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
             --no-log-init \
             $NEWU && \
         passwd -d $NEWU && \
-        echo "${NEWU}:${NEWU}" | chpasswd
+        echo "${NEWU}:${NEWU}" | chpasswd && \
+        echo "root:root" | chpasswd
 
 # USER $UNAME
 WORKDIR $HOMEDIR
