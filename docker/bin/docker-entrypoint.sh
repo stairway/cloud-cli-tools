@@ -25,6 +25,7 @@ git_config() {
 
 ssh_config() {
     local file_list=0
+    [ -d ~/.ssh ] || mkdir ~/.ssh
     file_list=($([ -d ~/.ssh ] && ls ~/.ssh 2>/dev/null))
     local gen_date=$(date -u +%Y%m%dT%H%M%SZ)
     local key_count=0
