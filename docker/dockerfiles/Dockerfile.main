@@ -55,6 +55,20 @@ RUN HOME=$HOMEDIR \
     ENVFILE='${HOME}/.local/.env' \
     $DOTLOCAL/bin/install.sh
 
+# (alternative to `--groups sudo` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
+# (to add password, use `-p "$(openssl passwd -1 <password>)"`)
+RUN [ "$UNAME" != "root" ] && \
+        useradd \
+            --shell /bin/bash \
+            --create-home \
+            --user-group \
+            --comment "Default User" \
+            --groups sudo,root \
+            --no-log-init \
+            $UNAME && \
+        passwd -d $UNAME && \
+        echo "${UNAME}:${UNAME}" | chpasswd
+
 # USER $UNAME
 WORKDIR $HOMEDIR
 

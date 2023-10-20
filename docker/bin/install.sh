@@ -182,6 +182,7 @@ export VISUAL="\${EDITOR:-$EDITOR}"
 export GIT_EDITOR="\${EDITOR:-$EDITOR}"
 export KUBE_EDITOR="\${EDITOR:-$EDITOR}"
 export CLUSTER_PREFIX="\${CLUSTER_PREFIX:-di}"
+export PATH="${DOTLOCAL}/bin:/opt/bin:\${PATH}"
 # export PATH="\${PATH}:$SHARED/tfenv/bin"
 export ENVFILE=$ENVFILE
 export HISTFILE="\${HOME}/.bash_history"
