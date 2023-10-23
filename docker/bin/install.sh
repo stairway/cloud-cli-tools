@@ -178,9 +178,9 @@
     for d in $(find $SHARED -mindepth 1 -maxdepth 2 -type d -name bin -exec sh -c "val=$(echo {}); [ \"\$val\" = \"\$DOTLOCAL/bin\" ] || echo \$val" {} \;); do \
         [ -n "$_path_extra" ] && _path_extra="$_path_extra:$d" || _path_extra="$d"; \
     done && \
-    echo "export \"\${PATH}:$_path_extra\"" > foo && \
+    echo "export \"\${PATH}:$_path_extra\"" > $BASHRC_EXTRA && \
     unset _path_extra && \
-    cat > $BASHRC_EXTRA <<EOF
+    cat >> $BASHRC_EXTRA <<EOF
 export PWD=\$(pwd)
 export USER=\$(whoami)
 export EDITOR="\${EDITOR:-$EDITOR}"
