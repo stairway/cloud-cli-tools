@@ -471,3 +471,4 @@ LABEL org.opencontainers.image.title="Cloud CLI Tools - Base Image"
 LABEL org.opencontainers.image.documentation="https://github.com/${GITHUB_REPO}/tree/main/docker#readme"
 LABEL org.opencontainers.image.url="https://github.com/${GITHUB_REPO}"
 LABEL org.opencontainers.image.source="https://github.com/${GITHUB_REPO}/blob/main/docker/dockerfiles/Dockerfile.base"
+
