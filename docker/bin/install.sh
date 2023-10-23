@@ -64,7 +64,7 @@
 
 # RUN \
     poetry_bin_path=$(command -v poetry >/dev/null && command -v poetry | xargs dirname | xargs dirname || { [ -d "${SHARED}/poetry/bin" ] && echo "${SHARED}/poetry/bin"; }) && \
-    [ -n "$poetry_bin_path" ] && ln -s $poetry_bin_path/* $DOTLOCAL/bin && \
+    [ -n "$poetry_bin_path" ] && ln -s $poetry_bin_path/* $HOMELOCAL/bin && \
     "${poetry_bin_path}/poetry" completions bash >> $DOTLOCAL/.bash_completion
 
 # Install kubectx and kubens
@@ -126,7 +126,7 @@
         latest_version=$(curl -sSL https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') && \
     mkdir $SHARED/tfenv && \
     git clone --depth=1 https://github.com/tfutils/tfenv.git $SHARED/tfenv && \
-    ln -s $SHARED/tfenv/bin/* $DOTLOCAL/bin && \
+    ln -s $SHARED/tfenv/bin/* $HOMELOCAL/bin && \
     tfenv install $version && \
     tfenv use $version && \
     [ "$version" != "$latest_version" ] && tfenv install $latest_version
@@ -170,9 +170,17 @@
     echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
     ln -s /usr/share/bash-completion/completions/git $DOTLOCAL/.git-completion.bash && \
     ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
+    for d in $(find $SHARED -mindepth 1 -maxdepth 2 -type d -name bin -exec sh -c "val=$(echo {}); [ \"\$val\" = \"\$DOTLOCAL/bin\" ] || echo \$val" {} \;); do \
+        ln -s $d/* $HOMELOCAL/bin; \
+    done && \
     echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
+    unset _path_extra && \
+    for d in $(find $SHARED -mindepth 1 -maxdepth 2 -type d -name bin -exec sh -c "val=$(echo {}); [ \"\$val\" = \"\$DOTLOCAL/bin\" ] || echo \$val" {} \;); do \
+        [ -n "$_path_extra" ] && _path_extra="$_path_extra:$d" || _path_extra="$d"; \
+    done && \
+    echo "export \"\${PATH}:$_path_extra\"" > foo && \
+    unset _path_extra && \
     cat > $BASHRC_EXTRA <<EOF
-
 export PWD=\$(pwd)
 export USER=\$(whoami)
 export EDITOR="\${EDITOR:-$EDITOR}"
@@ -181,7 +189,6 @@ export GIT_EDITOR="\${EDITOR:-$EDITOR}"
 export KUBE_EDITOR="\${EDITOR:-$EDITOR}"
 export CLUSTER_PREFIX="\${CLUSTER_PREFIX:-di}"
 export PATH=$MYPATH
-# export PATH="\${PATH}:$SHARED/tfenv/bin"
 export ENVFILE=$ENVFILE
 export HISTFILE="\${HOME}/.bash_history"
 
