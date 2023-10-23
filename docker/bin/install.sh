@@ -126,10 +126,11 @@
         latest_version=$(curl -sSL https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version') && \
     mkdir $SHARED/tfenv && \
     git clone --depth=1 https://github.com/tfutils/tfenv.git $SHARED/tfenv && \
-    ln -s $SHARED/tfenv/bin/* $HOMELOCAL/bin && \
-    tfenv install $version && \
-    tfenv use $version && \
-    [ "$version" != "$latest_version" ] && tfenv install $latest_version
+    tfenv_bin_path=$(command -v tfenv >/dev/null && command -v tfenv | xargs dirname | xargs dirname || { [ -d "${SHARED}/tfenv/bin" ] && echo "${SHARED}/tfenv/bin"; }) && \
+    [ -n "$tfenv_bin_path" ] && ln -s $tfenv_bin_path/* $HOMELOCAL/bin && \
+    "${tfenv_bin_path}/tfenv" install $version && \
+    "${tfenv_bin_path}/tfenv" use $version && \
+    [ "$version" != "$latest_version" ] && "${tfenv_bin_path}/tfenv" install $latest_version
 
 # RUN \
     version=$($SCRIPTS/gh-get-version.sh "${TERRAGRUNT_VERSION}" "latest" "gruntwork-io/terragrunt") && \
@@ -170,9 +171,6 @@
     echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
     ln -s /usr/share/bash-completion/completions/git $DOTLOCAL/.git-completion.bash && \
     ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
-    for d in $(find $SHARED -mindepth 1 -maxdepth 2 -type d -name bin -exec sh -c "val=$(echo {}); [ \"\$val\" = \"\$DOTLOCAL/bin\" ] || echo \$val" {} \;); do \
-        ln -s $d/* $HOMELOCAL/bin; \
-    done && \
     echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
     unset _path_extra && \
     for d in $(find $SHARED -mindepth 1 -maxdepth 2 -type d -name bin -exec sh -c "val=$(echo {}); [ \"\$val\" = \"\$DOTLOCAL/bin\" ] || echo \$val" {} \;); do \
