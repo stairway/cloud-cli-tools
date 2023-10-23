@@ -64,7 +64,7 @@
 
 # RUN \
     poetry_bin_path=$(command -v poetry >/dev/null && command -v poetry | xargs dirname | xargs dirname || { [ -d "${SHARED}/poetry/bin" ] && echo "${SHARED}/poetry/bin"; }) && \
-    [ -n "$poetry_bin_path" ] && ln -s $poetry_bin_path/* $DOTLOCAL/bin && \
+    [ -n "$poetry_bin_path" ] && ln -s $poetry_bin_path/* $HOMELOCAL/bin && \
     "${poetry_bin_path}/poetry" completions bash >> $DOTLOCAL/.bash_completion
 
 # Install kubectx and kubens
@@ -127,7 +127,7 @@
     mkdir $SHARED/tfenv && \
     git clone --depth=1 https://github.com/tfutils/tfenv.git $SHARED/tfenv && \
     tfenv_bin_path=$(command -v tfenv >/dev/null && command -v tfenv | xargs dirname | xargs dirname || { [ -d "${SHARED}/tfenv/bin" ] && echo "${SHARED}/tfenv/bin"; }) && \
-    [ -n "$tfenv_bin_path" ] && ln -s $tfenv_bin_path/* $DOTLOCAL/bin && \
+    [ -n "$tfenv_bin_path" ] && ln -s $tfenv_bin_path/* $HOMELOCAL/bin && \
     "${tfenv_bin_path}/tfenv" install $version && \
     "${tfenv_bin_path}/tfenv" use $version && \
     [ "$version" != "$latest_version" ] && "${tfenv_bin_path}/tfenv" install $latest_version
