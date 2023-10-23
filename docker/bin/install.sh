@@ -173,7 +173,7 @@
     ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
     echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
     unset _path_extra && \
-    for d in $(find $SHARED -mindepth 1 -maxdepth 2 -type d -name bin -exec sh -c "val=$(echo {}); [ \"\$val\" = \"\$DOTLOCAL/bin\" ] || echo \$val" {} \;); do \
+    for d in $(find $SHARED -mindepth 1 -maxdepth 2 -not \( -path "$DOTLOCAL" -prune \) -type d -name bin -print); do \
         [ -n "$_path_extra" ] && _path_extra="$_path_extra:$d" || _path_extra="$d"; \
     done && \
     echo "export PATH=\"\${PATH}:$_path_extra\"" > $BASHRC_EXTRA && \
