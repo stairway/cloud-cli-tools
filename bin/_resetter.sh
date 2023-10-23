@@ -37,7 +37,7 @@ cleanup_dotfiles() {
         printf "\033[93m>\033[0m Restoring '%s' ...\n" "${WORKING_DIRECTORY}/.aws/config"
         cp "${WORKING_DIRECTORY}/.aws/config_restore" "${WORKING_DIRECTORY}/.aws/config"
         if [ -d "${WORKING_DIRECTORY}/.aws" ]; then
-            targeted+=($(find "${WORKING_DIRECTORY}/.aws" -mindepth 1 -type d -print))
+            targeted+=($(find "${WORKING_DIRECTORY}/.aws" -mindepth 1 -path "${WORKING_DIRECTORY}/.aws/.git" -prune -o -type d -print))
         fi
         aws_config_restore=true
     fi
@@ -46,11 +46,10 @@ cleanup_dotfiles() {
         for item in $@; do
             item_basename="$(basename ${item})"
             if [ "${item_basename}" = ".aws" -a "${aws_config_restore}" != "true" ]; then
-                targeted+=(${WORKING_DIRECTORY}/${item_basename})
+                targeted+=($(find "${WORKING_DIRECTORY}/${item_basename}" -mindepth 1 -path "${WORKING_DIRECTORY}/${item_basename}/.git" -prune -o -print))
             elif [ "${item_basename}" = ".aws" ]; then
-                targeted+=($(find "${WORKING_DIRECTORY}/${item_basename}" -type f ! -iname 'config*' -print))
+                targeted+=($(find "${WORKING_DIRECTORY}/${item_basename}" -mindepth 1 -path "${WORKING_DIRECTORY}/${item_basename}/.git" -prune -o -type f ! -iname 'config*' -print))
             fi
-            [ "${item_basename}" = ".aws" -a "${aws_config_restore}" != "true" ] &&
             [ "${item_basename}" = ".awsvault" -a "${aws_config_restore}" != "true" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
             [ "${item_basename}" = ".gnupg" -a "${aws_config_restore}" != "true" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
             [ "${item_basename}" = ".password-store" -a "${aws_config_restore}" != "true" ] && targeted+=(${WORKING_DIRECTORY}/${item_basename})
