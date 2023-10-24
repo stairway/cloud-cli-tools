@@ -31,7 +31,6 @@ ENV PLUGINS="${PLUGINS:-${DOTLOCAL}/plugins.d}"
 ENV DOWNLOADS="${DOWNLOADS:-${DOTLOCAL}/downloads}"
 ENV SCRIPTS="${SCRIPTS:-${DOTLOCAL}/scripts}"
 ENV DOCS="${DOCS:-${DOTLOCAL}/docs}"
-ENV PROMPT_COMMAND='history -a;history -c;history -r;set -a;[ -e "${ENVFILE:-~/.local/.env}" ] && . "${ENVFILE:-~/.local/.env}"; set +a >/dev/null'
 ENV BASHRC_EXTRA="${BASHRC_EXTRA:-${DOTLOCAL}/bash.bashrc_extra}"
 ENV DESCRIBE="${DESCRIBE:-${DOTLOCAL}/bin/describe}"
 ENV DOTLOCAL="${DOTLOCAL:-/opt/local}"
@@ -50,7 +49,7 @@ RUN HOME=$HOMEDIR \
     USER=$UNAME \
     HOMELOCAL=$HOMELOCAL \
     ENVFILE='${HOME}/.local/.env' \
-    MYPATH="${DOTLOCAL}"'/bin:/opt/bin:${PATH}' \
+    PATH="${DOTLOCAL}/bin:/opt/bin:${PATH}:/usr/games:/usr/local/games:/snap/bin" \
     $DOTLOCAL/bin/install.sh
 
 # (alternative to `--groups sudo` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
@@ -66,7 +65,11 @@ RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
             $NEWU && \
         passwd -d $NEWU && \
         echo "${NEWU}:${NEWU}" | chpasswd && \
-        echo "root:root" | chpasswd
+        echo "root:root" | chpasswd && \
+        USER="$NEWU" \
+        HOME="/home/$NEWU" \
+        HOMELOCAL="/home/$NEWU/.local" \
+        $DOTLOCAL/bin/install-user.sh
 
 # USER $UNAME
 WORKDIR $HOMEDIR
