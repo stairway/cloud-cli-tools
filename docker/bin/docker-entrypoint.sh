@@ -109,7 +109,8 @@ print_args() {
         printf "arg: ${arg}\n"
     done
 }
-[ "${DEBUG:-false}" = "true" ] && print_args
+[ "${DEBUG:-false}" != "true" ] || print_args
+[ "${DEBUG:-false}" != "true" ] || printf "PATH=%s\n" $PATH
 
 _is_tty() { tty >/dev/null 2>&1 && return $? || return $?; }
 
