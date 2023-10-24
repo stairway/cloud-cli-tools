@@ -10,7 +10,7 @@ ARG UNAME=root
 ARG HOMEDIR=/root
 ARG HOMELOCAL=$HOMEDIR/.local
 ARG ENVFILE=$HOMELOCAL/.env
-ARG PATH='$PATH:/usr/games:/usr/local/games:/snap/bin'
+ARG PATH="$PATH:/usr/games:/usr/local/games:/snap/bin"
 
 ARG KUBE_VERSION=latest
 ARG ISTIO_VERSION=latest
