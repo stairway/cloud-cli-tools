@@ -53,15 +53,7 @@ RUN HOME=$HOMEDIR \
     ENVFILE='${HOME}/.local/.env' \
     PATH=$PATH \
     $DOTLOCAL/bin/install.sh && \
-    echo "root:root" | chpasswd && \
-    cat > /etc/profile.d/99-entrypoint.sh <<EOF
-export PWD=\$(pwd)
-
-if [ "\$(whoami)" = "root" ]; then
-    export USER=$UNAME
-    HOME=$HOMEDIR
-fi
-EOF
+    echo "root:root" | chpasswd 
 
 # (alternative to `--groups sudo` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
 # (to add password, use `-p "$(openssl passwd -1 <password>)"`)
@@ -81,7 +73,12 @@ RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
         HOMELOCAL="/home/$NEWU/.local" \
         $DOTLOCAL/bin/install-user.sh && \
         cat > /etc/profile.d/99-entrypoint.sh <<EOF
-if [ "\$(whoami)" != "root" ]; then
+export PWD=\$(pwd)
+
+if [ "\$(whoami)" = "root" ]; then
+    export USER=$UNAME
+    HOME=$HOMEDIR
+else
     export USER=$NEWU
     HOME=/home/$NEWU
 fi
