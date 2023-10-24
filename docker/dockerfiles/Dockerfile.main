@@ -78,11 +78,7 @@ WORKDIR $HOMEDIR
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
 
 SHELL [ "/bin/bash", "-o", "pipefail", "-c" ]
-ENTRYPOINT /bin/bash -c \
-    "for f in \$(find /etc/profile.d -mindepth 1 -type f -name '*.sh' -print | sort -u); do \
-        . \$f; \
-    done && \
-    /opt/local/bin/docker-entrypoint.sh"
+ENTRYPOINT ["PATH=$PATH", "/opt/local/bin/docker-entrypoint.sh"]
 
 # Additional Metadata
 ARG VERSION=base-latest

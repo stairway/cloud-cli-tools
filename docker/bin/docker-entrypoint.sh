@@ -2,6 +2,10 @@
 
 set -o pipefail
 
+for f in $(find /etc/profile.d -mindepth 1 -type f -name '*.sh' -print | sort -u); do
+    . $f
+done
+
 USERNAME="${USERNAME:-""}"
 GIT_CONFIG_FULL_NAME="${GIT_CONFIG_FULL_NAME:-""}"
 GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-""}"
