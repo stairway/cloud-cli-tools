@@ -2,10 +2,6 @@
 
 set -o pipefail
 
-for f in $(find /etc/profile.d -mindepth 1 -type f -name '*.sh' -print | sort -u); do
-    . $f
-done
-
 USERNAME="${USERNAME:-""}"
 GIT_CONFIG_FULL_NAME="${GIT_CONFIG_FULL_NAME:-""}"
 GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-""}"
@@ -115,10 +111,16 @@ print_args() {
 }
 [ "${DEBUG:-false}" != "true" ] || print_args
 [ "${DEBUG:-false}" != "true" ] || printf "PATH=%s\n" $PATH
+[ "${DEBUG:-false}" != "true" ] || printf "USER=%s\n" $USER
+[ "${DEBUG:-false}" != "true" ] || printf "HOME=%s\n" $HOME
 
 _is_tty() { tty >/dev/null 2>&1 && return $? || return $?; }
 
 trap die INT
+
+for f in $(find /etc/profile.d -mindepth 1 -type f -name '*.sh' -print | sort -u); do
+    . $f
+done
 
 case "$1" in
     docker)

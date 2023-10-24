@@ -173,7 +173,6 @@
     ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
     cat > $BASHRC_EXTRA <<EOF
 # PWD=\$(pwd)
-export USER=\$(whoami)
 export EDITOR="\${EDITOR:-$EDITOR}"
 export VISUAL="\${EDITOR:-$EDITOR}"
 export GIT_EDITOR="\${EDITOR:-$EDITOR}"

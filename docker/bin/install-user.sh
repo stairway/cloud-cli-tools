@@ -29,4 +29,11 @@
     [ "$version" != "$latest_version" ] && "${tfenv_bin_path}/tfenv" install $latest_version
 
 # RUN \
+    cat > /etc/profile.d/99-entrypoint-user.sh <<EOF
+# PWD=\$(pwd)
+USER=\$(whoami)
+HOME=/home/$USER
+EOF
+
+# RUN \
     chown -R "ubuntu:ubuntu" $HOMELOCAL
