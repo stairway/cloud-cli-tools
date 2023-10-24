@@ -176,9 +176,7 @@
     for d in $(find $SHARED -mindepth 1 -maxdepth 2 -type d -name bin -exec sh -c "val=$(echo {}); [ \"\$val\" = \"\$DOTLOCAL/bin\" ] || echo \$val" {} \;); do \
         [ -n "$_path_extra" ] && _path_extra="$_path_extra:$d" || _path_extra="$d"; \
     done && \
-    echo "export PATH=\"\${PATH}:$_path_extra\"" > $BASHRC_EXTRA && \
-    unset _path_extra && \
-    cat >> $BASHRC_EXTRA <<EOF
+    cat > $BASHRC_EXTRA <<EOF
 export PWD=\$(pwd)
 export USER=\$(whoami)
 export EDITOR="\${EDITOR:-$EDITOR}"
@@ -186,13 +184,14 @@ export VISUAL="\${EDITOR:-$EDITOR}"
 export GIT_EDITOR="\${EDITOR:-$EDITOR}"
 export KUBE_EDITOR="\${EDITOR:-$EDITOR}"
 export CLUSTER_PREFIX="\${CLUSTER_PREFIX:-di}"
-export PATH=$MYPATH
 export ENVFILE=$ENVFILE
-export HISTFILE="\${HOME}/.bash_history"
+HISTFILE="\${HOME}/.bash_history"
+PROMPT_COMMAND='history -a;history -c;history -r;set -a;[ -e "${ENVFILE:-~/.local/.env}" ] && . "${ENVFILE:-~/.local/.env}"; set +a >/dev/null'
+PATH=\"${MYPATH:-\$PATH}:$_path_extra\"
 
 # This is in .profile
 # if [ -d "\${HOME}/.local/bin" ]; then
-#     export PATH="\${HOME}/.local/bin:\${PATH}"
+#     PATH="\${HOME}/.local/bin:\${PATH}"
 # fi
 
 if [ -f "$ENVFILE" ]; then
@@ -235,7 +234,7 @@ EOF
         cat >> $HOME/.profile <<EOF
 # set PATH so it includes user's private bin if it exists
 if [ -d "\$HOME/bin" ] ; then
-    PATH="\$HOME/bin:$PATH"
+    PATH="\$HOME/bin:\$PATH"
 fi
 
 # set PATH so it includes user's private bin if it exists
