@@ -67,7 +67,10 @@ RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
         passwd -d $NEWU && \
         echo "${NEWU}:${NEWU}" | chpasswd && \
         echo "root:root" | chpasswd && \
-        HOME="/home/$NEWU" HOMELOCAL="/home/$NEWU/.local" $DOTLOCAL/bin/install-user.sh
+        USER="$NEWU" \
+        HOME="/home/$NEWU" \
+        HOMELOCAL="/home/$NEWU/.local" \
+        $DOTLOCAL/bin/install-user.sh
 
 # USER $UNAME
 WORKDIR $HOMEDIR
