@@ -187,7 +187,7 @@ export CLUSTER_PREFIX="\${CLUSTER_PREFIX:-di}"
 export ENVFILE=$ENVFILE
 HISTFILE="\${HOME}/.bash_history"
 PROMPT_COMMAND='history -a;history -c;history -r;set -a;[ -e "${ENVFILE:-~/.local/.env}" ] && . "${ENVFILE:-~/.local/.env}"; set +a >/dev/null'
-PATH=\"${MYPATH:-\$PATH}:$_path_extra\"
+PATH="\$PATH:$_path_extra"
 
 # This is in .profile
 # if [ -d "\${HOME}/.local/bin" ]; then
