@@ -30,9 +30,11 @@
 
 # RUN \
     cat > /etc/profile.d/99-entrypoint-user.sh <<EOF
-# PWD=\$(pwd)
-USER=\$(whoami)
-HOME=/home/$USER
+if [ "$USER" != "root" ]; then
+    # USER=$USER
+    USER=\$(whoami)
+    HOME=$HOME
+fi
 EOF
 
 # RUN \
