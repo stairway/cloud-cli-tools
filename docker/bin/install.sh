@@ -172,7 +172,7 @@
     ln -s /usr/share/bash-completion/completions/git $DOTLOCAL/.git-completion.bash && \
     ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
     cat > $BASHRC_EXTRA <<EOF
-export PWD=\$(pwd)
+# PWD=\$(pwd)
 export USER=\$(whoami)
 export EDITOR="\${EDITOR:-$EDITOR}"
 export VISUAL="\${EDITOR:-$EDITOR}"
@@ -241,14 +241,14 @@ EOF
         [ -n "$_path_extra" ] && _path_extra="$_path_extra:$d" || _path_extra="$d"; \
     done && \
     cat > /etc/profile.d/10-set-path.sh <<EOF
-PATH="\$PATH:$_path_extra"
+[[ ":$PATH:" == *":$_path_extra:"* ]] || PATH="\$PATH:$_path_extra"
 
 if [ -d "${SHARED}/bin" ]; then
-    PATH="${SHARED}/bin:\${PATH}"
+    [[ ":$PATH:" == *":$SHARED/bin:"* ]] || PATH="${SHARED}/bin:\${PATH}"
 fi
 
 if [ -d "${DOTLOCAL}/bin" ]; then
-    PATH="${DOTLOCAL}/bin:\${PATH}"
+    [[ ":$PATH:" == *":$DOTLOCAL/bin:"* ]] || PATH="${DOTLOCAL}/bin:\${PATH}"
 fi
 EOF
 
