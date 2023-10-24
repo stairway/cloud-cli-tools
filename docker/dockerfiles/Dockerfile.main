@@ -10,6 +10,7 @@ ARG UNAME=root
 ARG HOMEDIR=/root
 ARG HOMELOCAL=$HOMEDIR/.local
 ARG ENVFILE=$HOMELOCAL/.env
+ARG PATH='$PATH:/usr/games:/usr/local/games:/snap/bin'
 
 ARG KUBE_VERSION=latest
 ARG ISTIO_VERSION=latest
@@ -49,8 +50,9 @@ RUN HOME=$HOMEDIR \
     USER=$UNAME \
     HOMELOCAL=$HOMELOCAL \
     ENVFILE='${HOME}/.local/.env' \
-    PATH="${DOTLOCAL}/bin:/opt/bin:${PATH}:/usr/games:/usr/local/games:/snap/bin" \
-    $DOTLOCAL/bin/install.sh
+    PATH=$PATH \
+    $DOTLOCAL/bin/install.sh && \
+    echo "root:root" | chpasswd
 
 # (alternative to `--groups sudo` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
 # (to add password, use `-p "$(openssl passwd -1 <password>)"`)
@@ -65,13 +67,12 @@ RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
             $NEWU && \
         passwd -d $NEWU && \
         echo "${NEWU}:${NEWU}" | chpasswd && \
-        echo "root:root" | chpasswd && \
         USER="$NEWU" \
         HOME="/home/$NEWU" \
         HOMELOCAL="/home/$NEWU/.local" \
         $DOTLOCAL/bin/install-user.sh
 
-# USER $UNAME
+USER $UNAME
 WORKDIR $HOMEDIR
 
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
