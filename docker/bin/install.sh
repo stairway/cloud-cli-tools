@@ -254,20 +254,6 @@ fi
 EOF
 
 # RUN \
-    cat > /etc/profile.d/99-entrypoint.sh <<EOF
-export PWD=\$(pwd)
-
-# if [ "\$(whoami)" = "$UNAME" ]; then
-if [ "\$UNAME" = "$UNAME" ]; then
-    export USER=$UNAME
-    HOME=$HOMEDIR
-else
-    export USER=$USER
-    HOME=$HOME
-fi
-EOF
-
-# RUN \
     chmod -R g+w $DOTLOCAL && \
     { set -x; $SCRIPTS/child-dirs.sh $HOME/.ssh $HOME/.gnupg $HOME/.password-store $HOME/.awsvault; } && \
     { [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS; }
