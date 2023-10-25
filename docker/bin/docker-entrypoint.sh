@@ -141,7 +141,11 @@ case "$1" in
         if [ $# -gt 0 ]; then
             _is_tty && bash -l -c "$@" && exec bash -l || bash -l -c "$@"
         else
-            _is_tty && exec bash -l
+            if [ "$UNAME" = "$(whoami)" ]; then
+                _is_tty && exec bash -l
+            else
+                _is_tty && sudo --preserve-env -u $USER sh -c 'exec bash -l'
+            fi
         fi
         [ $exit_code -eq 0 ] || exit_code=$?
         keep_alive

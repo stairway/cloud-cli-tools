@@ -103,7 +103,7 @@ EOF
     [ $last_err -eq 0 -a -f ~/._initialized ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "AWS (and dpctl)"
 }
 
-if [ ! -f /.initialized ]; then
+if [ ! -f /tmp/.initialized ]; then
     if [ -d /tmp/addons ]; then
         tarballs="$(find /tmp/addons -mindepth 1 -type f -name '*.tgz' | grep -v /archive)"
         if [ $(count ${tarballs[@]}) -gt 0 ]; then
@@ -127,9 +127,9 @@ if [ ! -f /.initialized ]; then
         if [ $(count ${files[@]}) -gt 0 ]; then
             for f in ${files[@]}; do
                 fname="$(basename ${f})"
-                target="/usr/local/bin/${fname}"
+                target="$DOTLOCAL/bin/${fname}"
                 if [ ! -f "${target}" ]; then
-                    printf "\033[93m>\033[0m Installing '%s' to '%s'\n" "${f}" "/usr/local/bin/${fname}"
+                    printf "\033[93m>\033[0m Installing '%s' to '%s'\n" "${f}" "${target}"
                     install "${f}" "${target}"
                 fi
             done
@@ -137,9 +137,9 @@ if [ ! -f /.initialized ]; then
         fi
     fi
 
-    date -u +%Y%m%dT%H%M%SZ > /.initialized
+    date -u +%Y%m%dT%H%M%SZ > /tmp/.initialized
 fi
 
-command -v dpctl >/dev/null && ls /.initialized >/dev/null && init_aws
+command -v dpctl >/dev/null && ls /tmp/.initialized >/dev/null && init_aws
 
 # [ -f $(which kube-ps1.sh) ] && . $(which kube-ps1.sh)
