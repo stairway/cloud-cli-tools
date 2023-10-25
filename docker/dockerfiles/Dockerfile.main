@@ -73,13 +73,12 @@ RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
         HOMELOCAL="/home/$NEWU/.local" \
         $DOTLOCAL/bin/install-user.sh && \
         cat > /etc/profile.d/99-entrypoint.sh <<EOF
-export PWD=\$(pwd)
-# if [ "\$(whoami)" = "$UNAME" ]; then
-if [ "\$UNAME" = "$UNAME" ]; then
-    export USER=$UNAME
+if [ "\$(whoami)" = "$UNAME" ]; then
+# if [ "\$UNAME" = "$UNAME" ]; then
+    USER=$UNAME
     HOME=$HOMEDIR
 else
-    export USER=$NEWU
+    USER=$NEWU
     HOME=/home/$NEWU
 fi
 EOF

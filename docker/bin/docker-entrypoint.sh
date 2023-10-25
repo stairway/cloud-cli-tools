@@ -2,16 +2,31 @@
 
 set -o pipefail
 
-for f in $(find /etc/profile.d -mindepth 1 -not \( -path '/etc/profile.d/02-su*' -prune \) -type f -name '*.sh' -print | sort -u); do
-    . $f
-done
-
 USERNAME="${USERNAME:-""}"
 GIT_CONFIG_FULL_NAME="${GIT_CONFIG_FULL_NAME:-""}"
 GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-""}"
 EDITOR="${EDITOR:-""}"
 GIT_DEFAULT_BRANCH="${GIT_DEFAULT_BRANCH:-main}"
-INPUT_SHELL=""
+
+[ -f /etc/profile.d/98-docker.sh ] || cat > /etc/profile.d/98-docker.sh <<EOF
+KEEP_ALIVE=${KEEP_ALIVE}
+USERNAME=${USERNAME}
+TEAM_NAME=${TEAM_NAME}
+CLUSTER_PREFIX=${CLUSTER_PREFIX}
+EDITOR=${EDITOR}
+DEFAULT_PROFILE=${DEFAULT_PROFILE}
+AWS_VAULT_USER_REGION=${AWS_VAULT_USER_REGION}
+GIT_CONFIG_EMAIL='${GIT_CONFIG_EMAIL}'
+GIT_CONFIG_FULL_NAME='${GIT_CONFIG_FULL_NAME}'
+HISTFILE='${HISTFILE}'
+TERM=${TERM}
+UNAME=${UNAME}
+GIT_DEFAULT_BRANCH=${GIT_DEFAULT_BRANCH}
+EOF
+
+for f in $(find /etc/profile.d -mindepth 1 -not \( -path '/etc/profile.d/98-docker*' -prune \) -type f -name '*.sh' -print | sort -u); do
+    . $f
+done
 
 git_config() {
     git config --global user.name "${GIT_CONFIG_FULL_NAME}"
@@ -141,11 +156,7 @@ case "$1" in
         if [ $# -gt 0 ]; then
             _is_tty && bash -l -c "$@" && exec bash -l || bash -l -c "$@"
         else
-            if [ "$UNAME" = "$(whoami)" ]; then
-                _is_tty && exec bash -l
-            else
-                _is_tty && sudo --preserve-env -u $USER sh -c 'exec bash -l'
-            fi
+            _is_tty && exec bash -l
         fi
         [ $exit_code -eq 0 ] || exit_code=$?
         keep_alive
