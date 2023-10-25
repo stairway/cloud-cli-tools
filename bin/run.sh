@@ -385,6 +385,7 @@ run_new() {
         -e "'GIT_CONFIG_FULL_NAME=${GIT_CONFIG_FULL_NAME}'"
         -e "'HISTFILE=${docker_histfile}'"
         -e "TERM=${DOCKER_TERM}"
+        -e "UNAME=${DOCKER_USER}"
     )
     [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && \
         environment_vars+=(-e "VSCODE_DEBUGPY_PORT=${VSCODE_DEBUGPY_PORT}")

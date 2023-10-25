@@ -180,6 +180,7 @@ export GIT_EDITOR="\${EDITOR:-$EDITOR}"
 export KUBE_EDITOR="\${EDITOR:-$EDITOR}"
 export CLUSTER_PREFIX="\${CLUSTER_PREFIX:-di}"
 export ENVFILE=$ENVFILE
+export AWS_VAULT_BACKEND="${AWS_VAULT_BACKEND}"
 HISTFILE="\${HOME}/.bash_history"
 PROMPT_COMMAND='history -a;history -c;history -r;set -a;[ -e "${ENVFILE:-~/.local/.env}" ] && . "${ENVFILE:-~/.local/.env}"; set +a >/dev/null'
 
@@ -249,6 +250,20 @@ fi
 
 if [ -d "${DOTLOCAL}/bin" ]; then
     [[ ":\$PATH:" == *":$DOTLOCAL/bin:"* ]] || PATH="${DOTLOCAL}/bin:\${PATH}"
+fi
+EOF
+
+# RUN \
+    cat > /etc/profile.d/99-entrypoint.sh <<EOF
+export PWD=\$(pwd)
+
+# if [ "\$(whoami)" = "$UNAME" ]; then
+if [ "\$UNAME" = "$UNAME" ]; then
+    export USER=$UNAME
+    HOME=$HOMEDIR
+else
+    export USER=$USER
+    HOME=$HOME
 fi
 EOF
 
