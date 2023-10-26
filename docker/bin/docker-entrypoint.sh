@@ -8,7 +8,22 @@ GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-""}"
 EDITOR="${EDITOR:-""}"
 GIT_DEFAULT_BRANCH="${GIT_DEFAULT_BRANCH:-main}"
 
-[ -f /etc/profile.d/98-docker.sh ] || cat > /etc/profile.d/98-docker.sh <<EOF
+# [ -f /etc/profile.d/98-docker.sh ] || cat > /etc/profile.d/98-docker.sh <<EOF
+# TRUE='${TRUE}'
+# FALSE='${FALSE}'
+# BOOL='${BOOL}'
+# SHARED='${SHARED}'
+# PLUGINS='${PLUGINS}'
+# DOWNLOADS='${DOWNLOADS}'
+# SCRIPTS='${SCRIPTS}'
+# DOCS='${DOCS}'
+# BASHRC_EXTRA='${BASHRC_EXTRA}'
+# DESCRIBE='${DESCRIBE}'
+# DOTLOCAL='${DOTLOCAL}'
+# _PATH='${_PATH}'
+# EOF
+
+[ -f /etc/profile.d/98-entrypoint.sh ] || cat > /etc/profile.d/98-entrypoint.sh <<EOF
 KEEP_ALIVE=${KEEP_ALIVE}
 USERNAME=${USERNAME}
 TEAM_NAME=${TEAM_NAME}
@@ -24,7 +39,7 @@ UNAME=${UNAME}
 GIT_DEFAULT_BRANCH=${GIT_DEFAULT_BRANCH}
 EOF
 
-for f in $(find /etc/profile.d -mindepth 1 -not \( -path '/etc/profile.d/98-docker*' -prune \) -type f -name '*.sh' -print | sort -u); do
+for f in $(find /etc/profile.d -mindepth 1 -not \( -path '/etc/profile.d/98-*' -prune \) -type f -name '*.sh' -print | sort -u); do
     . $f
 done
 

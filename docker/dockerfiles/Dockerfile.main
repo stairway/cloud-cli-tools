@@ -53,7 +53,22 @@ RUN HOME=$HOMEDIR \
     ENVFILE='${HOME}/.local/.env' \
     PATH=$PATH \
     $DOTLOCAL/bin/install.sh && \
-    echo "root:root" | chpasswd
+    echo "root:root" | chpasswd && \
+    [ -f /etc/profile.d/98-docker.sh ] || cat > /etc/profile.d/98-docker.sh <<EOF
+TRUE='${TRUE}'
+FALSE='${FALSE}'
+BOOL='${BOOL}'
+SHARED='${SHARED}'
+PLUGINS='${PLUGINS}'
+DOWNLOADS='${DOWNLOADS}'
+SCRIPTS='${SCRIPTS}'
+DOCS='${DOCS}'
+BASHRC_EXTRA='${BASHRC_EXTRA}'
+DESCRIBE='${DESCRIBE}'
+DOTLOCAL='${DOTLOCAL}'
+AWS_VAULT_BACKEND='${AWS_VAULT_BACKEND}'
+_PATH='${_PATH}'
+EOF
 
 # (alternative to `--groups sudo` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
 # (to add password, use `-p "$(openssl passwd -1 <password>)"`)
@@ -72,10 +87,9 @@ RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
         HOME="/home/$NEWU" \
         HOMELOCAL="/home/$NEWU/.local" \
         $DOTLOCAL/bin/install-user.sh && \
-        [ "$UNAME" = "root" ] && \
-            echo "if [ \"\$(whoami)\" = \"$UNAME\" ]; then" > /etc/profile.d/99-entrypoint.sh || \
-            echo "if [ \"\$UNAME\" = \"$UNAME\" ]; then" > /etc/profile.d/99-entrypoint.sh && \
-            cat >> /etc/profile.d/99-entrypoint.sh <<EOF
+        cat > /etc/profile.d/99-check-user.sh <<EOF
+if [ "\$(whoami)" = "$UNAME" ]; then
+# if [ "\$UNAME" = "$UNAME" ]; then
     USER=$UNAME
     HOME=$HOMEDIR
 else
