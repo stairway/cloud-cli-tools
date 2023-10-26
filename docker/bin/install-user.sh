@@ -29,12 +29,4 @@
     [ "$version" != "$latest_version" ] && "${tfenv_bin_path}/tfenv" install $latest_version
 
 # RUN \
-    cat > $HOME/.profile <<EOF
-
-# [ "\$UNAME" = "$(whoami)" ] || su -l \$UNAME
-[ "\$(pwd)" = "\$HOME" ] || cd ~
-
-EOF
-
-# RUN \
     chown -R "ubuntu:ubuntu" $HOMELOCAL
