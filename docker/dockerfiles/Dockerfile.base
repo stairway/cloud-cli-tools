@@ -15,19 +15,15 @@ ARG TZ=America/Chicago
 ARG EDITOR=nano
 
 # default values
-# ARG UNAME=root
-# ARG HOMEDIR=/root
-# ARG SHARED=$HOMEDIR/.local/share
 ARG SHARED=/opt
 ARG DOTLOCAL=/opt/local
 
 # only used if HOME != root
 ARG UID=1001
 
-# ENV PATH="${DOTLOCAL}/bin:/opt/bin:${PATH}"
 ENV DOWNLOADS=${DOTLOCAL}/downloads
 ENV SCRIPTS=${DOTLOCAL}/scripts
-ENV BASHRC_EXTRA="${DOTLOCAL}/bash.bashrc_extra"
+ENV BASHRC_EXTRA="${DOTLOCAL}/bash.extra"
 ENV DOTLOCAL=${DOTLOCAL}
 ENV SHARED=${SHARED}
 
@@ -99,8 +95,6 @@ RUN apt-get update -y && \
     . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
 RUN cat >> /etc/skel/.bashrc <<EOF
-
-[ "\$(pwd)" = "\$HOME" ] || cd ~
 
 if [ -f "\${BASHRC_EXTRA:-$BASHRC_EXTRA}" ]; then
     . "\${BASHRC_EXTRA:-$BASHRC_EXTRA}"
