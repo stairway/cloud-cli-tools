@@ -165,13 +165,6 @@
     printf "Installing '%s' to '%s' ...\n" "${unzip_dir}/kube-ps1.sh" "$PLUGINS/kube-ps1.sh" && \
     mv ${unzip_dir}/kube-ps1.sh $PLUGINS/
 
-RUN cat >> /etc/skel/.bashrc <<EOF
-
-if [ -f "\${BASHRC_EXTRA:-$BASHRC_EXTRA}" ]; then
-    . "\${BASHRC_EXTRA:-$BASHRC_EXTRA}"
-fi
-EOF
-
 # RUN \
     echo '' >>  /etc/bash.bashrc && \
     echo '' >> "${HOME}/.bashrc" && \
@@ -179,6 +172,8 @@ EOF
     ln -s /usr/share/bash-completion/completions/git $DOTLOCAL/.git-completion.bash && \
     ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
     cat > $BASHRC_EXTRA <<EOF
+[ "\$(pwd)" = "\$HOME" ] || cd ~
+
 export EDITOR="\${EDITOR:-$EDITOR}"
 export VISUAL="\${EDITOR:-$EDITOR}"
 export GIT_EDITOR="\${EDITOR:-$EDITOR}"
