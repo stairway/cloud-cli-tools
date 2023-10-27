@@ -40,3 +40,15 @@ if [ "\$(whoami)" = "$UNAME" -a "\$UNAME" != "$UNAME" ]; then
     exec su -l $UNAME
 fi
 EOF
+
+# TODO: should "$UNAME" (below) just be replaced with hardcoded "root"?
+# RUN \
+    cat > /etc/profile.d/99-check-user.sh <<EOF
+if [ "\$(whoami)" = "$UNAME" -a "\$UNAME" != "$UNAME" ]; then
+    USER=$UNAME
+    HOME=/home/$UNAME
+elif [ "\$(whoami)" != "$UNAME" -a "\$UNAME" = "$UNAME" ]; then
+    USER=$UNAME
+    HOME=/home/$UNAME
+fi
+EOF
