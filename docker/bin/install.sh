@@ -171,28 +171,18 @@
     echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
     ln -s /usr/share/bash-completion/completions/git $DOTLOCAL/.git-completion.bash && \
     ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
-    echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
-    unset _path_extra && \
-    for d in $(find $SHARED -mindepth 1 -maxdepth 2 -not \( -path "$DOTLOCAL" -prune \) -type d -name bin -print); do \
-        [ -n "$_path_extra" ] && _path_extra="$_path_extra:$d" || _path_extra="$d"; \
-    done && \
     cat > $BASHRC_EXTRA <<EOF
-export PWD=\$(pwd)
-export USER=\$(whoami)
+[ "\$(pwd)" = "\$HOME" ] || cd ~
+
 export EDITOR="\${EDITOR:-$EDITOR}"
 export VISUAL="\${EDITOR:-$EDITOR}"
 export GIT_EDITOR="\${EDITOR:-$EDITOR}"
 export KUBE_EDITOR="\${EDITOR:-$EDITOR}"
 export CLUSTER_PREFIX="\${CLUSTER_PREFIX:-di}"
 export ENVFILE=$ENVFILE
+export AWS_VAULT_BACKEND="${AWS_VAULT_BACKEND}"
 HISTFILE="\${HOME}/.bash_history"
 PROMPT_COMMAND='history -a;history -c;history -r;set -a;[ -e "${ENVFILE:-~/.local/.env}" ] && . "${ENVFILE:-~/.local/.env}"; set +a >/dev/null'
-PATH="\$PATH:$_path_extra"
-
-# This is in .profile
-# if [ -d "\${HOME}/.local/bin" ]; then
-#     PATH="\${HOME}/.local/bin:\${PATH}"
-# fi
 
 if [ -f "$ENVFILE" ]; then
     set -o allexport
@@ -201,13 +191,13 @@ if [ -f "$ENVFILE" ]; then
 fi
 
 if [ -d "\${PLUGINS:-$PLUGINS}" ]; then
-    for f in \$(find "\${PLUGINS:-$PLUGINS}" -mindepth 1 -type f -name '*.sh' -exec echo {} \; | sort -u); do
+    for f in \$(find "\${PLUGINS:-$PLUGINS}" -mindepth 1 -type f -name '*.sh' -print | sort -u); do
         . \$f
     done
 fi
 
 if [ -d "\${DOTLOCAL:-$DOTLOCAL}/profile.d" ]; then
-    for f in \$(find "\${DOTLOCAL:-$DOTLOCAL}/profile.d" -mindepth 1 -type f -regextype posix-egrep -regex "\${DOTLOCAL:-$DOTLOCAL}/profile\.d\/[0-9]+.+\.sh" -exec echo {} \; | sort -u); do
+    for f in \$(find "\${DOTLOCAL:-$DOTLOCAL}/profile.d" -mindepth 1 -type f -regextype posix-egrep -regex "\${DOTLOCAL:-$DOTLOCAL}/profile\.d\/[0-9]+.+\.sh" -print | sort -u); do
         . \$f
     done
 fi
@@ -243,6 +233,24 @@ if [ -d "\$HOME/.local/bin" ] ; then
 fi
 
 $match
+EOF
+
+# RUN \
+    echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
+    unset _path_extra && \
+    for d in $(find $SHARED -mindepth 1 -maxdepth 2 -not \( -path "$DOTLOCAL" -prune \) -type d -name bin -print); do \
+        [ -n "$_path_extra" ] && _path_extra="$_path_extra:$d" || _path_extra="$d"; \
+    done && \
+    cat > /etc/profile.d/10-set-path.sh <<EOF
+[[ ":\$PATH:" == *":$_path_extra:"* ]] || PATH="\$PATH:$_path_extra"
+
+if [ -d "${SHARED}/bin" ]; then
+    [[ ":\$PATH:" == *":$SHARED/bin:"* ]] || PATH="${SHARED}/bin:\${PATH}"
+fi
+
+if [ -d "${DOTLOCAL}/bin" ]; then
+    [[ ":\$PATH:" == *":$DOTLOCAL/bin:"* ]] || PATH="${DOTLOCAL}/bin:\${PATH}"
+fi
 EOF
 
 # RUN \

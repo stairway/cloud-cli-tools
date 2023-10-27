@@ -7,7 +7,39 @@ GIT_CONFIG_FULL_NAME="${GIT_CONFIG_FULL_NAME:-""}"
 GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-""}"
 EDITOR="${EDITOR:-""}"
 GIT_DEFAULT_BRANCH="${GIT_DEFAULT_BRANCH:-main}"
-INPUT_SHELL=""
+
+# [ -f /etc/profile.d/98-docker.sh ] || cat > /etc/profile.d/98-docker.sh <<EOF
+# TRUE='${TRUE}'
+# FALSE='${FALSE}'
+# BOOL='${BOOL}'
+# SHARED='${SHARED}'
+# PLUGINS='${PLUGINS}'
+# DOWNLOADS='${DOWNLOADS}'
+# SCRIPTS='${SCRIPTS}'
+# DOCS='${DOCS}'
+# BASHRC_EXTRA='${BASHRC_EXTRA}'
+# DESCRIBE='${DESCRIBE}'
+# DOTLOCAL='${DOTLOCAL}'
+# _PATH='${_PATH}'
+# EOF
+
+[ -f /etc/profile.d/98-entrypoint.sh ] || cat > /etc/profile.d/98-entrypoint.sh <<EOF
+KEEP_ALIVE=${KEEP_ALIVE}
+USERNAME=${USERNAME}
+TEAM_NAME=${TEAM_NAME}
+CLUSTER_PREFIX=${CLUSTER_PREFIX}
+EDITOR=${EDITOR}
+DEFAULT_PROFILE=${DEFAULT_PROFILE}
+AWS_VAULT_USER_REGION=${AWS_VAULT_USER_REGION}
+GIT_CONFIG_EMAIL='${GIT_CONFIG_EMAIL}'
+GIT_CONFIG_FULL_NAME='${GIT_CONFIG_FULL_NAME}'
+UNAME=${UNAME}
+GIT_DEFAULT_BRANCH=${GIT_DEFAULT_BRANCH}
+EOF
+
+for f in $(find /etc/profile.d -mindepth 1 -not \( -path '/etc/profile.d/98-*' -prune \) -type f -name '*.sh' -print | sort -u); do
+    . $f
+done
 
 git_config() {
     git config --global user.name "${GIT_CONFIG_FULL_NAME}"
@@ -109,7 +141,12 @@ print_args() {
         printf "arg: ${arg}\n"
     done
 }
-[ "${DEBUG:-false}" = "true" ] && print_args
+[ "${DEBUG:-false}" != "true" ] || print_args
+[ "${DEBUG:-false}" != "true" ] || printf "PATH=%s\n" $PATH
+[ "${DEBUG:-false}" != "true" ] || printf "UNAME=%s\n" $UNAME
+[ "${DEBUG:-false}" != "true" ] || printf "whoami=%s\n" "$(whoami)"
+[ "${DEBUG:-false}" != "true" ] || printf "USER=%s\n" $USER
+[ "${DEBUG:-false}" != "true" ] || printf "HOME=%s\n" $HOME
 
 _is_tty() { tty >/dev/null 2>&1 && return $? || return $?; }
 
