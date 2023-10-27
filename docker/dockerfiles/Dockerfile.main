@@ -83,20 +83,11 @@ RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
             $NEWU && \
         passwd -d $NEWU && \
         echo "${NEWU}:${NEWU}" | chpasswd && \
+        UNAME="$UNAME" \
         USER="$NEWU" \
         HOME="/home/$NEWU" \
         HOMELOCAL="/home/$NEWU/.local" \
-        $DOTLOCAL/bin/install-user.sh && \
-        # TODO: should "$UNAME" (below) just be replaced with hardcoded "root"?
-        cat > /etc/profile.d/99-docker-user.sh <<EOF
-if [ "\$(whoami)" = "$UNAME" -a "\$UNAME" != "$UNAME" ]; then
-    USER=$UNAME
-    HOME=/home/$UNAME
-elif [ "\$(whoami)" != "$UNAME" -a "\$UNAME" = "$UNAME" ]; then
-    USER=$UNAME
-    HOME=/home/$UNAME
-fi
-EOF
+        $DOTLOCAL/bin/install-user.sh
 
 USER $UNAME
 WORKDIR $HOMEDIR

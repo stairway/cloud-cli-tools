@@ -22,6 +22,16 @@ UNAME=${UNAME}
 GIT_DEFAULT_BRANCH=${GIT_DEFAULT_BRANCH}
 EOF
 
+cat > /etc/profile.d/99-docker-user.sh <<EOF
+if [ "\$(whoami)" = "root" -a "\$UNAME" != "root" ]; then
+    USER="\$UNAME"
+    HOME="/home/\$UNAME"
+elif [ "\$(whoami)" != "root" -a "\$UNAME" = "root" ]; then
+    USER="\$(whoami)"
+    HOME="/home/\$(whoami)"
+fi
+EOF
+
 for f in $(find /etc/profile.d -mindepth 1 -not \( -path '/etc/profile.d/9*-vars.sh' -prune \) -type f -name '*.sh' -print | sort -u); do
     . $f
 done
