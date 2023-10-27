@@ -8,22 +8,7 @@ GIT_CONFIG_EMAIL="${GIT_CONFIG_EMAIL:-""}"
 EDITOR="${EDITOR:-""}"
 GIT_DEFAULT_BRANCH="${GIT_DEFAULT_BRANCH:-main}"
 
-# [ -f /etc/profile.d/98-docker.sh ] || cat > /etc/profile.d/98-docker.sh <<EOF
-# TRUE='${TRUE}'
-# FALSE='${FALSE}'
-# BOOL='${BOOL}'
-# SHARED='${SHARED}'
-# PLUGINS='${PLUGINS}'
-# DOWNLOADS='${DOWNLOADS}'
-# SCRIPTS='${SCRIPTS}'
-# DOCS='${DOCS}'
-# BASHRC_EXTRA='${BASHRC_EXTRA}'
-# DESCRIBE='${DESCRIBE}'
-# DOTLOCAL='${DOTLOCAL}'
-# _PATH='${_PATH}'
-# EOF
-
-[ -f /etc/profile.d/98-entrypoint.sh ] || cat > /etc/profile.d/98-entrypoint.sh <<EOF
+[ -f /etc/profile.d/98-entrypoint.sh ] || cat > /etc/profile.d/98-entrypoint-vars.sh <<EOF
 KEEP_ALIVE=${KEEP_ALIVE}
 USERNAME=${USERNAME}
 TEAM_NAME=${TEAM_NAME}
@@ -37,7 +22,17 @@ UNAME=${UNAME}
 GIT_DEFAULT_BRANCH=${GIT_DEFAULT_BRANCH}
 EOF
 
-for f in $(find /etc/profile.d -mindepth 1 -not \( -path '/etc/profile.d/98-*' -prune \) -type f -name '*.sh' -print | sort -u); do
+cat > /etc/profile.d/99-docker-user.sh <<EOF
+if [ "\$(whoami)" = "root" -a "\$UNAME" != "root" ]; then
+    USER="\$UNAME"
+    HOME="/home/\$UNAME"
+elif [ "\$(whoami)" != "root" -a "\$UNAME" = "root" ]; then
+    USER="\$(whoami)"
+    HOME="/home/\$(whoami)"
+fi
+EOF
+
+for f in $(find /etc/profile.d -mindepth 1 -not \( -path '/etc/profile.d/9*-vars.sh' -prune \) -type f -name '*.sh' -print | sort -u); do
     . $f
 done
 

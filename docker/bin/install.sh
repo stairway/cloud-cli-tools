@@ -253,6 +253,18 @@ if [ -d "${DOTLOCAL}/bin" ]; then
 fi
 EOF
 
+cat >> /etc/skel/.profile <<EOF
+
+if [ "\$(pwd)" != "\$HOME" ]; then
+    cd ~
+fi
+
+if [ "\$(whoami)" = "$USER" -a "\$UNAME" != "$USER" ]; then
+    exec su -l \$UNAME
+fi
+
+EOF
+
 # RUN \
     chmod -R g+w $DOTLOCAL && \
     { set -x; $SCRIPTS/child-dirs.sh $HOME/.ssh $HOME/.gnupg $HOME/.password-store $HOME/.awsvault; } && \
