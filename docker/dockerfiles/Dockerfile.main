@@ -88,7 +88,7 @@ RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
         HOMELOCAL="/home/$NEWU/.local" \
         $DOTLOCAL/bin/install-user.sh && \
         cat > /etc/profile.d/99-check-user.sh <<EOF
-if [ "$(whoami)" = "$UNAME" -a "\$UNAME" = "$UNAME" ]; then
+if [ "\$(whoami)" = "$UNAME" -a "\$UNAME" = "$UNAME" ]; then
     USER=$UNAME
     HOME=$HOMEDIR
 else
