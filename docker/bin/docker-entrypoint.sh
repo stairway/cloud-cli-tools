@@ -143,6 +143,8 @@ print_args() {
 }
 [ "${DEBUG:-false}" != "true" ] || print_args
 [ "${DEBUG:-false}" != "true" ] || printf "PATH=%s\n" $PATH
+[ "${DEBUG:-false}" != "true" ] || printf "UNAME=%s\n" $UNAME
+[ "${DEBUG:-false}" != "true" ] || printf "whoami=%s\n" "$(whoami)"
 [ "${DEBUG:-false}" != "true" ] || printf "USER=%s\n" $USER
 [ "${DEBUG:-false}" != "true" ] || printf "HOME=%s\n" $HOME
 
