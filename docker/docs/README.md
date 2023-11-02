@@ -12,24 +12,28 @@ docker run \
     --platform {linux/amd64|linux/arm64} \
     --name {instance-name} \
     -p 5678:5678 \
-    -e VSCODE_DEBUGPY_PORT=5678 \
-    -e AWS_VAULT_USER_REGION={aws-region} \
     -e KEEP_ALIVE={true|false} \
     -e USERNAME={user} \
     -e TEAM_NAME={team-name} \
+    -e CLUSTER_PREFIX={cluster-prefix} \
+    -e EDITOR={nano|vim} \
+    -e VSCODE_DEBUGPY_PORT=5678 \
+    -e DEFAULT_PROFILE={default-profile (user)} \
+    -e AWS_VAULT_USER_REGION={aws-region} \
     -e GIT_CONFIG_FULL_NAME="{First-Name Last-Name}" \
     -e GIT_CONFIG_EMAIL="{email}" \
-    -e EDITOR={nano|vim} \
     -e HISTFILE="{histfile (/root/.bash_history)}"
-    -v /var/lib/docker/volumes/{instance-name}/_data/.awsvault:/root/.awsvault \
-    -v /var/lib/docker/volumes/{instance-name}/_data/.gnupg:/root/.gnupg \
-    -v /var/lib/docker/volumes/{instance-name}/_data/.password-store:/root/.password-store \
-    -v ${PWD}/mount/home/root/.bash_history:/root/.bash_history \
-    -v ${PWD}/mount/home/root/.env:/root/.local/.env \
-    -v ${PWD}/mount/home/root/.aws:/root/.aws \
-    -v ${PWD}/mount/home/root/.kube:/root/.kube \
-    -v ${PWD}/mount/home/root/.dpctl:/root/.dpctl \
-    -v ${PWD}/mount/home/root/.ssh:/root/.ssh \
+    -e TERM={term (xterm-256color)} \
+    -e UNAME={root|ubuntu} \
+    -v /var/lib/docker/volumes/{instance-name}/_data/.awsvault:/{uname home}/.awsvault \
+    -v /var/lib/docker/volumes/{instance-name}/_data/.gnupg:/{uname home}/.gnupg \
+    -v /var/lib/docker/volumes/{instance-name}/_data/.password-store:/{uname home}/.password-store \
+    -v ${PWD}/mount/home/{uname}/.bash_history:/{uname home}/.bash_history \
+    -v ${PWD}/mount/home/{uname}/.env:/{uname home}/.local/.env \
+    -v ${PWD}/mount/home/{uname}/.aws:/{uname home}/.aws \
+    -v ${PWD}/mount/home/{uname}/.kube:/{uname home}/.kube \
+    -v ${PWD}/mount/home/{uname}/.dpctl:/{uname home}/.dpctl \
+    -v ${PWD}/mount/home/{uname}/.ssh:/{uname home}/.ssh \
     -v ${PWD}/mount/data:/data \
     -v ${PWD}/mount/addons:/tmp/addons \
     -v /var/run/docker.sock:/var/run/docker.sock \
@@ -44,25 +48,28 @@ docker run \
     --platform {linux/amd64|linux/arm64} \
     --name {instance-name} \
     -p 5678:5678 \
-    -e VSCODE_DEBUGPY_PORT=5678 \
-    -e AWS_VAULT_USER_REGION={aws-region} \
     -e KEEP_ALIVE={true|false} \
     -e USERNAME={user} \
     -e TEAM_NAME={team-name} \
+    -e CLUSTER_PREFIX={cluster-prefix} \
+    -e EDITOR={nano|vim} \
+    -e VSCODE_DEBUGPY_PORT=5678 \
+    -e DEFAULT_PROFILE={default-profile (user)} \
+    -e AWS_VAULT_USER_REGION={aws-region} \
     -e GIT_CONFIG_FULL_NAME="{First-Name Last-Name}" \
     -e GIT_CONFIG_EMAIL="{email}" \
-    -e EDITOR={nano|vim} \
     -e HISTFILE="{histfile (/root/.bash_history)}"
-    -e VSCODE_DEBUGPY_PORT={yes|no} \
-    -v /var/lib/docker/volumes/{instance-name}/_data/.awsvault:/root/.awsvault \
-    -v /var/lib/docker/volumes/{instance-name}/_data/.gnupg:/root/.gnupg \
-    -v /var/lib/docker/volumes/{instance-name}/_data/.password-store:/root/.password-store \
-    -v ${PWD}/mount/home/root/.bash_history:/root/.bash_history \
-    -v ${PWD}/mount/home/root/.env:/root/.local/.env \
-    -v ${PWD}/mount/home/root/.aws:/root/.aws \
-    -v ${PWD}/mount/home/root/.kube:/root/.kube \
-    -v ${PWD}/mount/home/root/.dpctl:/root/.dpctl \
-    -v ${PWD}/mount/home/root/.ssh:/root/.ssh \
+    -e TERM={term (xterm-256color)} \
+    -e UNAME={root|ubuntu} \
+    -v /var/lib/docker/volumes/{instance-name}/_data/.awsvault:/{uname home}/.awsvault \
+    -v /var/lib/docker/volumes/{instance-name}/_data/.gnupg:/{uname home}/.gnupg \
+    -v /var/lib/docker/volumes/{instance-name}/_data/.password-store:/{uname home}/.password-store \
+    -v ${PWD}/mount/home/{uname}/.bash_history:/{uname home}/.bash_history \
+    -v ${PWD}/mount/home/{uname}/.env:/{uname home}/.local/.env \
+    -v ${PWD}/mount/home/{uname}/.aws:/{uname home}/.aws \
+    -v ${PWD}/mount/home/{uname}/.kube:/{uname home}/.kube \
+    -v ${PWD}/mount/home/{uname}/.dpctl:/{uname home}/.dpctl \
+    -v ${PWD}/mount/home/{uname}/.ssh:/{uname home}/.ssh \
     -v ${PWD}/mount/data:/data \
     -v ${PWD}/mount/addons:/tmp/addons \
     -v /var/run/docker.sock:/var/run/docker.sock \

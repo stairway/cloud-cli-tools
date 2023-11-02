@@ -252,9 +252,13 @@ usage:  run.sh -u <user> -t <team_name> -n <full_name> -m <email> -e <editor>
 |   |   +-- <package-group>/
 |   |       `-- <package-name>.zip
 |   +-- bin/
+|   |   |-- crypto.sh
 |   |   |-- describe
 |   |   |-- docker-entrypoint.sh
+|   |   |-- gh-login
 |   |   |-- init.sh
+|   |   |-- install-user.sh
+|   |   |-- install.sh
 |   |   |-- mytf.sh
 |   |   `-- wtf
 |   +-- conf/
@@ -267,9 +271,8 @@ usage:  run.sh -u <user> -t <team_name> -n <full_name> -m <email> -e <editor>
 |   |   `-- README.md
 |   +-- profile/
 |   |   |-- 10-colors.sh
-|   |   |-- 20-aws-prompt.sh
-|   |   |-- 20-kube-prompt.sh
-|   |   |-- 41-misc-aliases.sh
+|   |   |-- 11-emojis.sh
+|   |   |-- 31-misc-aliases.sh
 |   |   |-- 80-platform-functions.sh
 |   |   |-- 81-platform-aliases.sh
 |   |   `-- 99-prompt.sh
@@ -286,6 +289,24 @@ usage:  run.sh -u <user> -t <team_name> -n <full_name> -m <email> -e <editor>
 |               `-- [files]
 |           +-- .ssh/
 |               `-- [files]
+|   +-- home/
+|       +-- ubuntu/
+|           +-- .aws/
+|               `-- [files]
+|           +-- .dpctl/
+|               `-- [files]
+|           +-- .kube/
+|               `-- [files]
+|           +-- .ssh/
+|               `-- [files]
++-- .container
++-- .editorconfig
++-- .gitignore
++-- .mount
++-- cct
++-- docker-login
++-- install-cct
++-- install-cct-branch
 `-- README.md
 ```
 
