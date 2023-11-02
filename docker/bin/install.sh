@@ -175,11 +175,11 @@
 [ "\$(pwd)" = "\$HOME" ] || cd ~
 
 export EDITOR="\${EDITOR:-$EDITOR}"
-export VISUAL="\${EDITOR:-$EDITOR}"
-export GIT_EDITOR="\${EDITOR:-$EDITOR}"
-export KUBE_EDITOR="\${EDITOR:-$EDITOR}"
+export VISUAL="\${VISUAL:-$EDITOR}"
+export GIT_EDITOR="\${GIT_EDITOR:-$EDITOR}"
+export KUBE_EDITOR="\${KUBE_EDITOR:-$EDITOR}"
 export CLUSTER_PREFIX="\${CLUSTER_PREFIX:-di}"
-export ENVFILE=$ENVFILE
+export ENVFILE="\${ENVFILE:-$ENVFILE}"
 export AWS_VAULT_BACKEND="${AWS_VAULT_BACKEND}"
 HISTFILE="\${HOME}/.bash_history"
 PROMPT_COMMAND='history -a;history -c;history -r;set -a;[ -e "${ENVFILE:-~/.local/.env}" ] && . "${ENVFILE:-~/.local/.env}"; set +a >/dev/null'
