@@ -171,6 +171,11 @@
     echo 'printf "\033[1m%s\033[0m\n" "Welcome to the machine ..."' >> /etc/bash.bashrc && \
     ln -s /usr/share/bash-completion/completions/git $DOTLOCAL/.git-completion.bash && \
     ln -s $DOTLOCAL/bin/* $HOMELOCAL/bin && \
+    echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
+    unset path_extra && \
+    for d in $(find $SHARED -mindepth 1 -maxdepth 2 -not \( -path "$DOTLOCAL" -prune \) -type d -name bin -print); do \
+        [ -n "$path_extra" ] && path_extra="$path_extra:$d" || path_extra="$d"; \
+    done && \
     cat > $BASHRC_EXTRA <<EOF
 [ "\$(pwd)" = "\$HOME" ] || cd ~
 
@@ -183,6 +188,18 @@ export ENVFILE="\${ENVFILE:-$ENVFILE}"
 export AWS_VAULT_BACKEND="${AWS_VAULT_BACKEND}"
 HISTFILE="\${HOME}/.bash_history"
 PROMPT_COMMAND='history -a;history -c;history -r;set -a;[ -e "${ENVFILE:-~/.local/.env}" ] && . "${ENVFILE:-~/.local/.env}"; set +a >/dev/null'
+
+### See /etc/profile.d/10-set-path.sh
+# [[ ":\$PATH:" == *":$path_extra:"* ]] || PATH="\$PATH:$path_extra"
+#
+# if [ -d "${SHARED}/bin" ]; then
+#     [[ ":\$PATH:" == *":$SHARED/bin:"* ]] || PATH="${SHARED}/bin:\${PATH}"
+# fi
+#
+# if [ -d "${DOTLOCAL}/bin" ]; then
+#     [[ ":\$PATH:" == *":$DOTLOCAL/bin:"* ]] || PATH="${DOTLOCAL}/bin:\${PATH}"
+# fi
+###
 
 if [ -f "$ENVFILE" ]; then
     set -o allexport
@@ -236,21 +253,26 @@ $match
 EOF
 
 # RUN \
-    echo "[ \$# -eq 0 ] && $DOTLOCAL/bin/init.sh" > $DOTLOCAL/profile.d/init.sh && \
-    unset _path_extra && \
-    for d in $(find $SHARED -mindepth 1 -maxdepth 2 -not \( -path "$DOTLOCAL" -prune \) -type d -name bin -print); do \
-        [ -n "$_path_extra" ] && _path_extra="$_path_extra:$d" || _path_extra="$d"; \
-    done && \
+    unset path_part path_extra && \
     cat > /etc/profile.d/10-set-path.sh <<EOF
-[[ ":\$PATH:" == *":$_path_extra:"* ]] || PATH="\$PATH:$_path_extra"
-
-if [ -d "${SHARED}/bin" ]; then
-    [[ ":\$PATH:" == *":$SHARED/bin:"* ]] || PATH="${SHARED}/bin:\${PATH}"
-fi
-
-if [ -d "${DOTLOCAL}/bin" ]; then
-    [[ ":\$PATH:" == *":$DOTLOCAL/bin:"* ]] || PATH="${DOTLOCAL}/bin:\${PATH}"
-fi
+for path_part in $(echo \$PATH | awk -F':' '{ for (i = 1; i <= NF; i++) print $i }'); do
+  flag=false;
+  for path_extra in \$(find $SHARED -mindepth 1 -maxdepth 2 -not \( -path "$DOTLOCAL" -prune \) -type d -name bin -print); do
+    if [ "\$path_extra" != "\$path_part" ]; then
+      PATH="\$PATH:\$path_extra"
+      flag=true
+    fi
+  done
+  if [ "${SHARED}/bin" != "\$path_part" ]; then
+    PATH="${SHARED}/bin:\$PATH"
+    flag=true
+  fi
+  if [ "${DOTLOCAL}/bin" != "\$path_part" ]; then
+    PATH="${DOTLOCAL}/bin:\$PATH"
+    flag=true
+  fi
+  if \$flag ; then break; fi
+done
 EOF
 
 cat >> /etc/skel/.profile <<EOF
