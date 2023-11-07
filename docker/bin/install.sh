@@ -254,8 +254,24 @@ EOF
 
 # RUN \
     unset path_part path_extra && \
+    cat > /etc/profile.d/05-common-functions.sh <<EOF
+explode() {
+    delim="\${1:-""}"
+    str="\${2:-""}"
+    if [ "\${delim}x" != "x" -a "\${str}x" != "x" ]; then
+      for part in \$(echo \$str | awk -F"\$delim" '{ for (i = 1; i <= NF; i++) print \$i }'); do
+        echo "\$part"
+      done
+    else
+        echo "\$str"
+    fi
+}
+EOF
+
+# RUN \
+    unset path_part path_extra && \
     cat > /etc/profile.d/10-set-path.sh <<EOF
-for path_part in \$(echo \$PATH | awk -F':' '{ for (i = 1; i <= NF; i++) print \$i }'); do
+for path_part in \$(explode ":" "\$PATH" ); do
   flag=false;
   for path_extra in \$(find $SHARED -mindepth 1 -maxdepth 2 -not \( -path "$DOTLOCAL" -prune \) -type d -name bin -print); do
     if [ "\$path_extra" != "\$path_part" ]; then
