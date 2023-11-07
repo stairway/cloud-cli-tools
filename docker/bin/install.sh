@@ -253,7 +253,6 @@ $match
 EOF
 
 # RUN \
-    unset path_part path_extra && \
     cat > /etc/profile.d/05-common-functions.sh <<EOF
 explode() {
     delim="\${1:-""}"
@@ -266,29 +265,22 @@ explode() {
         echo "\$str"
     fi
 }
+strsrch() {
+    haystack="\${1:-""}"
+    needle="\${2:-""}"
+    delim="\${3:-""}"
+    echo "\$haystack" | grep -q -E "\${needle}\\\${delim}" || echo "\$haystack" | grep -q -E "\\\${delim}\${needle}"
+}
 EOF
 
 # RUN \
-    unset path_part path_extra && \
     cat > /etc/profile.d/10-set-path.sh <<EOF
-for path_part in \$(explode ":" "\$PATH" ); do
-  flag=false;
-  for path_extra in \$(find $SHARED -mindepth 1 -maxdepth 2 -not \( -path "$DOTLOCAL" -prune \) -type d -name bin -print); do
-    if [ "\$path_extra" != "\$path_part" ]; then
-      PATH="\$PATH:\$path_extra"
-      flag=true
-    fi
-  done
-  if [ "${SHARED}/bin" != "\$path_part" ]; then
-    PATH="${SHARED}/bin:\$PATH"
-    flag=true
-  fi
-  if [ "${DOTLOCAL}/bin" != "\$path_part" ]; then
-    PATH="${DOTLOCAL}/bin:\$PATH"
-    flag=true
-  fi
-  if \$flag ; then break; fi
+for path_extra in \$(find $SHARED -mindepth 1 -maxdepth 2 -not \( -path "$DOTLOCAL" -prune \) -type d -name bin -print); do
+  strsrch "$PATH" "\$path_extra"  || PATH="$PATH:\$path_extra"
 done
+unset path_extra
+strsrch "$PATH" "${SHARED}/bin" || PATH="${SHARED}/bin:$PATH"
+strsrch "$PATH" "${DOTLOCAL}/bin" || PATH="${DOTLOCAL}/bin:$PATH"
 EOF
 
 cat >> /etc/skel/.profile <<EOF
