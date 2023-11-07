@@ -269,7 +269,7 @@ strsrch() {
     haystack="\${1:-""}"
     needle="\${2:-""}"
     delim="\${3:-""}"
-    echo "\$haystack" | grep -q -E "\${needle}\\\\${delim}" || echo "\$haystack" | grep -q -E "\\\\${delim}\${needle}"
+    echo "\$haystack" | grep -q -E "\${needle}\\\${delim}" || echo "\$haystack" | grep -q -E "\\\${delim}\${needle}"
 }
 EOF
 
