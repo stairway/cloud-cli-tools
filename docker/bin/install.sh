@@ -255,7 +255,7 @@ EOF
 # RUN \
     unset path_part path_extra && \
     cat > /etc/profile.d/10-set-path.sh <<EOF
-for path_part in $(echo \$PATH | awk -F':' '{ for (i = 1; i <= NF; i++) print $i }'); do
+for path_part in \$(echo \$PATH | awk -F':' '{ for (i = 1; i <= NF; i++) print \$i }'); do
   flag=false;
   for path_extra in \$(find $SHARED -mindepth 1 -maxdepth 2 -not \( -path "$DOTLOCAL" -prune \) -type d -name bin -print); do
     if [ "\$path_extra" != "\$path_part" ]; then
