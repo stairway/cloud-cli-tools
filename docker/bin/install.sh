@@ -269,18 +269,18 @@ strsrch() {
     haystack="\${1:-""}"
     needle="\${2:-""}"
     delim="\${3:-""}"
-    echo "\$haystack" | grep -q -E "\${needle}\\\${delim}" || echo "\$haystack" | grep -q -E "\\\${delim}\${needle}"
+    echo "\$haystack" | grep -q -E "\${needle}\\\\${delim}" || echo "\$haystack" | grep -q -E "\\\\${delim}\${needle}"
 }
 EOF
 
 # RUN \
     cat > /etc/profile.d/10-set-path.sh <<EOF
 for path_extra in \$(find $SHARED -mindepth 1 -maxdepth 2 -not \( -path "$DOTLOCAL" -prune \) -type d -name bin -print); do
-  strsrch "$PATH" "\$path_extra"  || PATH="$PATH:\$path_extra"
+  strsrch "\$PATH" "\$path_extra"  || PATH="\$PATH:\$path_extra"
 done
 unset path_extra
-strsrch "$PATH" "${SHARED}/bin" || PATH="${SHARED}/bin:$PATH"
-strsrch "$PATH" "${DOTLOCAL}/bin" || PATH="${DOTLOCAL}/bin:$PATH"
+strsrch "\$PATH" "${SHARED}/bin" || PATH="${SHARED}/bin:\$PATH"
+strsrch "\$PATH" "${DOTLOCAL}/bin" || PATH="${DOTLOCAL}/bin:\$PATH"
 EOF
 
 cat >> /etc/skel/.profile <<EOF
