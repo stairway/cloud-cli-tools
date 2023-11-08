@@ -95,7 +95,7 @@ WORKDIR $HOMEDIR
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
 
 SHELL [ "/bin/bash", "-o", "pipefail", "-c" ]
-ENTRYPOINT ["PATH=$_PATH /opt/local/bin/docker-entrypoint.sh"]
+ENTRYPOINT ["PATH=$_PATH", "/opt/local/bin/docker-entrypoint.sh"]
 # The following does not run the appending arguments to entrypoint
 # ENTRYPOINT /bin/bash -c "PATH=$_PATH /opt/local/bin/docker-entrypoint.sh"
 
