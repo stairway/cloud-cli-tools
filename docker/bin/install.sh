@@ -255,33 +255,39 @@ EOF
 # RUN \
     cat > /etc/profile.d/05-common-functions.sh <<EOF
 explode() {
-    delim="\${1:-""}"
-    str="\${2:-""}"
-    if [ "\${delim}x" != "x" -a "\${str}x" != "x" ]; then
-      for part in \$(echo \$str | awk -F"\$delim" '{ for (i = 1; i <= NF; i++) print \$i }'); do
-        echo "\$part"
-      done
-    else
-        echo "\$str"
-    fi
+  delim="\${1:-""}"
+  str="\${2:-""}"
+  if [ "\${delim}x" != "x" -a "\${str}x" != "x" ]; then
+    for part in \$(echo \$str | awk -F"\$delim" '{ for (i = 1; i <= NF; i++) print \$i }'); do
+      echo "\$part"
+    done
+  else
+    echo "\$str"
+  fi
 }
 strsrch() {
-    haystack="\${1:-""}"
-    needle="\${2:-""}"
-    delim="\${3:-""}"
-    echo "\$haystack" | grep -q -E '\'"\${needle}\${delim}" || echo "\$haystack" | grep -q -E '\'"\${delim}\${needle}"
+  haystack="\${1:-""}"
+  needle="\${2:-""}"
+  delim="\${3:-""}"
+  echo "\$haystack" | grep -q -E '\'"\${needle}\${delim}" || echo "\$haystack" | grep -q -E '\'"\${delim}\${needle}"
 }
 EOF
 
 # RUN \
     cat > /etc/profile.d/10-set-path.sh <<EOF
-for _path_extra in \$(find "\${SHARED:-$SHARED}" -mindepth 1 -maxdepth 2 -not \( -path "\${DOTLOCAL:-$DOTLOCAL}" -prune \) -type d -name bin -print); do
-  strsrch "\$PATH" "\$_path_extra"  || PATH="\$PATH:\$_path_extra"
+__PATH="\$_PATH"
+for _path_extra in \$(find "\${SHARED:-$SHARED}" -mindepth 1 -maxdepth 2 -not \( -path "\${DOTLOCAL:-$DOTLOCAL}" -prune \) -type d -name bin -print | grep -v "\${SHARED:-$SHARED}/bin"); do
+  if [ -d "\$_path_extra" ]; then
+    strsrch "\$PATH" "\$_path_extra"  || PATH="\$PATH:\$_path_extra"
+  fi
 done
 for _path_extra in \$(explode ":" "\${SHARED:-$SHARED}/bin:\${DOTLOCAL:-$DOTLOCAL}/bin"); do
-  strsrch "\$PATH" "\${_path_extra}" || PATH="\${_path_extra}:\$PATH"
+  if [ -d "\$_path_extra" ]; then
+    strsrch "\$PATH" "\${_path_extra}" || PATH="\${_path_extra}:\$PATH"
+  fi
 done
-unset _path_extra
+PATH="\$__PATH"
+unset _path_extra __PATH
 EOF
 
 cat >> /etc/skel/.profile <<EOF
