@@ -306,7 +306,7 @@ EOF
 
 # RUN \
     cat >> /etc/pam.d/su-l <<EOF
-# Added by docker via $DOTLOCAL/install.sh
+# Added by docker via $DOTLOCAL/bin/install.sh
 session         optional        pam_motd.so motd=/run/motd.dynamic
 session         optional        pam_motd.so noupdate
 EOF
