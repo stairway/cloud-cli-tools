@@ -275,7 +275,8 @@ EOF
 
 # RUN \
     cat > /etc/profile.d/10-set-path.sh <<EOF
-_tmp_path="\$_PATH"
+_PATH="\${_PATH:-"$_PATH"}"
+_tmp_path="\${_PATH:-\$PATH}"
 for _path_extra in \$(find "\${SHARED:-$SHARED}" -mindepth 1 -maxdepth 2 -not \( -path "\${DOTLOCAL:-$DOTLOCAL}" -prune \) -type d -name bin -print | grep -v "\${SHARED:-$SHARED}/bin"); do
   if [ -d "\$_path_extra" ]; then
     strsrch "\$_tmp_path" "\$_path_extra"  || _tmp_path="\$_tmp_path:\$_path_extra"
