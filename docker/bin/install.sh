@@ -275,19 +275,19 @@ EOF
 
 # RUN \
     cat > /etc/profile.d/10-set-path.sh <<EOF
-__PATH="\$_PATH"
+_tmp_path="\$_PATH"
 for _path_extra in \$(find "\${SHARED:-$SHARED}" -mindepth 1 -maxdepth 2 -not \( -path "\${DOTLOCAL:-$DOTLOCAL}" -prune \) -type d -name bin -print | grep -v "\${SHARED:-$SHARED}/bin"); do
   if [ -d "\$_path_extra" ]; then
-    strsrch "\$PATH" "\$_path_extra"  || PATH="\$PATH:\$_path_extra"
+    strsrch "\$_tmp_path" "\$_path_extra"  || _tmp_path="\$_tmp_path:\$_path_extra"
   fi
 done
 for _path_extra in \$(explode ":" "\${SHARED:-$SHARED}/bin:\${DOTLOCAL:-$DOTLOCAL}/bin"); do
   if [ -d "\$_path_extra" ]; then
-    strsrch "\$PATH" "\${_path_extra}" || PATH="\${_path_extra}:\$PATH"
+    strsrch "\$_tmp_path" "\${_path_extra}" || _tmp_path="\${_path_extra}:\$_tmp_path"
   fi
 done
-PATH="\$__PATH"
-unset _path_extra __PATH
+PATH="\$_tmp_path"
+unset _path_extra _tmp_path
 EOF
 
 cat >> /etc/skel/.profile <<EOF
