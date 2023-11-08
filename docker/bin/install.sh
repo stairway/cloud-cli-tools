@@ -303,7 +303,7 @@ fi
 
 EOF
 
-
+# Enable Message Of The Day for su-l
 # RUN \
     cat >> /etc/pam.d/su-l <<EOF
 # Added by docker via $DOTLOCAL/bin/install.sh

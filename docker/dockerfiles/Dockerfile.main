@@ -1,41 +1,40 @@
 # syntax=docker/dockerfile:1
-ARG VERSION=base-latest
-ARG IMAGE_BASE_NAME="stairwaytowonderland/cloud-cli-tools"
+ARG VERSION=base-latest \
+    IMAGE_BASE_NAME="stairwaytowonderland/cloud-cli-tools"
 FROM ${IMAGE_BASE_NAME}:${VERSION}
 LABEL org.opencontainers.image.authors="Andrew Haller <andrew.haller@liatrio.com>"
 
-ARG GH_CLIENT_TOKEN=
+ARG UNAME=root \
+    HOMEDIR=/root \
+    PATH="$PATH:/usr/games:/usr/local/games:/snap/bin" \
+    GH_CLIENT_TOKEN=
 
-ARG UNAME=root
-ARG HOMEDIR=/root
 ARG HOMELOCAL=$HOMEDIR/.local
-ARG ENVFILE=$HOMELOCAL/.env
-ARG PATH="$PATH:/usr/games:/usr/local/games:/snap/bin"
 
-ARG KUBE_VERSION=latest
-ARG ISTIO_VERSION=latest
-ARG TERRAFORM_VERSION=latest
-ARG TERRAGRUNT_VERSION=latest
-ARG HELM_VERSION=latest
-
-ARG KUBE_PS1_VERSION=v0.8.0
-
-ENV KEEP_ALIVE=false
+ARG ENVFILE=$HOMELOCAL/.env \
+    KUBE_VERSION=latest \
+    ISTIO_VERSION=latest \
+    TERRAFORM_VERSION=latest \
+    TERRAGRUNT_VERSION=latest \
+    HELM_VERSION=latest \
+    KUBE_PS1_VERSION=v0.8.0
 
 # https://yaml.org/type/bool.html
-ENV TRUE='y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1'
-ENV FALSE='n|N|no|No|NO|false|False|FALSE|off|Off|OFF|0'
-ENV BOOL="${TRUE}|${FALSE}"
+ENV TRUE='y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1' \
+    FALSE='n|N|no|No|NO|false|False|FALSE|off|Off|OFF|0'
 
-ENV SHARED="${SHARED:-${HOMEDIR}/.local/share}"
-ENV PLUGINS="${PLUGINS:-${DOTLOCAL}/plugins.d}"
-ENV DOWNLOADS="${DOWNLOADS:-${DOTLOCAL}/downloads}"
-ENV SCRIPTS="${SCRIPTS:-${DOTLOCAL}/scripts}"
-ENV DOCS="${DOCS:-${DOTLOCAL}/docs}"
-ENV BASHRC_EXTRA="${BASHRC_EXTRA:-${DOTLOCAL}/bashrc.extra}"
-ENV DESCRIBE="${DESCRIBE:-${DOTLOCAL}/bin/describe}"
-ENV DOTLOCAL="${DOTLOCAL:-/opt/local}"
-ENV PATH="${PATH}"
+ENV BOOL="${TRUE}|${FALSE}" \
+    KEEP_ALIVE=false \
+    SHARED="${SHARED:-${HOMEDIR}/.local/share}" \
+    PLUGINS="${PLUGINS:-${DOTLOCAL}/plugins.d}" \
+    DOWNLOADS="${DOWNLOADS:-${DOTLOCAL}/downloads}" \
+    SCRIPTS="${SCRIPTS:-${DOTLOCAL}/scripts}" \
+    DOCS="${DOCS:-${DOTLOCAL}/docs}" \
+    BASHRC_EXTRA="${BASHRC_EXTRA:-${DOTLOCAL}/bashrc.extra}" \
+    DESCRIBE="${DESCRIBE:-${DOTLOCAL}/bin/describe}" \
+    DOTLOCAL="${DOTLOCAL:-/opt/local}" \
+    _PATH="${PATH}" \
+    PATH="${PATH}"
 
 USER root
 WORKDIR $DOWNLOADS
@@ -100,8 +99,8 @@ ENTRYPOINT ["/opt/local/bin/docker-entrypoint.sh"]
 # ENTRYPOINT /bin/bash -c "PATH=$_PATH /opt/local/bin/docker-entrypoint.sh"
 
 # Additional Metadata
-ARG VERSION=base-latest
-ARG IMAGE_BASE_NAME="stairwaytowonderland/cloud-cli-tools"
+ARG VERSION=base-latest \
+    IMAGE_BASE_NAME="stairwaytowonderland/cloud-cli-tools"
 LABEL org.opencontainers.image.base.name="${IMAGE_BASE_NAME}:${VERSION}"
 LABEL org.opencontainers.image.description="docker run <image>:<tag> describe"
 LABEL org.opencontainers.image.title="Cloud CLI Tools"
