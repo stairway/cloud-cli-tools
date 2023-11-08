@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/bin/bash -e
+
+set -o pipefail
 
 # RUN \
     for f in $(ls -1 /tmp/addons); do install "/tmp/addons/${f}" "/usr/local/bin/${f}"; done && \
@@ -313,5 +315,5 @@ EOF
 
 # RUN \
     chmod -R g+w $DOTLOCAL && \
-    { set -x; $SCRIPTS/child-dirs.sh $HOME/.ssh $HOME/.gnupg $HOME/.password-store $HOME/.awsvault; } && \
+    { $SCRIPTS/child-dirs.sh $HOME/.ssh $HOME/.gnupg $HOME/.password-store $HOME/.awsvault; } && \
     { [ "${DEBUG:-false}" = "true" ] || rm -rf $DOWNLOADS; }

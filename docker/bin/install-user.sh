@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/bin/bash -e
+
+set -o pipefail
 
 # RUN \
     [ -d "$HOMELOCAL" ] || mkdir -p $HOMELOCAL/bin

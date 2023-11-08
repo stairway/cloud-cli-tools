@@ -101,9 +101,10 @@ ENTRYPOINT ["/opt/local/bin/docker-entrypoint.sh"]
 # Additional Metadata
 ARG VERSION=base-latest \
     IMAGE_BASE_NAME="stairwaytowonderland/cloud-cli-tools"
-LABEL org.opencontainers.image.base.name="${IMAGE_BASE_NAME}:${VERSION}"
-LABEL org.opencontainers.image.description="docker run <image>:<tag> describe"
-LABEL org.opencontainers.image.title="Cloud CLI Tools"
-LABEL org.opencontainers.image.documentation="https://github.com/${GITHUB_REPO}/tree/main/docker#readme"
-LABEL org.opencontainers.image.url="https://github.com/${GITHUB_REPO}"
-LABEL org.opencontainers.image.source="https://github.com/${GITHUB_REPO}/blob/main/docker/dockerfiles/Dockerfile.main"
+
+LABEL org.opencontainers.image.base.name="${IMAGE_BASE_NAME}:${VERSION}" \
+      org.opencontainers.image.description="docker run <image>:<tag> describe" \
+      org.opencontainers.image.title="Cloud CLI Tools" \
+      org.opencontainers.image.documentation="https://github.com/${GITHUB_REPO}/tree/main/docker#readme" \
+      org.opencontainers.image.url="https://github.com/${GITHUB_REPO}" \
+      org.opencontainers.image.source="https://github.com/${GITHUB_REPO}/blob/main/docker/dockerfiles/Dockerfile.main"
