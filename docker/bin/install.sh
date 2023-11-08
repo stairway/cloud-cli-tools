@@ -255,21 +255,21 @@ EOF
 # RUN \
     cat > /etc/profile.d/05-common-functions.sh <<EOF
 explode() {
-  delim="\${1:-""}"
-  str="\${2:-""}"
-  if [ "\${delim}x" != "x" -a "\${str}x" != "x" ]; then
-    for part in \$(echo \$str | awk -F"\$delim" '{ for (i = 1; i <= NF; i++) print \$i }'); do
-      echo "\$part"
-    done
-  else
-    echo "\$str"
-  fi
+    delim="\${1:-""}"
+    str="\${2:-""}"
+    if [ "\${delim}x" != "x" -a "\${str}x" != "x" ]; then
+        for part in \$(echo \$str | awk -F"\$delim" '{ for (i = 1; i <= NF; i++) print \$i }'); do
+            echo "\$part"
+        done
+    else
+      echo "\$str"
+    fi
 }
 strsrch() {
-  haystack="\${1:-""}"
-  needle="\${2:-""}"
-  delim="\${3:-""}"
-  echo "\$haystack" | grep -q -E '\'"\${needle}\${delim}" || echo "\$haystack" | grep -q -E '\'"\${delim}\${needle}"
+    haystack="\${1:-""}"
+    needle="\${2:-""}"
+    delim="\${3:-""}"
+    echo "\$haystack" | grep -q -E '\'"\${needle}\${delim}" || echo "\$haystack" | grep -q -E '\'"\${delim}\${needle}"
 }
 EOF
 
@@ -278,14 +278,14 @@ EOF
 _PATH="\${_PATH:-"$_PATH"}"
 _tmp_path="\${_PATH:-\$PATH}"
 for _path_extra in \$(find "\${SHARED:-$SHARED}" -mindepth 1 -maxdepth 2 -not \( -path "\${DOTLOCAL:-$DOTLOCAL}" -prune \) -type d -name bin -print | grep -v "\${SHARED:-$SHARED}/bin"); do
-  if [ -d "\$_path_extra" ]; then
-    strsrch "\$_tmp_path" "\$_path_extra"  || _tmp_path="\$_tmp_path:\$_path_extra"
-  fi
+    if [ -d "\$_path_extra" ]; then
+      strsrch "\$_tmp_path" "\$_path_extra"  || _tmp_path="\$_tmp_path:\$_path_extra"
+    fi
 done
 for _path_extra in \$(explode ":" "\${SHARED:-$SHARED}/bin:\${DOTLOCAL:-$DOTLOCAL}/bin"); do
-  if [ -d "\$_path_extra" ]; then
-    strsrch "\$_tmp_path" "\${_path_extra}" || _tmp_path="\${_path_extra}:\$_tmp_path"
-  fi
+    if [ -d "\$_path_extra" ]; then
+      strsrch "\$_tmp_path" "\${_path_extra}" || _tmp_path="\${_path_extra}:\$_tmp_path"
+    fi
 done
 PATH="\$_tmp_path"
 unset _path_extra _tmp_path
@@ -301,6 +301,14 @@ if [ "\$(whoami)" = "$USER" -a "\$UNAME" != "$USER" ]; then
     exec su -l \$UNAME
 fi
 
+EOF
+
+
+# RUN \
+    cat >> /etc/pam.d/su-l <<EOF
+# Added by docker via $DOTLOCAL/install.sh
+session         optional        pam_motd.so motd=/run/motd.dynamic
+session         optional        pam_motd.so noupdate
 EOF
 
 # RUN \
