@@ -70,8 +70,7 @@ ARG INSTALL_PKGS="\
     pre-commit \
     pytest \
     debugpy" \
-    # Install Docker
-    # https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+    #
     DOCKER_PKGS="\
     docker-ce \
     docker-ce-cli \
