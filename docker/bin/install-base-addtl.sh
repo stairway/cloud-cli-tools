@@ -331,8 +331,8 @@ EOF
     printf "minikube: %s\n" "$(minikube version --short)" >> /.versions
 
 # RUN \
-    echo $(cat /etc/bash.bashrc) | grep --color=never -q -E '#(if ! shopt -oq posix.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(fi)' && \
-    sed -z -i -E 's/#(if ! shopt -oq posix.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(fi)/\1\2\3\4\5\6\7/' /etc/bash.bashrc || \
+    echo $(cat /etc/bash.bashrc) | grep --color=never -q -E '#\s*(if ! shopt -oq posix.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#\s*(fi)' && \
+    sed -z -i -E 's/#\s*(if ! shopt -oq posix.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#(.*\s*)#\s*(fi)/\1\2\3\4\5\6\7/' /etc/bash.bashrc || \
     echo "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then . /etc/bash_completion; fi" >> "/root/.bashrc"
 
 # RUN \

@@ -305,14 +305,21 @@ fi
 
 EOF
 
-# Enable Message Of The Day for su
 # RUN \
-    cat >> /etc/pam.d/su <<EOF
+    grep --color=never -E -q '(^#?\s*account\s*requisite\s*pam_time\.so$)(\s*)' /etc/pam.d/su && \
+    sed -z -E -i "s@(#?\s*account\s*requisite\s*pam_time\.so)(\s*)@\1\2###\\
+# Enable MOTD - Added by docker via $DOTLOCAL/bin/install.sh\\
+###\\
+# Prints the message of the day upon successful login.\\
+# (Replaces the \`MOTD_FILE' option in login.defs)\\
+# This includes a dynamically generated part from /run/motd.dynamic\\
+# and a static (admin-editable) part from /etc/motd.\\
+session    optional   pam_motd.so motd=/run/motd.dynamic\\
+session    optional   pam_motd.so noupdate\2@" /etc/pam.d/su
 
-# Added by docker via $DOTLOCAL/bin/install.sh
-session         optional        pam_motd.so motd=/run/motd.dynamic
-session         optional        pam_motd.so noupdate
-EOF
+# RUN \
+    grep --color=never -E -q '#?\s*(auth\s*sufficient\s*pam_wheel\.so\s*[a-z]*)\s(\s*)' /etc/pam.d/su && \
+    sed -E -z -i "s@#?\s*(auth\s*sufficient\s*pam_wheel\.so\s*[a-z]*)\s(\s*)@\1 group=root\2\2@g" /etc/pam.d/su
 
 # RUN \
     chmod -R g+w $DOTLOCAL && \

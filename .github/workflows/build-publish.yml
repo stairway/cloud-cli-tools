@@ -32,6 +32,7 @@ jobs:
           files: |
             conf/base/*.env
             docker/dockerfiles/*.base
+            docker/bin/*-base-*.sh
 
   check:
     runs-on: ubuntu-latest
