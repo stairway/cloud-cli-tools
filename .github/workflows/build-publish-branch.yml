@@ -47,6 +47,7 @@ jobs:
           files: |
             conf/base/*.env
             docker/dockerfiles/*.base
+            docker/bin/*-base*.sh
 
       - name: Get Branch Name
         id: get-branch-name
