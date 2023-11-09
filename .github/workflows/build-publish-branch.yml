@@ -48,6 +48,7 @@ jobs:
             conf/base/*.env
             docker/dockerfiles/*.base
             docker/bin/*-base*.sh
+            docker/bin/gh-login
 
       - name: Get Branch Name
         id: get-branch-name

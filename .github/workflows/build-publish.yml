@@ -33,6 +33,7 @@ jobs:
             conf/base/*.env
             docker/dockerfiles/*.base
             docker/bin/*-base*.sh
+            docker/bin/gh-login
 
   check:
     runs-on: ubuntu-latest
