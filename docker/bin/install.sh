@@ -305,9 +305,10 @@ fi
 
 EOF
 
-# Enable Message Of The Day for su-l
+# Enable Message Of The Day for su
 # RUN \
-    cat >> /etc/pam.d/su-l <<EOF
+    cat >> /etc/pam.d/su <<EOF
+
 # Added by docker via $DOTLOCAL/bin/install.sh
 session         optional        pam_motd.so motd=/run/motd.dynamic
 session         optional        pam_motd.so noupdate

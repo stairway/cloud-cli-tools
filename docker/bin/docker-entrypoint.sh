@@ -164,9 +164,9 @@ case "$1" in
     *)
         do_init
         if [ $# -gt 0 ]; then
-            _is_tty && { bash -l -c "$@" && exec su -l $UNAME; } || bash -l -c "$@"
+            _is_tty && { bash -l -c "$@" && exec su -; } || bash -l -c "$@"
         else
-            _is_tty && exec su -l $UNAME || true
+            _is_tty && exec su - || true
         fi
         [ $exit_code -eq 0 ] || exit_code=$?
         keep_alive
