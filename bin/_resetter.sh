@@ -104,17 +104,22 @@ full_clean() {
 deep_clean() {
     WORKING_DIRECTORY="$1"
     printf "\033[93m>\033[0m Checking: %s\n" "${WORKING_DIRECTORY}/.aws"
+    removed=false
     if [ -d "${WORKING_DIRECTORY}/.aws" ]; then
-        rm -rf "${WORKING_DIRECTORY}/.aws"
-    else
-        printf "\033[91m>\033[0m Not Found. %s\n" "${NOTHING_MSG}"
+        # Counterintuitive opposite check due to exit code if find has results
+        # https://www.man7.org/linux/man-pages/man1/find.1.html
+        # See: -exec command {} +
+        if ! find "${WORKING_DIRECTORY}/.aws" -mindepth 1 -maxdepth 1 -not \( -path "${WORKING_DIRECTORY}/.aws/.git" -prune \) -exec false {} +; then
+            find "${WORKING_DIRECTORY}/.aws" -mindepth 1 -maxdepth 1 -not \( -path "${WORKING_DIRECTORY}/.aws/.git" -prune \) -exec sh -c 'match=$(echo {}); printf "\033[93m>\033[0m Removing '%s' ...\n" "$match"' \;
+            removed=true
+        fi
     fi
-    printf "\033[93m>\033[0m Checking: %s\n" "${WORKING_DIRECTORY}/.env"
     if [ -f "${WORKING_DIRECTORY}/.env" ]; then
+        printf "\033[93m>\033[0m Removing: '%s' ... \n" "${WORKING_DIRECTORY}/.env"
         rm -f "${WORKING_DIRECTORY}/.env"
-    else
-        printf "\033[91m>\033[0m Not Found. %s\n" "${NOTHING_MSG}"
+        removed=true
     fi
+    if ! $removed ; then printf "\033[91m>\033[0m Not Found. %s\n" "${NOTHING_MSG}" ; fi
     remove_volume
 }
 
