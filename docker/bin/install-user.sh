@@ -1,5 +1,11 @@
 #!/bin/bash -e
 
+# https://docs.brew.sh/Installation#unattended-installation
+# The rest is in the dockerfile
+# RUN \
+    (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.bashrc; \
+    brew install gcc yq
+
 set -o pipefail
 
 # RUN \
@@ -38,8 +44,3 @@ set -o pipefail
 #     exec su -l $USER
 # fi
 EOF
-
-# https://docs.brew.sh/Installation#unattended-installation
-# The rest is in the dockerfile
-# RUN \
-    (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.bashrc
