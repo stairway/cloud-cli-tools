@@ -69,19 +69,6 @@ AWS_VAULT_BACKEND='${AWS_VAULT_BACKEND}'
 _PATH='${_PATH}'
 EOF
 
-RUN useradd -m -s /bin/bash linuxbrew \
-	&& echo 'linuxbrew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
-
-USER linuxbrew
-
-RUN NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
-    && (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> /root/.bashrc \
-    && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" \
-    && HOMEBREW_NO_ANALYTICS=1 HOMEBREW_NO_AUTO_UPDATE=1 brew tap homebrew/core \
-	&& rm -rf ~/.cache
-
-USER root
-
 # (alternative to `--groups sudo` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
 # (to add password, use `-p "$(openssl passwd -1 <password>)"`)
 RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
@@ -101,8 +88,18 @@ RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
         HOMELOCAL="/home/$NEWU/.local" \
         $DOTLOCAL/bin/install-user.sh
 
+RUN useradd -m -s /bin/bash linuxbrew \
+	&& echo 'linuxbrew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
+
+USER linuxbrew
+
+RUN NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
+    (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> /linuxbrew/.bashrc
+
 USER $UNAME
 WORKDIR $HOMEDIR
+
+RUN (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.bashrc
 
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
 
