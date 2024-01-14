@@ -48,3 +48,7 @@ EOF
     # (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> /root/.bashrc
     # eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
     # brew install gcc yq
+
+# https://docs.brew.sh/Installation#unattended-installation
+# The rest is in the dockerfile
+(echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.bashrc
