@@ -36,12 +36,6 @@ ENV BOOL="${TRUE}|${FALSE}" \
     _PATH="${PATH}" \
     PATH="${PATH}"
 
-# We want a "standard Ubuntu"
-# (ie: not one that has been minimized
-# by removing packages and content
-# not required in a production system)
-RUN yes | unminimize
-
 RUN useradd -m -s /bin/bash linuxbrew && \
 	echo 'linuxbrew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
 USER linuxbrew

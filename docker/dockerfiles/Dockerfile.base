@@ -25,6 +25,12 @@ ENV DOWNLOADS=${DOTLOCAL}/downloads \
     EDITOR=${EDITOR} \
     AWS_VAULT_BACKEND=pass
 
+# We want a "standard Ubuntu"
+# (ie: not one that has been minimized
+# by removing packages and content
+# not required in a production system)
+RUN yes | unminimize
+
 # Pre-install
 RUN apt-get --assume-yes --quiet update && \
     DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --quiet install apt-utils && \
