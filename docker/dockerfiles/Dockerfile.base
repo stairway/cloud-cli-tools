@@ -80,6 +80,10 @@ ARG INSTALL_PKGS="\
 
 COPY bin/gh-login bin/install-base-* $DOTLOCAL/bin/
 
+ONBUILD COPY bin/* $DOTLOCAL/bin/
+ONBUILD COPY profile/* $DOTLOCAL/profile.d/
+ONBUILD COPY conf $DOTLOCAL/conf
+
 # Install packages
 RUN INSTALL_PKGS=$INSTALL_PKGS \
     PIP_PKGS=$PIP_PKGS \

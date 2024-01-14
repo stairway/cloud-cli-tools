@@ -337,7 +337,6 @@ run_new() {
         -v "${PWD}/mount/home/${DOCKER_USER}/.env:${docker_user_home}/.local/.env"
         -v "${PWD}/mount/home/${DOCKER_USER}/.aws:${docker_user_home}/.aws"
         -v "${PWD}/mount/home/${DOCKER_USER}/.kube:${docker_user_home}/.kube"
-        -v "${PWD}/mount/home/${DOCKER_USER}/.dpctl:${docker_user_home}/.dpctl"
         -v "${PWD}/mount/home/${DOCKER_USER}/.ssh:${docker_user_home}/.ssh"
         -v "${PWD}/mount/data:/data"
         -v /var/run/docker.sock:/var/run/docker.sock

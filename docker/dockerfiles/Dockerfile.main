@@ -39,9 +39,9 @@ ENV BOOL="${TRUE}|${FALSE}" \
 USER root
 WORKDIR $DOWNLOADS
 
-COPY bin/* $DOTLOCAL/bin/
-COPY profile/* $DOTLOCAL/profile.d/
-COPY conf $DOTLOCAL/conf
+# COPY bin/* $DOTLOCAL/bin/
+# COPY profile/* $DOTLOCAL/profile.d/
+# COPY conf $DOTLOCAL/conf
 COPY docs $DOCS
 
 ADD addons/**/*.tgz /tmp/addons/

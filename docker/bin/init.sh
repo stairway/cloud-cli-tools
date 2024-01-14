@@ -59,7 +59,7 @@ init_dpctl() {
 
 _waiting() { printf "${1:-.}"; sleep 1; }
 
-init_aws() {
+init_aws_mfa() {
     local last_err=0
     printf "\033[92;1m>>>\033[94;1m Initializing %s \033[92;1m>>>\033[0m\n" "AWS (and dpctl)"
 
@@ -103,43 +103,30 @@ EOF
     [ $last_err -eq 0 -a -f ~/._initialized ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "AWS (and dpctl)"
 }
 
-if [ ! -f /tmp/.initialized ]; then
-    if [ -d /tmp/addons ]; then
-        tarballs="$(find /tmp/addons -mindepth 1 -type f -name '*.tgz' | grep -v /archive)"
-        if [ $(count ${tarballs[@]}) -gt 0 ]; then
-            [ -d /tmp/addons/archive ] || mkdir /tmp/addons/archive
-            pushd /tmp/addons
-            for f in ${tarballs[@]}; do tar -xzvf "${f}" 2>/dev/null; done
-            popd
-            mv ${tarballs[@]} /tmp/addons/archive/ 2>/dev/null || true
-        fi
+init_aws_sso() {
+    local last_err=0
+    printf "\033[92;1m>>>\033[94;1m Initializing %s \033[92;1m>>>\033[0m\n" "AWS"
 
-        zips="$(find /tmp/addons -mindepth 1 -type f -name '*.zip' | grep -v /archive)"
-        if [ $(count ${zips[@]}) -gt 0 ]; then
-            [ -d /tmp/addons/archive ] || mkdir /tmp/addons/archive
-            pushd /tmp/addons
-            for f in ${zips[@]}; do unzip -o "${f}" 2>/dev/null; done
-            popd
-            mv ${zips[@]} /tmp/addons/archive/ 2>/dev/null || true
-        fi
+    if [ ! -f ~/._initialized ]; then
+        [ ! -f ~/.password-store/.gpg-id -o ! -f ~/.gnupg/trustdb.gpg ] && printf "Still Initializing ..." && \
+            while [ ! -f ~/.password-store/.gpg-id -o ! -f ~/.gnupg/trustdb.gpg ]; do _waiting; done; echo
+        aws configure sso
 
-        files="$(find /tmp/addons -mindepth 1 -type f | grep -v -P '\.tgz|\.zip|/archive')"
-        if [ $(count ${files[@]}) -gt 0 ]; then
-            for f in ${files[@]}; do
-                fname="$(basename ${f})"
-                target="$DOTLOCAL/bin/${fname}"
-                if [ ! -f "${target}" ]; then
-                    printf "\033[93m>\033[0m Installing '%s' to '%s'\n" "${f}" "${target}"
-                    install "${f}" "${target}"
-                fi
-            done
-            rm -f ${files[@]}
-        fi
+        cat > ~/.aws/config_restore <<EOF
+[default]
+region=${AWS_VAULT_USER_REGION}
+EOF
+
+        date -u +%Y%m%dT%H%M%SZ > ~/._initialized || last_err=$?
     fi
 
+    [ $last_err -eq 0 -a -f ~/._initialized ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "AWS"
+}
+
+if [ ! -f /tmp/.initialized ]; then
     date -u +%Y%m%dT%H%M%SZ > /tmp/.initialized
 fi
 
-command -v dpctl >/dev/null && ls /tmp/.initialized >/dev/null && init_aws
+ls /tmp/.initialized >/dev/null && init_aws_sso
 
 # [ -f $(which kube-ps1.sh) ] && . $(which kube-ps1.sh)
