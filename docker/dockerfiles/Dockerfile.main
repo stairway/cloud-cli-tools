@@ -42,8 +42,8 @@ ENV BOOL="${TRUE}|${FALSE}" \
 # not required in a production system)
 RUN yes | unminimize
 
-RUN useradd -m -s /bin/bash linuxbrew \
-	&& echo 'linuxbrew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
+RUN useradd -m -s /bin/bash linuxbrew && \
+	echo 'linuxbrew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
 USER linuxbrew
 RUN NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 USER root
