@@ -58,36 +58,39 @@ set -o pipefail
 # RUN \
     curl -sSL https://git.io/install-kubent | sh -
 
-# https://python-poetry.org/docs/
-# POETRY_HOME default : ~/.local/share/pypoetry
-# To override: `curl -sSL https://install.python-poetry.org | POETRY_HOME=/etc/poetry python3 -`
 # RUN \
-    curl -sSL https://install.python-poetry.org | POETRY_HOME=$SHARED/poetry python3 -
+    $DOTLOCAL/bin/install-user.sh
 
-# RUN \
-    poetry_bin_path=$(command -v poetry >/dev/null && command -v poetry | xargs dirname | xargs dirname || { [ -d "${SHARED}/poetry/bin" ] && echo "${SHARED}/poetry/bin"; }) && \
-    [ -n "$poetry_bin_path" ] && ln -s $poetry_bin_path/* $HOMELOCAL/bin && \
-    "${poetry_bin_path}/poetry" completions bash >> $DOTLOCAL/.bash_completion
+# # https://python-poetry.org/docs/
+# # POETRY_HOME default : ~/.local/share/pypoetry
+# # To override: `curl -sSL https://install.python-poetry.org | POETRY_HOME=/etc/poetry python3 -`
+# # RUN \
+#     curl -sSL https://install.python-poetry.org | POETRY_HOME=$SHARED/poetry python3 -
 
-# Install kubectx and kubens
-# https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
-# RUN \
-    version=$($SCRIPTS/gh-get-version.sh "${KUBECTX_VERSION}" "latest" "ahmetb/kubectx") && \
-    status=$($SCRIPTS/gh-download-and-verify.sh "ahmetb/kubectx" "${version}" \
-        "kubectx_${version}_linux_x86_64.tar.gz" "checksums.txt") && \
-    echo $status && \
-    tar -xvzf kubectx_${version}_linux_x86_64.tar.gz && \
-    install kubectx /usr/local/bin/kubectx && \
-    printf "kubectx: %s\n" "$(kubectx --version)" >> /.versions
+# # RUN \
+#     poetry_bin_path=$(command -v poetry >/dev/null && command -v poetry | xargs dirname | xargs dirname || { [ -d "${SHARED}/poetry/bin" ] && echo "${SHARED}/poetry/bin"; }) && \
+#     [ -n "$poetry_bin_path" ] && ln -s $poetry_bin_path/* $HOMELOCAL/bin && \
+#     "${poetry_bin_path}/poetry" completions bash >> $DOTLOCAL/.bash_completion
 
-# RUN \
-    version=$($SCRIPTS/gh-get-version.sh "${KUBECTX_VERSION}" "latest" "ahmetb/kubectx") && \
-    status=$($SCRIPTS/gh-download-and-verify.sh "ahmetb/kubectx" "${version}" \
-        "kubens_${version}_linux_x86_64.tar.gz" "checksums.txt") && \
-    echo $status && \
-    tar -xvzf kubens_${version}_linux_x86_64.tar.gz && \
-    install kubens /usr/local/bin/kubens && \
-    printf "kubens: %s\n" "$(kubens --version)" >> /.versions
+# # Install kubectx and kubens
+# # https://github.com/ahmetb/kubectx/blob/master/README.md#manual-installation-macos-and-linux
+# # RUN \
+#     version=$($SCRIPTS/gh-get-version.sh "${KUBECTX_VERSION}" "latest" "ahmetb/kubectx") && \
+#     status=$($SCRIPTS/gh-download-and-verify.sh "ahmetb/kubectx" "${version}" \
+#         "kubectx_${version}_linux_x86_64.tar.gz" "checksums.txt") && \
+#     echo $status && \
+#     tar -xvzf kubectx_${version}_linux_x86_64.tar.gz && \
+#     install kubectx /usr/local/bin/kubectx && \
+#     printf "kubectx: %s\n" "$(kubectx --version)" >> /.versions
+
+# # RUN \
+#     version=$($SCRIPTS/gh-get-version.sh "${KUBECTX_VERSION}" "latest" "ahmetb/kubectx") && \
+#     status=$($SCRIPTS/gh-download-and-verify.sh "ahmetb/kubectx" "${version}" \
+#         "kubens_${version}_linux_x86_64.tar.gz" "checksums.txt") && \
+#     echo $status && \
+#     tar -xvzf kubens_${version}_linux_x86_64.tar.gz && \
+#     install kubens /usr/local/bin/kubens && \
+#     printf "kubens: %s\n" "$(kubens --version)" >> /.versions
 ##################################################
 
 # # TODO: why doesn't standard istio install work?
