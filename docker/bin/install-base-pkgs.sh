@@ -3,13 +3,13 @@
 set -o pipefail
 
 # RUN \
-    apt-get update -y && \
+    apt-get --assume-yes --quiet update && \
     export TZ_COUNTRY=$(echo "$TZ" | awk -F'/' '{print $1}') && \
     export TZ_CITY=$(echo "$TZ" | awk -F'/' '{print $2}') && \
     echo "tzdata tzdata/Areas select $TZ_COUNTRY" | debconf-set-selections && \
     echo "tzdata tzdata/Zones/$TZ_COUNTRY select $TZ_CITY" | debconf-set-selections && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y $INSTALL_PKGS && \
-    apt-get clean -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --quiet install $INSTALL_PKGS && \
+    rm --recursive --force /var/lib/apt/lists/* && \
     pip3 install --upgrade pip --no-cache-dir && \
     sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
     touch /usr/share/locale/locale.alias && \
@@ -30,11 +30,11 @@ EOF
 # PIP_CACHE_DIR=$DOTLOCAL python${python_version} -m pip install $PIP_PKGS
 # RUN \
     export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -F'.' '{print $1"."$2}') && \
-    apt-get update -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common && \
+    apt-get --assume-yes --quiet update && \
+    DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --quiet install software-properties-common && \
     add-apt-repository -y 'ppa:deadsnakes/ppa' && \
     { [ "${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" != "${PYTHON_DEFAULT_VERSION}" ] && \
-        DEBIAN_FRONTEND=noninteractive apt-get install -y "python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" "python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}-distutils" && \
+        DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --quiet install "python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" "python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}-distutils" && \
         update-alternatives --install /usr/bin/python3 python3 "/usr/bin/python${PYTHON_DEFAULT_VERSION}" 99 && \
         update-alternatives --install /usr/bin/python3 python3 "/usr/bin/python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" 98 && \
         update-alternatives --set python3 $(update-alternatives --list python3 | grep "python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}") && \
@@ -44,10 +44,10 @@ EOF
     { for python_version in $(echo $ADDITIONAL_PYTHON_VERSIONS); do \
         [ "${python_version}" != "${PYTHON_DEFAULT_VERSION}" -a "${python_version}" != "${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" ] && \
             priority=$((priority+1)) && \
-            DEBIAN_FRONTEND=noninteractive apt-get install -y "python${python_version}" "python${python_version}-distutils" && \
+            DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --quiet install "python${python_version}" "python${python_version}-distutils" && \
             update-alternatives --install /usr/bin/python3 python3 "/usr/bin/python${python_version}" $priority && \
             python${python_version} -m pip install $PIP_PKGS --no-cache-dir; \
     done; } && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y python-is-python3 && \
-    apt-get clean -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --quiet install python-is-python3 && \
+    rm --recursive --force /var/lib/apt/lists/* && \
     pip cache purge
