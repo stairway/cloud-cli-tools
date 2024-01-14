@@ -45,6 +45,7 @@ USER root
 
 WORKDIR $DOWNLOADS
 
+### Copied using ONBUILD from parent image
 # COPY bin/* $DOTLOCAL/bin/
 # COPY profile/* $DOTLOCAL/profile.d/
 # COPY conf $DOTLOCAL/conf
