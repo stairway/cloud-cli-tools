@@ -40,15 +40,7 @@ set -o pipefail
 EOF
 
 # https://docs.brew.sh/Installation#unattended-installation
-# RUN \
-    # NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
-    # test -d $HOME/.linuxbrew && eval "$(~/.linuxbrew/bin/brew shellenv)" && \
-    # test -d /home/linuxbrew/.linuxbrew && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
-    # echo "eval \"\$($(brew --prefix)/bin/brew shellenv)\"" >> $HOME/.bashrc && \
-    # (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> /root/.bashrc
-    # eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
-    # brew install gcc yq
-
-# https://docs.brew.sh/Installation#unattended-installation
 # The rest is in the dockerfile
-(echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.bashrc
+RUN \
+    (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.bashrc && \
+    brew install gcc yq
