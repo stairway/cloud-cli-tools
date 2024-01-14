@@ -42,5 +42,4 @@ EOF
 # https://docs.brew.sh/Installation#unattended-installation
 # The rest is in the dockerfile
 # RUN \
-    (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.bashrc && \
-    brew install gcc yq
+    (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.bashrc
