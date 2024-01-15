@@ -338,12 +338,3 @@ EOF
 # RUN \
     echo $(cat "/root/.bashrc") | grep --color=never -q -E '(case.*in.*\s*)xterm-color(.*\s*esac)' && \
     sed -z -i -E 's/(case.*in.*\s*)xterm-color(.*\s*esac)/\1xterm-*color\2/g' "/root/.bashrc"
-
-# RUN \
-    cd /home/linuxbrew/.linuxbrew/Homebrew && \
-    git config --global --add safe.directory /home/linuxbrew/.linuxbrew/Homebrew && \
-    git remote set-url origin https://github.com/Linuxbrew/brew && \
-    cat >> /etc/skel/.profile <<EOF
-git config --global --add safe.directory /home/linuxbrew/.linuxbrew/Homebrew
-
-EOF

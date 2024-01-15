@@ -111,7 +111,10 @@ WORKDIR $DOWNLOADS
 RUN useradd -m -s /bin/bash linuxbrew && \
 	echo 'linuxbrew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
 USER linuxbrew
-RUN NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+RUN NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
+    cd /home/linuxbrew/.linuxbrew/Homebrew && \
+    git config --global --add safe.directory /home/linuxbrew/.linuxbrew/Homebrew && \
+    git remote set-url origin https://github.com/Linuxbrew/brew
 USER root
 ENV PATH="/home/linuxbrew/.linuxbrew/bin:${PATH}"
 
@@ -121,7 +124,12 @@ RUN AWS_VAULT_VERSION=$AWS_VAULT_VERSION \
     MINIKUBE_VERSION=$MINIKUBE_VERSION \
     AWS_PYTHON_LAMBDA_RUNTIME_VERSION=$AWS_PYTHON_LAMBDA_RUNTIME_VERSION \
     ADDITIONAL_PYTHON_VERSIONS=$ADDITIONAL_PYTHON_VERSIONS \
-    $DOTLOCAL/bin/install-base-addtl.sh
+    $DOTLOCAL/bin/install-base-addtl.sh && \
+    git config --global --add safe.directory /home/linuxbrew/.linuxbrew/Homebrew && \
+    cat >> /etc/skel/.profile <<EOF
+git config --global --add safe.directory /home/linuxbrew/.linuxbrew/Homebrew
+
+EOF
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 WORKDIR /root
