@@ -88,16 +88,7 @@ RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
         HOMELOCAL="/home/$NEWU/.local" \
         $DOTLOCAL/bin/install-user.sh
 
-USER $NEWU
-RUN (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.bashrc; \
-    brew install gcc yq
-
 USER $UNAME
-RUN if [ "$UNAME" != "$NEWU" ]; then \
-        (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.bashrc; \
-        brew install gcc yq; \
-    fi
-
 WORKDIR $HOMEDIR
 
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
