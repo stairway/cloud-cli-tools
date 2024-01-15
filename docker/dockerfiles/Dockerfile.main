@@ -88,8 +88,6 @@ RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
         HOMELOCAL="/home/$NEWU/.local" \
         $DOTLOCAL/bin/install-user.sh
 
-# RUN (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> $BASHRC_EXTRA
-
 USER $NEWU
 # RUN brew install gcc yq
 
