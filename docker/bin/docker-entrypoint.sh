@@ -78,11 +78,11 @@ versions() {
 
 init_git() {
     local last_err=0
-    if [ ! -f ~/.gitconfig ]; then
+    # if [ ! -f ~/.gitconfig ]; then
         printf "\033[92;1m>>>\033[94;1m Initializing %s \033[92;1m>>>\033[0m\n" "Git"
 
         git_config || last_err=$?
-    fi
+    # fi
 
     [ $last_err -eq 0 -a -f ~/.gitconfig ] && printf "\033[92;1m<<< Successfully Initialized %s <<<\033[0m\n" "Git"
 }
