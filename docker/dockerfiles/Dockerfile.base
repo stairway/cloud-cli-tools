@@ -113,6 +113,7 @@ RUN useradd -m -s /bin/bash linuxbrew && \
 USER linuxbrew
 RUN NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
     cd /home/linuxbrew/.linuxbrew/Homebrew && \
+    git config --global --add safe.directory /home/linuxbrew/.linuxbrew/Homebrew && \
     git remote set-url origin https://github.com/Linuxbrew/brew
 USER root
 
