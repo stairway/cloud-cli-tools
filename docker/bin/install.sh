@@ -240,6 +240,9 @@ complete -C /usr/local/bin/aws_completer aws
 EOF
 
 # RUN \
+    (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> $BASHRC_EXTRA;
+
+# RUN \
     [ "$USER" != "root" ] || \
         match=$(grep -E -i "^(mesg\s+n.+true)$" $HOME/.profile) && \
         sed -i "s@$match@@" $HOME/.profile && \
