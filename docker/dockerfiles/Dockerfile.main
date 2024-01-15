@@ -91,10 +91,10 @@ RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
 # RUN (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> $BASHRC_EXTRA
 
 USER $NEWU
-RUN brew install gcc yq
+# RUN brew install gcc yq
 
 USER $UNAME
-RUN brew install gcc yq
+# RUN brew install gcc yq
 
 WORKDIR $HOMEDIR
 
