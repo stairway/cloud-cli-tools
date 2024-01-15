@@ -108,6 +108,12 @@ ENV LANG=en_US.UTF-8 \
 
 WORKDIR $DOWNLOADS
 
+RUN useradd -m -s /bin/bash linuxbrew && \
+	echo 'linuxbrew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
+USER linuxbrew
+RUN NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+USER root
+
 # Install additional
 RUN AWS_VAULT_VERSION=$AWS_VAULT_VERSION \
     HASHICORP_VAULT_VERSION=$HASHICORP_VAULT_VERSION \
