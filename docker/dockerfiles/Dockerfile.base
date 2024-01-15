@@ -114,6 +114,8 @@ USER linuxbrew
 RUN NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 USER root
 
+ENV PATH="/home/linuxbrew/.linuxbrew/bin:${PATH}"
+
 # Install additional
 RUN AWS_VAULT_VERSION=$AWS_VAULT_VERSION \
     HASHICORP_VAULT_VERSION=$HASHICORP_VAULT_VERSION \
