@@ -90,11 +90,13 @@ RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
 
 USER $NEWU
 RUN (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.bashrc; \
-    /home/linuxbrew/.linuxbrew/bin/brew install gcc yq
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
+    which brew
 
 USER $UNAME
 RUN (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.bashrc; \
-    /home/linuxbrew/.linuxbrew/bin/brew install gcc yq
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
+    brew install gcc yq
 WORKDIR $HOMEDIR
 
 VOLUME [ "/data", "$HOMEDIR/.ssh", "$HOMEDIR/.gnupg", "$HOMEDIR/.password-store", "$HOMEDIR/.awsvault" ]
