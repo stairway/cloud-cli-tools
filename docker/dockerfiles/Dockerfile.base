@@ -128,7 +128,6 @@ RUN AWS_VAULT_VERSION=$AWS_VAULT_VERSION \
     $DOTLOCAL/bin/install-base-addtl.sh
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-# USER $UNAME
 WORKDIR /root
 
 # Additional Metadata
