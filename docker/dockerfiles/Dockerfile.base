@@ -111,12 +111,8 @@ WORKDIR $DOWNLOADS
 RUN useradd -m -s /bin/bash linuxbrew && \
 	echo 'linuxbrew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
 USER linuxbrew
-RUN NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
-    cd /home/linuxbrew/.linuxbrew/Homebrew && \
-    git config --global --add safe.directory /home/linuxbrew/.linuxbrew/Homebrew && \
-    git remote set-url origin https://github.com/Linuxbrew/brew
+RUN NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 USER root
-
 ENV PATH="/home/linuxbrew/.linuxbrew/bin:${PATH}"
 
 # Install additional
