@@ -88,10 +88,10 @@ RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
         HOMELOCAL="/home/$NEWU/.local" \
         $DOTLOCAL/bin/install-user.sh
 
-USER $NEWU
-RUN brew install gcc yq
+# USER $NEWU
+# RUN brew install gcc yq
 USER $UNAME
-RUN brew install gcc yq
+# RUN brew install gcc yq
 
 WORKDIR $HOMEDIR
 
