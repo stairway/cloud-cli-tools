@@ -83,4 +83,6 @@ _PS1_DEFAULT=
 [ -z "$_PS1_DEFAULT" ] && _PS1_DEFAULT=$PS1
 _PS1="$(echo $_PS1_DEFAULT | sed 's/\\$$//')"${C_GREEN}'$(parse_git_branch)'${C_NC}'\$ '
 _PS1='$(cloud_prompt)'$_PS1
-PS1=$_PS1
+# PS1=$_PS1
+# Handles long PS1 lines better
+PS1=$_PS1$'\n# '
