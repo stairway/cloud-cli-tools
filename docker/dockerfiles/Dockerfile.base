@@ -109,15 +109,14 @@ RUN \
     echo "tzdata tzdata/Areas select $TZ_COUNTRY" | debconf-set-selections && \
     echo "tzdata tzdata/Zones/$TZ_COUNTRY select $TZ_CITY" | debconf-set-selections
 
-RUN \
-    DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --quiet install $INSTALL_PKGS && \
-    rm --recursive --force /var/lib/apt/lists/* && \
-    pip3 install --upgrade pip --no-cache-dir && \
-    sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
-    touch /usr/share/locale/locale.alias && \
-    locale-gen && \
-    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
-    . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
+RUN DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --quiet install $INSTALL_PKGS
+RUN rm --recursive --force /var/lib/apt/lists/*
+RUN pip3 install --upgrade pip --no-cache-dir
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen
+RUN touch /usr/share/locale/locale.alias
+RUN locale-gen
+RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+RUN . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
 RUN \
     cat >> /etc/skel/.bashrc <<EOF
