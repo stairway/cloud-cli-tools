@@ -117,8 +117,7 @@ RUN useradd -m -s /bin/bash linuxbrew && \
 	echo 'linuxbrew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
 USER linuxbrew
 RUN NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
-    cd /home/linuxbrew/.linuxbrew/Homebrew && \
-    git remote set-url origin https://github.com/Linuxbrew/brew
+    git -C "/home/linuxbrew/.linuxbrew/Homebrew" remote set-url origin https://github.com/Homebrew/brew
 USER root
 ENV PATH="/home/linuxbrew/.linuxbrew/bin:${PATH}"
 

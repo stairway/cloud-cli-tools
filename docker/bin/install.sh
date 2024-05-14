@@ -154,6 +154,9 @@ set -o pipefail
     install k9s /usr/local/bin/k9s && \
     k9s version
 
+# RUN \
+    curl -fsSL https://tailscale.com/install.sh | sh
+
 # TODO
 # Use gh client, and verify commit
 # (https://docs.github.com/en/rest/git/tags?apiVersion=2022-11-28#get-a-tag)
