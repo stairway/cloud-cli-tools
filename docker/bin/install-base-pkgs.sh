@@ -2,6 +2,8 @@
 
 set -o pipefail
 
+set -x
+
 # RUN \
     apt-get --assume-yes --quiet update && \
     export TZ_COUNTRY=$(echo "$TZ" | awk -F'/' '{print $1}') && \
