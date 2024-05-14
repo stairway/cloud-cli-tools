@@ -190,6 +190,17 @@ user_prompt() {
             read VSCODE_DEBUGPY && VSCODE_DEBUGPY="${VSCODE_DEBUGPY:-$VSCODE_DEBUGPY_DEFAULT}"
         done
 
+        while [ "${TAILSCALED}" != "${YES_VALUE}" -a "${TAILSCALED}" != "${NO_VALUE}" ]; do
+            if [ "${TAILSCALED_DEFAULT:-""}" = "${YES_VALUE}" ]; then
+                TAILSCALED_ALT="${NO_VALUE}"
+            else
+                TAILSCALED_DEFAULT="${NO_VALUE}"
+                TAILSCALED_ALT="${YES_VALUE}"
+            fi
+            printf "Configure Tailscaled (tailscaled) (\033[32;3mdefault: \033[32;3;1m%s\033[0m | \033[32;3m%s\033[0m): " "$TAILSCALED_DEFAULT" "$TAILSCALED_ALT"
+            read TAILSCALED && TAILSCALED="${TAILSCALED:-$TAILSCALED_DEFAULT}"
+        done
+
         echo
 
         command_msg=()
@@ -338,19 +349,32 @@ run_new() {
         -v "${PWD}/mount/home/${DOCKER_USER}/.aws:${docker_user_home}/.aws"
         -v "${PWD}/mount/home/${DOCKER_USER}/.kube:${docker_user_home}/.kube"
         -v "${PWD}/mount/home/${DOCKER_USER}/.ssh:${docker_user_home}/.ssh"
+        -v "${PWD}/mount/home/${DOCKER_USER}/.ssh:${docker_user_home}/.ssh"
         -v "${PWD}/mount/data:/data"
         -v /var/run/docker.sock:/var/run/docker.sock
         # --mount "type=volume,src='${RANDOMSTR}',dst=${docker_user_home}/.local"
     )
+
     [ -d "${PWD}/mount/addons" -a $(count $(ls -1 ${PWD}/mount/addons)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/addons:/tmp/addons")
-    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/docker-entrypoint.sh:/opt/local/bin/docker-entrypoint.sh")
+    mount_volumes+=(-v "${PWD}/docker/bin/docker-entrypoint.sh:/opt/local/bin/docker-entrypoint.sh")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/crypto.sh:/opt/local/bin/crypto.sh")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/init.sh:/opt/local/bin/init.sh")
-    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/profile:/opt/local/profile.d")
+    mount_volumes+=(-v "${PWD}/docker/profile:/opt/local/profile.d")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}:/data/$(basename $(pwd))")
 
-    local run_mode=("")
+    local run_mode=("-p 8000:8000")
     [ "${VSCODE_DEBUGPY}" = "${YES_VALUE}" ] && run_mode+=("-p ${VSCODE_DEBUGPY_PORT}:${VSCODE_DEBUGPY_PORT}")
+
+    if [ "${TAILSCALED}" = "${YES_VALUE}" ]; then
+        mount_volumes+=(
+            -v "/dev/net/tun:/dev/net/tun"
+            -v "/lib/modules:/lib/modules"
+        )
+        caps=(
+            --cap-add NET_ADMIN
+            --cap-add SYS_MODULE
+        )
+    fi
 
     if [ "${DOCKER_RUN_DETACHED:-false}" = "true" ]; then
         run_mode+=(
@@ -408,6 +432,7 @@ run_new() {
         # --network=host
         ${environment_vars[@]}
         ${mount_volumes[@]}
+        ${caps[@]}
         ${run_mode[@]}
     )
 

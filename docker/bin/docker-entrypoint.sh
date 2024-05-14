@@ -98,6 +98,18 @@ init_ssh() {
     fi
 }
 
+init_tailscaled() {
+    if ! command -v tailscale >/dev/null; then
+        curl -fsSL https://tailscale.com/install.sh | sh
+    fi
+    if ! pgrep -a tailscaled 2>/dev/null; then
+        tailscaled --state=mem: 2>~/tailscaled.log &
+    fi
+    pid=$(pgrep -a tailscaled 2>/dev/null | awk '{print $1}')
+    [ $? -ne 0 ] || echo $pid
+    return $?
+}
+
 exit_code=0
 waiting() { printf "${1:-.}"; sleep 1; }
 die() {
@@ -115,6 +127,7 @@ do_init() {
     versions
     crypto.sh
     init_git && init_ssh
+    init_tailscaled > ~/.tailscaled.lock
     [ -e ~/data ] || ln -s /data ~/data
     if [ ${VSCODE_DEBUGPY_PORT:-0} -gt 999 ]; then
         if [ ! -d /data/.vscode ]; then
