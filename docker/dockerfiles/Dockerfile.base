@@ -102,15 +102,14 @@ ONBUILD COPY conf $DOTLOCAL/conf
 #     PIP_PKGS=$PIP_PKGS \
 #     $DOTLOCAL/bin/install-base-pkgs.sh
 
-RUN INSTALL_PKGS=$INSTALL_PKGS
-RUN PIP_PKGS=$PIP_PKGS
-
 RUN \
     apt-get --assume-yes --quiet update && \
     export TZ_COUNTRY=$(echo "$TZ" | awk -F'/' '{print $1}') && \
     export TZ_CITY=$(echo "$TZ" | awk -F'/' '{print $2}') && \
     echo "tzdata tzdata/Areas select $TZ_COUNTRY" | debconf-set-selections && \
-    echo "tzdata tzdata/Zones/$TZ_COUNTRY select $TZ_CITY" | debconf-set-selections && \
+    echo "tzdata tzdata/Zones/$TZ_COUNTRY select $TZ_CITY" | debconf-set-selections
+
+RUN \
     DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --quiet install $INSTALL_PKGS && \
     rm --recursive --force /var/lib/apt/lists/* && \
     pip3 install --upgrade pip --no-cache-dir && \
