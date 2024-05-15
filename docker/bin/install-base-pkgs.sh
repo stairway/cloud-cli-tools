@@ -10,7 +10,6 @@ set -o pipefail
     echo "tzdata tzdata/Zones/$TZ_COUNTRY select $TZ_CITY" | debconf-set-selections && \
     DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --quiet install $INSTALL_PKGS && \
     rm --recursive --force /var/lib/apt/lists/* && \
-    # pip3 install --upgrade pip --no-cache-dir && \
     sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
     touch /usr/share/locale/locale.alias && \
     locale-gen && \
