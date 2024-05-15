@@ -128,7 +128,7 @@ EOF
 
 # Install additional python versions
 # PIP_CACHE_DIR=$DOTLOCAL python${python_version} -m pip install $PIP_PKGS
-RUN \
+RUN PIP_PKGS=$PIP_PKGS \
     export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -F'.' '{print $1"."$2}') && \
     apt-get --assume-yes --quiet update && \
     DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --quiet install software-properties-common && \
@@ -139,6 +139,7 @@ RUN \
         update-alternatives --install /usr/bin/python3 python3 "/usr/bin/python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" 98 && \
         update-alternatives --set python3 $(update-alternatives --list python3 | grep "python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}") && \
         python${AWS_PYTHON_LAMBDA_RUNTIME_VERSION} -m pip install $PIP_PKGS --no-cache-dir; } && \
+    python${PYTHON_DEFAULT_VERSION} -m pip install $PIP_PKGS --no-cache-dir && \
     priority=0 && \
     { for python_version in $(echo $ADDITIONAL_PYTHON_VERSIONS); do \
         [ "${python_version}" != "${PYTHON_DEFAULT_VERSION}" -a "${python_version}" != "${AWS_PYTHON_LAMBDA_RUNTIME_VERSION}" ] && \
