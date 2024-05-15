@@ -111,8 +111,7 @@ RUN \
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --quiet install $INSTALL_PKGS
 RUN rm --recursive --force /var/lib/apt/lists/*
-RUN ls -la /usr/bin
-RUN /usr/bin/python -m pip install --upgrade pip --no-cache-dir
+RUN /usr/bin/python3 -m pip install --upgrade pip --no-cache-dir
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen
 RUN touch /usr/share/locale/locale.alias
 RUN locale-gen

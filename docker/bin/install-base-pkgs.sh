@@ -2,7 +2,7 @@
 
 set -o pipefail
 
-# RUN \
+RUN \
     apt-get --assume-yes --quiet update && \
     export TZ_COUNTRY=$(echo "$TZ" | awk -F'/' '{print $1}') && \
     export TZ_CITY=$(echo "$TZ" | awk -F'/' '{print $2}') && \
@@ -10,14 +10,14 @@ set -o pipefail
     echo "tzdata tzdata/Zones/$TZ_COUNTRY select $TZ_CITY" | debconf-set-selections && \
     DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --quiet install $INSTALL_PKGS && \
     rm --recursive --force /var/lib/apt/lists/* && \
-    pip3 install --upgrade pip --no-cache-dir && \
+    /usr/bin/python3 -m pip install --upgrade pip --no-cache-dir && \
     sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
     touch /usr/share/locale/locale.alias && \
     locale-gen && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     . /etc/os-release && echo "${NAME} ${VERSION}" >> /.versions
 
-# RUN \
+RUN \
     cat >> /etc/skel/.bashrc <<EOF
 
 if [ -f "\${BASHRC_EXTRA:-$BASHRC_EXTRA}" ]; then
@@ -28,7 +28,7 @@ EOF
 
 # Install additional python versions
 # PIP_CACHE_DIR=$DOTLOCAL python${python_version} -m pip install $PIP_PKGS
-# RUN \
+RUN \
     export PYTHON_DEFAULT_VERSION=$(python3 --version | awk '{print $2}' | awk -F'.' '{print $1"."$2}') && \
     apt-get --assume-yes --quiet update && \
     DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --quiet install software-properties-common && \
