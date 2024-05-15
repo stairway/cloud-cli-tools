@@ -11,7 +11,9 @@ if ! command -v kpv3-cli ; then
     printf "\n%s\n\n" "Configuring Kubernetes (sign in via Liatrio GitHub)"
     kpv3-cli --headless kubeconfig -w
   fi
-  printf "\n🏁 %s 🏁\n" "Platform setup complete"
-  printf "• %s" "Run 'k9s' (or 'kubectl' etc.) to interact with platform resources."
-  printf "\n🎉 %s 🎉\n" "Happy Platforming"
+  if [ -s $HOME/.kube/k8s-platform-v3 ]; then
+    printf "\n🏁 %s 🏁\n" "Platform setup complete"
+    printf "• %s" "Run 'k9s' (or 'kubectl' etc.) to interact with platform resources."
+    printf "\n🎉 %s 🎉\n" "Happy Platforming"
+  fi
 fi

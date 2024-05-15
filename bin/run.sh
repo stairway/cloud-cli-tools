@@ -356,10 +356,10 @@ run_new() {
     )
 
     [ -d "${PWD}/mount/addons" -a $(count $(ls -1 ${PWD}/mount/addons)) -gt 0 ] && mount_volumes+=(-v "${PWD}/mount/addons:/tmp/addons")
-    mount_volumes+=(-v "${PWD}/docker/bin/docker-entrypoint.sh:/opt/local/bin/docker-entrypoint.sh")
+    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/docker-entrypoint.sh:/opt/local/bin/docker-entrypoint.sh")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/crypto.sh:/opt/local/bin/crypto.sh")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/bin/init.sh:/opt/local/bin/init.sh")
-    mount_volumes+=(-v "${PWD}/docker/profile:/opt/local/profile.d")
+    [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}/docker/profile:/opt/local/profile.d")
     [ "${DEBUG:-false}" = "true" ] && mount_volumes+=(-v "${PWD}:/data/$(basename $(pwd))")
 
     local run_mode=("-p 8000:8000")
