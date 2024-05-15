@@ -338,3 +338,7 @@ EOF
 # RUN \
     echo $(cat "/root/.bashrc") | grep --color=never -q -E '(case.*in.*\s*)xterm-color(.*\s*esac)' && \
     sed -z -i -E 's/(case.*in.*\s*)xterm-color(.*\s*esac)/\1xterm-*color\2/g' "/root/.bashrc"
+
+# RUN \
+    wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && \
+    chmod +x /usr/bin/yq
