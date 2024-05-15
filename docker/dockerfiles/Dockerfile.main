@@ -71,7 +71,7 @@ EOF
 
 # (alternative to `--groups sudo` is `echo "$UNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers`)
 # (to add password, use `-p "$(openssl passwd -1 <password>)"`)
-RUN [ "$UNAME" = "root" ] && NEWU=ubuntu || NEWU="$UNAME" && \
+RUN [ "$UNAME" = "root" ] && NEWU=user || NEWU="$UNAME" && \
         useradd \
             --shell /bin/bash \
             --create-home \
